@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="情報項目 × 担当のマトリクスに作業と帳票を置き、矢印でつないで業務シーケンス図（情報の地図）を作る編集ツールの雛形。">
+  <title>業務シーケンス図</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
+      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
+      --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854; --tint:#fafaf6;
+      --grid:#c3cec6; --box:#d7e8dc; --box-line:#2f6b4a; --box-ink:#0d3b22;
+    }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.6; }
+    header,main,footer { width:min(1280px,calc(100% - 48px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.08em; }
+    .mark { display:inline-block; flex-shrink:0; width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); margin-right:5px; }
+    .note { font-size:12px; color:var(--muted); }
+    button,input,textarea,select { font-family:inherit; color:inherit; }
+    button { cursor:pointer; }
+    :focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+
+    .intro { padding:40px 0 22px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--brown); margin:0 0 10px; }
+    h1 { font-size:clamp(28px,4vw,40px); line-height:1.4; letter-spacing:.025em; margin:0 0 8px; }
+    h1 span { color:var(--brown); }
+    .lead { font-size:14px; color:var(--muted); margin:0; max-width:820px; }
+
+    /* ツールバー */
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:0 0 12px; }
+    .btn { background:transparent; color:var(--green); border:1px solid var(--line); border-radius:5px; padding:6px 14px; font-size:13px; white-space:nowrap; }
+    .btn:hover { background:var(--hover); }
+    .btn.primary { background:var(--green); color:#fff; border-color:var(--green); }
+    .btn.primary:hover { background:#0b5a31; }
+    .btn.add { border:1.5px dashed var(--green); background:#fff; font-weight:700; }
+    .btn.danger { color:#a4472f; }
+    .group-label { font-size:11px; color:var(--muted); letter-spacing:.08em; }
+    .seg { display:inline-flex; border:1px solid var(--line); border-radius:5px; overflow:hidden; background:#fff; }
+    .seg button { padding:5px 12px; border:0; background:transparent; font-size:12px; color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+    .seg button + button { border-left:1px solid var(--line); }
+    .seg button.on { background:var(--green); color:#fff; }
+    .seg .ln { display:inline-block; width:20px; border-top:2px solid currentColor; }
+    .seg .ln.dashed { border-top-style:dashed; }
+    .spacer { flex:1; }
+
+    /* 選択中の項目の設定 */
+    .inspector { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; min-height:54px; margin-bottom:14px; padding:10px 16px; background:#fff; border:1px solid var(--line); border-radius:12px; font-size:13px; }
+    .i-kind { font-size:10px; font-weight:700; letter-spacing:.15em; color:var(--brown); }
+    .i-field { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+    .i-field.grow { flex:1; min-width:220px; }
+    .i-field input,.i-field select { padding:6px 10px; font-size:14px; border:1px solid var(--line); border-radius:5px; background:var(--paper); }
+    .i-field.grow input { flex:1; min-width:0; }
+    .i-field input:focus,.i-field select:focus { outline:2px solid var(--green); outline-offset:0; background:#fff; }
+    .i-hint { color:var(--muted); font-size:12px; }
+    .i-hint b { color:var(--green); font-weight:700; }
+
+    /* 図 */
+    .scroll { overflow:auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+    .board { position:relative; isolation:isolate; display:grid; min-width:100%; width:max-content; border:1.5px solid #5d7466; background:#fff; user-select:none; -webkit-user-select:none; }
+    .board > div { border-right:1px solid var(--grid); border-bottom:1px solid var(--grid); min-width:0; }
+    .c-brand { display:grid; place-items:center; padding:10px; background:var(--green); color:#fff; font-size:18px; font-weight:700; letter-spacing:.12em; }
+    .c-label { display:grid; place-items:center; font-size:14px; font-weight:700; background:var(--tint); }
+    .c-title { display:flex; align-items:center; }
+    .c-title input { width:100%; padding:12px 18px; border:0; background:transparent; font-size:17px; font-weight:700; }
+    .c-head { position:relative; display:flex; align-items:center; justify-content:center; min-height:42px; background:var(--tint); font-size:13px; font-weight:700; }
+    .c-head input { width:100%; padding:8px 10px; border:0; background:transparent; font-size:14px; font-weight:700; text-align:center; }
+    .c-row { position:relative; display:flex; align-items:center; background:var(--tint); }
+    .c-row textarea { width:100%; padding:10px 12px; border:0; background:transparent; font-size:14px; text-align:center; resize:none; line-height:1.5; }
+    .c-remark textarea { width:100%; height:100%; min-height:100px; padding:10px; border:0; background:transparent; font-size:12px; color:var(--muted); resize:none; }
+    .board input:focus,.board textarea:focus { outline:2px solid var(--green); outline-offset:-2px; background:#fff; }
+    .tools { position:absolute; top:3px; right:3px; display:flex; gap:2px; opacity:0; }
+    .c-row .tools { top:auto; bottom:3px; }
+    .c-head:hover .tools,.c-row:hover .tools,.c-head:focus-within .tools,.c-row:focus-within .tools { opacity:1; }
+    .tools button { width:20px; height:20px; padding:0; border:1px solid var(--line); border-radius:4px; background:#fff; color:var(--muted); font-size:12px; line-height:1; }
+    .tools button:hover { color:var(--green); border-color:var(--green); }
+
+    .cell { position:relative; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 18px; min-height:104px; padding:24px 14px; }
+    .cell.drop { background:var(--hover); box-shadow:inset 0 0 0 2px var(--box-line); }
+    .cell-add { position:absolute; right:6px; bottom:6px; display:grid; place-items:center; width:24px; height:24px; padding:0; border:1.5px dashed var(--box-line); border-radius:50%; background:#fff; color:var(--box-line); font-size:15px; line-height:1; opacity:0; }
+    .cell:hover .cell-add,.cell-add:focus-visible { opacity:1; }
+    .cell-add:hover { background:var(--box-line); color:#fff; border-style:solid; }
+    @media (hover:none) { .cell-add,.tools { opacity:.7; } }
+
+    .cell.has-note { padding-top:52px; }
+    .node-wrap { position:relative; display:flex; flex-direction:column; align-items:center; max-width:100%; }
+    .node-note { position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%); width:150px; font-size:11px; line-height:1.4; color:var(--ink); text-align:center; }
+    .node { position:relative; z-index:2; display:grid; place-items:center; min-width:76px; padding:8px 16px; border:1.5px solid var(--box-line); border-radius:7px; background:var(--box); color:var(--box-ink); font-size:16px; font-weight:700; letter-spacing:.08em; cursor:grab; touch-action:none; }
+    .node:hover { box-shadow:0 2px 8px rgba(32,58,44,.15); }
+    .node.selected { outline:3px solid var(--focus); outline-offset:3px; }
+    .node.drop-target { outline:2px dashed var(--focus); outline-offset:3px; }
+    .node.dragging { z-index:10; opacity:.85; pointer-events:none; box-shadow:0 8px 20px rgba(32,58,44,.25); }
+    .node.doc { min-width:0; width:86px; min-height:68px; padding:10px 8px 18px; border:0; border-radius:0; background:transparent; font-size:12px; letter-spacing:.02em; line-height:1.3; text-align:center; }
+    .node.doc .label { position:relative; }
+    .doc-shape { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    .doc-shape path { fill:#eef5f0; stroke:var(--box-line); stroke-width:1.5; vector-effect:non-scaling-stroke; }
+    .doc-shape .fold { fill:#c5dccb; }
+    .label-input { width:110px; padding:2px 4px; border:1px solid var(--box-line); border-radius:4px; font:inherit; text-align:center; background:#fff; }
+    .handle { position:absolute; top:50%; right:-8px; width:14px; height:14px; margin-top:-7px; border:2px solid var(--box-line); border-radius:50%; background:#fff; cursor:crosshair; opacity:0; }
+    .node:hover .handle,.node.selected .handle { opacity:1; }
+    .handle:hover { background:var(--focus); border-color:var(--focus); }
+
+    .edges { position:absolute; top:0; left:0; z-index:1; pointer-events:none; overflow:visible; }
+    .edge .line { fill:none; stroke:var(--box-line); stroke-width:1.6; }
+    .edge.dashed .line { stroke-dasharray:5 4; }
+    .edge .hit { fill:none; stroke:transparent; stroke-width:14; pointer-events:stroke; cursor:pointer; }
+    .edge:hover .line { stroke-width:2.4; }
+    .edge.selected .line { stroke:var(--focus); stroke-width:2.4; }
+    .temp { fill:none; stroke:var(--focus); stroke-width:1.8; stroke-dasharray:4 3; }
+
+    .legend { display:flex; flex-wrap:wrap; gap:8px 24px; margin-top:14px; font-size:12px; color:var(--muted); }
+    .legend span { display:inline-flex; align-items:center; gap:8px; }
+    .legend .ln { display:inline-block; width:34px; border-top:2px solid var(--box-line); }
+    .legend .ln.dashed { border-top-style:dashed; }
+    .legend .box { display:inline-block; width:26px; height:16px; border:1.5px solid var(--box-line); border-radius:4px; background:var(--box); }
+    .legend .doc { display:inline-block; width:16px; height:20px; border:1.5px solid var(--box-line); background:#eef5f0; clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%); }
+
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 20px; padding:24px 0 36px; color:var(--muted); font-size:12px; }
+    #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); padding:10px 20px; border-radius:7px; color:#fff; background:var(--green); font-size:13px; }
+    #toast:empty { display:none; }
+
+    @media(max-width:720px) {
+      header,main,footer { width:calc(100% - 32px); }
+      .scroll { padding:8px; }
+    }
+    @media print {
+      @page { size:landscape; }
+      header,main,footer { width:100%; }
+      body { background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .intro,.toolbar,.inspector,.cell-add,.tools,.handle,footer,#toast { display:none !important; }
+      .scroll { border:0; padding:0; overflow:visible; }
+      .node.selected { outline:none; }
+      .edge.selected .line { stroke:var(--box-line); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"></span>BUSINESS SEQUENCE</div>
+    <span class="note">データはこのブラウザに保存されます</span>
+  </header>
+
+  <main>
+    <div class="intro">
+      <p class="eyebrow">INFORMATION MAP</p>
+      <h1>情報の<span>地図</span>をつくる。</h1>
+      <p class="lead">縦に情報項目、横に担当を並べ、誰がどの情報に何をするかを箱で置きます。矢印でつなぐと、業務の流れと情報の受け渡しが一枚で見えるようになります。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn add" id="add-row">＋ 情報項目（行）</button>
+      <button class="btn add" id="add-role">＋ 担当（列）</button>
+      <span class="group-label" style="margin-left:8px">新しい矢印</span>
+      <span class="seg" id="new-style">
+        <button data-v="solid"><span class="ln"></span>実線</button>
+        <button data-v="dashed"><span class="ln dashed"></span>点線</button>
+      </span>
+      <span class="spacer"></span>
+      <button class="btn" id="import-btn">JSON読み込み</button>
+      <button class="btn" id="export-btn">JSON書き出し</button>
+      <button class="btn" id="print-btn">印刷・PDF</button>
+      <button class="btn danger" id="clear-btn">新規作成</button>
+      <input type="file" id="file" accept=".json,application/json" hidden>
+    </div>
+
+    <div class="inspector" id="inspector" aria-live="polite"></div>
+
+    <div class="scroll">
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="legend">
+      <span><i class="box"></i>作業（情報に対して行うこと）</span>
+      <span><i class="doc"></i>帳票・外部資料</span>
+      <span><i class="ln"></i>実線：作業の流れ・情報の受け渡し</span>
+      <span><i class="ln dashed"></i>点線：参照・帳票とのやりとり</span>
+    </div>
+  </main>
+
+  <footer><span>業務シーケンス図 ／ 情報の地図</span><span>Delete：選択中の項目を削除 ・ Enter：名前を編集 ・ Esc：選択を解除</span></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <datalist id="label-list"></datalist>
+
+  <script>
+    // ===== 設定 =====
+    const STORAGE_KEY = "bizseq.data";
+    const STYLE_KEY = "bizseq.newStyle";
+    // 作業名の候補
+    const LABELS = ["作成", "登録", "閲覧", "確認", "確定", "更新", "振分", "承認", "入力", "照合", "送付", "保管"];
+    const ROUTES = { auto: "自動", h: "横にまっすぐ", v: "縦にまっすぐ", vh: "縦 → 横", hv: "横 → 縦", below: "下を回る", above: "上を回る" };
+    // 初回表示用のサンプル（請求書の発行）
+    const SAMPLE = () => ({
+      title: "請求書の発行",
+      roles: [{ id: "c1", name: "営業" }, { id: "c2", name: "営業アシ" }, { id: "c3", name: "経理" }, { id: "c4", name: "" }],
+      rows: [
+        { id: "r1", name: "受注データ", remark: "" },
+        { id: "r2", name: "請求データ", remark: "" },
+        { id: "r3", name: "仕訳データ（売上）", remark: "" },
+        { id: "r4", name: "仕訳データ（銀行明細）", remark: "" },
+        { id: "r5", name: "未入金一覧", remark: "" },
+        { id: "r6", name: "〃", remark: "" },
+      ],
+      nodes: [
+        { id: "n1", row: "r1", col: "c1", label: "作成", type: "action", note: "" },
+        { id: "n2", row: "r1", col: "c2", label: "登録", type: "action", note: "" },
+        { id: "n3", row: "r1", col: "c3", label: "閲覧", type: "action", note: "" },
+        { id: "n4", row: "r2", col: "c1", label: "確認", type: "action", note: "" },
+        { id: "n5", row: "r2", col: "c2", label: "作成", type: "action", note: "" },
+        { id: "n6", row: "r2", col: "c3", label: "確定", type: "action", note: "" },
+        { id: "n7", row: "r2", col: "c4", label: "請求書", type: "doc", note: "" },
+        { id: "n8", row: "r3", col: "c3", label: "登録", type: "action", note: "" },
+        { id: "n9", row: "r4", col: "c3", label: "登録", type: "action", note: "" },
+        { id: "n10", row: "r4", col: "c4", label: "銀行明細", type: "doc", note: "" },
+        { id: "n11", row: "r5", col: "c1", label: "確認", type: "action", note: "クライアントに連絡して状況を確認する" },
+        { id: "n12", row: "r5", col: "c2", label: "振分", type: "action", note: "営業担当者別に振り分け作業を行う" },
+        { id: "n13", row: "r5", col: "c3", label: "作成", type: "action", note: "" },
+        { id: "n14", row: "r5", col: "c4", label: "補助元帳", type: "doc", note: "" },
+        { id: "n15", row: "r6", col: "c1", label: "更新", type: "action", note: "" },
+        { id: "n16", row: "r6", col: "c3", label: "閲覧", type: "action", note: "" },
+      ],
+      edges: [
+        { id: "e1", from: "n1", to: "n2", style: "solid", route: "auto" },
+        { id: "e2", from: "n2", to: "n3", style: "dashed", route: "auto" },
+        { id: "e3", from: "n2", to: "n5", style: "dashed", route: "auto" },
+        { id: "e4", from: "n5", to: "n4", style: "solid", route: "auto" },
+        { id: "e5", from: "n4", to: "n6", style: "solid", route: "below" },
+        { id: "e6", from: "n6", to: "n7", style: "dashed", route: "auto" },
+        { id: "e7", from: "n7", to: "n8", style: "dashed", route: "auto" },
+        { id: "e8", from: "n10", to: "n9", style: "dashed", route: "auto" },
+        { id: "e9", from: "n14", to: "n13", style: "dashed", route: "auto" },
+        { id: "e10", from: "n13", to: "n12", style: "solid", route: "auto" },
+        { id: "e11", from: "n12", to: "n11", style: "solid", route: "auto" },
+        { id: "e12", from: "n11", to: "n15", style: "solid", route: "auto" },
+        { id: "e13", from: "n15", to: "n16", style: "dashed", route: "auto" },
+      ],
+    });
+    const EMPTY = () => ({
+      title: "",
+      roles: [{ id: uid(), name: "" }, { id: uid(), name: "" }, { id: uid(), name: "" }],
+      rows: [{ id: uid(), name: "", remark: "" }, { id: uid(), name: "", remark: "" }, { id: uid(), name: "", remark: "" }],
+      nodes: [], edges: [],
+    });
+    // ================
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const byId = (list, id) => list.find(x => x.id === id);
+    const board = document.getElementById("board");
+    document.getElementById("label-list").innerHTML = LABELS.map(l => `<option value="${l}">`).join("");
+
+    // 読み込んだデータを正しい形にそろえる
+    function normalize(d) {
+      const str = v => String(v ?? "");
+      const out = {
+        title: str(d.title),
+        roles: (Array.isArray(d.roles) ? d.roles : []).map(r => ({ id: str(r.id) || uid(), name: str(r.name) })),
+        rows: (Array.isArray(d.rows) ? d.rows : []).map(r => ({ id: str(r.id) || uid(), name: str(r.name), remark: str(r.remark) })),
+        nodes: (Array.isArray(d.nodes) ? d.nodes : []).map(n => ({ id: str(n.id) || uid(), row: str(n.row), col: str(n.col), label: str(n.label), type: n.type === "doc" ? "doc" : "action", note: str(n.note) })),
+        edges: (Array.isArray(d.edges) ? d.edges : []).map(e => ({ id: str(e.id) || uid(), from: str(e.from), to: str(e.to), style: e.style === "dashed" ? "dashed" : "solid", route: ROUTES[e.route] ? e.route : "auto" })),
+      };
+      if (!out.roles.length) out.roles.push({ id: uid(), name: "" });
+      if (!out.rows.length) out.rows.push({ id: uid(), name: "", remark: "" });
+      return cleanup(out);
+    }
+    // 存在しない行・列・作業を参照しているものを取り除く
+    function cleanup(d = data) {
+      const rows = new Set(d.rows.map(r => r.id)), cols = new Set(d.roles.map(r => r.id));
+      d.nodes = d.nodes.filter(n => rows.has(n.row) && cols.has(n.col));
+      const ids = new Set(d.nodes.map(n => n.id));
+      d.edges = d.edges.filter(e => ids.has(e.from) && ids.has(e.to) && e.from !== e.to);
+      return d;
+    }
+    function load() {
+      try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return normalize(JSON.parse(raw)); } catch {}
+      return SAMPLE();
+    }
+    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {} }
+
+    let data = load();
+    let sel = null; // { type: "node" | "edge", id }
+    let newStyle = "solid";
+    try { newStyle = localStorage.getItem(STYLE_KEY) === "dashed" ? "dashed" : "solid"; } catch {}
+
+    // ===== 図の描画 =====
+    function nodeHtml(n) {
+      const selected = sel?.type === "node" && sel.id === n.id ? " selected" : "";
+      const shape = n.type === "doc" ? `<svg class="doc-shape" viewBox="0 0 86 68" preserveAspectRatio="none" aria-hidden="true"><path d="M1,1 H85 V52 L69,67 H1 Z"/><path class="fold" d="M85,52 H69 V67 Z"/></svg>` : "";
+      return `<div class="node-wrap">${n.note ? `<div class="node-note">${esc(n.note)}</div>` : ""}` +
+        `<div class="node ${n.type}${selected}" data-id="${n.id}" title="ドラッグで移動・ダブルクリックで名前を編集">${shape}<span class="label">${esc(n.label) || "（未入力）"}</span>` +
+        `<span class="handle" title="ドラッグして矢印を引く"></span></div></div>`;
+    }
+
+    function renderBoard() {
+      const R = data.roles.length, last = data.rows.length - 1;
+      board.style.gridTemplateColumns = `190px repeat(${R}, minmax(150px, 1fr)) 160px`;
+      let h = `<div class="c-brand">情報の地図</div><div class="c-label">業務名</div>` +
+        `<div class="c-title" style="grid-column:3 / -1"><input id="title" value="${esc(data.title)}" placeholder="業務名を入力" aria-label="業務名"></div>`;
+      h += `<div class="c-head">情報項目</div>`;
+      data.roles.forEach((r, i) => {
+        h += `<div class="c-head" data-role="${r.id}"><input class="role-name" value="${esc(r.name)}" placeholder="担当・外部" aria-label="担当名">` +
+          `<span class="tools">${i ? `<button data-act="role-left" title="左へ移動">‹</button>` : ""}${i < R - 1 ? `<button data-act="role-right" title="右へ移動">›</button>` : ""}` +
+          `${R > 1 ? `<button data-act="role-del" title="この列を削除">×</button>` : ""}</span></div>`;
+      });
+      h += `<div class="c-head">備考</div>`;
+      data.rows.forEach((row, i) => {
+        h += `<div class="c-row" data-row="${row.id}"><textarea class="row-name" rows="2" placeholder="情報項目" aria-label="情報項目">${esc(row.name)}</textarea>` +
+          `<span class="tools">${i ? `<button data-act="row-up" title="上へ移動">↑</button>` : ""}${i < last ? `<button data-act="row-down" title="下へ移動">↓</button>` : ""}` +
+          `${last ? `<button data-act="row-del" title="この行を削除">×</button>` : ""}</span></div>`;
+        const hasNote = data.nodes.some(n => n.row === row.id && n.note);
+        data.roles.forEach(r => {
+          const nodes = data.nodes.filter(n => n.row === row.id && n.col === r.id);
+          h += `<div class="cell${hasNote ? " has-note" : ""}" data-row="${row.id}" data-col="${r.id}">${nodes.map(nodeHtml).join("")}` +
+            `<button class="cell-add" data-act="add" title="ここに作業を追加" aria-label="ここに作業を追加">＋</button></div>`;
+        });
+        h += `<div class="c-remark"><textarea class="remark" data-row="${row.id}" rows="3" aria-label="備考">${esc(row.remark)}</textarea></div>`;
+      });
+      board.innerHTML = h + `<svg class="edges" id="edges"></svg>`;
+      drawEdges();
+    }
+
+    // ===== 矢印 =====
+    function box(id) {
+      const el = board.querySelector(`.node[data-id="${id}"]`);
+      if (!el) return null;
+      const base = board.getBoundingClientRect(), r = el.getBoundingClientRect();
+      const l = r.left - base.left, t = r.top - base.top;
+      return { l, t, r: l + r.width, b: t + r.height, cx: l + r.width / 2, cy: t + r.height / 2 };
+    }
+
+    function route(a, b, mode) {
+      const sameRow = Math.abs(a.cy - b.cy) < 8, sameCol = Math.abs(a.cx - b.cx) < 8;
+      let m = mode;
+      if (m === "auto") m = sameRow ? "h" : sameCol ? "v" : "vh";
+      if (m === "h" && !sameRow) m = "hv";
+      if (m === "v" && !sameCol) m = "vh";
+      if (m === "vh" && sameCol) m = "v";
+      if (m === "hv" && sameRow) m = "h";
+      switch (m) {
+        case "h": return b.cx > a.cx ? `M${a.r},${a.cy} H${b.l}` : `M${a.l},${a.cy} H${b.r}`;
+        case "v": return b.cy > a.cy ? `M${a.cx},${a.b} V${b.t}` : `M${a.cx},${a.t} V${b.b}`;
+        case "vh": return `M${a.cx},${b.cy > a.cy ? a.b : a.t} V${b.cy} H${b.cx > a.cx ? b.l : b.r}`;
+        case "hv": return `M${b.cx > a.cx ? a.r : a.l},${a.cy} H${b.cx} V${b.cy > a.cy ? b.t : b.b}`;
+        case "below": { const y = Math.max(a.b, b.b) + 16; return `M${a.cx},${a.b} V${y} H${b.cx} V${b.b}`; }
+        case "above": { const y = Math.min(a.t, b.t) - 16; return `M${a.cx},${a.t} V${y} H${b.cx} V${b.t}`; }
+      }
+    }
+
+    function drawEdges(temp) {
+      const svg = document.getElementById("edges");
+      if (!svg) return;
+      svg.setAttribute("width", board.scrollWidth);
+      svg.setAttribute("height", board.scrollHeight);
+      const marker = (id, color) => `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker>`;
+      let h = `<defs>${marker("ah", "#2f6b4a")}${marker("ah-sel", "#b07854")}</defs>`;
+      for (const e of data.edges) {
+        const a = box(e.from), b = box(e.to);
+        if (!a || !b) continue;
+        const d = route(a, b, e.route), on = sel?.type === "edge" && sel.id === e.id;
+        h += `<g class="edge ${e.style}${on ? " selected" : ""}" data-edge="${e.id}"><path class="hit" d="${d}"/><path class="line" d="${d}" marker-end="url(#${on ? "ah-sel" : "ah"})"/></g>`;
+      }
+      if (temp) h += `<path class="temp" d="M${temp.x1},${temp.y1} L${temp.x2},${temp.y2}" marker-end="url(#ah-sel)"/>`;
+      svg.innerHTML = h;
+    }
+    new ResizeObserver(() => drawEdges()).observe(board);
+
+    // ===== 選択中の項目の設定 =====
+    function renderInspector() {
+      const el = document.getElementById("inspector");
+      const n = sel?.type === "node" && byId(data.nodes, sel.id);
+      const e = sel?.type === "edge" && byId(data.edges, sel.id);
+      if (n) {
+        el.innerHTML =
+          `<span class="i-kind">${n.type === "doc" ? "帳票" : "作業"}</span>` +
+          `<label class="i-field">名前<input id="i-label" list="label-list" value="${esc(n.label)}" size="10"></label>` +
+          `<span class="seg" id="i-type"><button data-v="action" class="${n.type === "action" ? "on" : ""}">作業</button><button data-v="doc" class="${n.type === "doc" ? "on" : ""}">帳票</button></span>` +
+          `<label class="i-field grow">補足<input id="i-note" value="${esc(n.note)}" placeholder="例：営業担当者別に振り分け作業を行う"></label>` +
+          `<button class="btn danger" id="i-del">削除</button>`;
+        document.getElementById("i-label").addEventListener("input", ev => {
+          n.label = ev.target.value; save();
+          const label = board.querySelector(`.node[data-id="${n.id}"] .label`);
+          if (label) label.textContent = n.label || "（未入力）";
+          drawEdges();
+        });
+        document.getElementById("i-note").addEventListener("input", ev => { n.note = ev.target.value; save(); renderBoard(); });
+        el.querySelectorAll("#i-type button").forEach(b => b.addEventListener("click", () => { n.type = b.dataset.v; save(); renderBoard(); renderInspector(); }));
+        document.getElementById("i-del").addEventListener("click", deleteSelected);
+      } else if (e) {
+        const a = byId(data.nodes, e.from), b = byId(data.nodes, e.to);
+        el.innerHTML =
+          `<span class="i-kind">矢印</span><span>${esc(a.label)} → ${esc(b.label)}</span>` +
+          `<span class="seg" id="i-style"><button data-v="solid" class="${e.style === "solid" ? "on" : ""}"><span class="ln"></span>実線</button><button data-v="dashed" class="${e.style === "dashed" ? "on" : ""}"><span class="ln dashed"></span>点線</button></span>` +
+          `<label class="i-field">経路<select id="i-route">${Object.entries(ROUTES).map(([k, v]) => `<option value="${k}"${k === e.route ? " selected" : ""}>${v}</option>`).join("")}</select></label>` +
+          `<button class="btn" id="i-flip">向きを反転</button><span class="spacer"></span><button class="btn danger" id="i-del">削除</button>`;
+        el.querySelectorAll("#i-style button").forEach(btn => btn.addEventListener("click", () => { e.style = btn.dataset.v; save(); drawEdges(); renderInspector(); }));
+        document.getElementById("i-route").addEventListener("change", ev => { e.route = ev.target.value; save(); drawEdges(); });
+        document.getElementById("i-flip").addEventListener("click", () => { [e.from, e.to] = [e.to, e.from]; save(); drawEdges(); renderInspector(); });
+        document.getElementById("i-del").addEventListener("click", deleteSelected);
+      } else {
+        sel = null;
+        el.innerHTML = `<span class="i-hint">マスの <b>＋</b> かダブルクリックで作業を追加 ・ 作業の右の <b>○</b> を別の作業までドラッグして矢印を引く ・ 作業をドラッグして別のマスへ移動 ・ 作業や矢印をクリックすると、ここで種類や線を変更できます</span>`;
+      }
+    }
+
+    function updateSelection() {
+      board.querySelectorAll(".node.selected").forEach(x => x.classList.remove("selected"));
+      if (sel?.type === "node") board.querySelector(`.node[data-id="${sel.id}"]`)?.classList.add("selected");
+      drawEdges(); renderInspector();
+    }
+
+    // ===== 作業の追加・編集・削除 =====
+    function addNode(row, col) {
+      const n = { id: uid(), row, col, label: "", type: "action", note: "" };
+      data.nodes.push(n);
+      sel = { type: "node", id: n.id };
+      renderBoard(); renderInspector();
+      editLabel(n.id, true);
+    }
+
+    function editLabel(id, isNew) {
+      const n = byId(data.nodes, id), label = board.querySelector(`.node[data-id="${id}"] .label`);
+      if (!n || !label) return;
+      const input = document.createElement("input");
+      input.className = "label-input"; input.value = n.label; input.setAttribute("list", "label-list");
+      input.placeholder = "作業名";
+      label.replaceWith(input);
+      input.focus(); input.select();
+      let done = false;
+      const finish = commit => {
+        if (done) return; done = true;
+        const v = input.value.trim();
+        if (commit && v) n.label = v;
+        if (isNew && !n.label) { data.nodes = data.nodes.filter(x => x !== n); cleanup(); sel = null; }
+        save(); renderBoard(); renderInspector();
+      };
+      input.addEventListener("pointerdown", ev => ev.stopPropagation());
+      input.addEventListener("keydown", ev => {
+        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.key === "Enter") { ev.preventDefault(); finish(true); }
+        if (ev.key === "Escape") { ev.preventDefault(); finish(false); }
+      });
+      input.addEventListener("blur", () => finish(true));
+    }
+
+    function deleteSelected() {
+      if (!sel) return;
+      if (sel.type === "node") data.nodes = data.nodes.filter(n => n.id !== sel.id);
+      else data.edges = data.edges.filter(e => e.id !== sel.id);
+      cleanup(); sel = null; save();
+      renderBoard(); renderInspector();
+    }
+
+    // ===== ドラッグ（作業の移動・矢印を引く） =====
+    let drag = null;
+    const rel = ev => { const r = board.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+    const inside = (el, x, y) => { const r = el.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
+    const cellAt = (x, y) => [...board.querySelectorAll(".cell")].find(c => inside(c, x, y));
+    const nodeAt = (x, y, except) => [...board.querySelectorAll(".node")].find(n => n.dataset.id !== except && inside(n, x, y));
+
+    board.addEventListener("pointerdown", ev => {
+      if (ev.button !== 0 || ev.target.closest("input,textarea,button,select")) return;
+      const edge = ev.target.closest("[data-edge]");
+      if (edge) { sel = { type: "edge", id: edge.dataset.edge }; updateSelection(); return; }
+      const nodeEl = ev.target.closest(".node");
+      if (!nodeEl) { if (sel) { sel = null; updateSelection(); } return; }
+      if (ev.target.closest(".handle")) drag = { type: "connect", from: nodeEl.dataset.id };
+      else drag = { type: "move", id: nodeEl.dataset.id, el: nodeEl, x: ev.clientX, y: ev.clientY, moved: false };
+      board.setPointerCapture(ev.pointerId);
+      ev.preventDefault();
+    });
+
+    board.addEventListener("pointermove", ev => {
+      if (!drag) return;
+      board.querySelectorAll(".drop,.drop-target").forEach(x => x.classList.remove("drop", "drop-target"));
+      if (drag.type === "connect") {
+        const a = box(drag.from), p = rel(ev);
+        drawEdges({ x1: a.cx, y1: a.cy, x2: p.x, y2: p.y });
+        nodeAt(ev.clientX, ev.clientY, drag.from)?.classList.add("drop-target");
+        return;
+      }
+      if (!drag.moved && Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) < 4) return;
+      drag.moved = true;
+      drag.el.classList.add("dragging");
+      drag.el.style.transform = `translate(${ev.clientX - drag.x}px, ${ev.clientY - drag.y}px)`;
+      cellAt(ev.clientX, ev.clientY)?.classList.add("drop");
+    });
+
+    function endDrag(ev) {
+      if (!drag) return;
+      const d = drag; drag = null;
+      board.querySelectorAll(".drop,.drop-target").forEach(x => x.classList.remove("drop", "drop-target"));
+      const cancel = ev.type === "pointercancel";
+      if (d.type === "connect") {
+        const target = !cancel && nodeAt(ev.clientX, ev.clientY, d.from);
+        if (target) {
+          const to = target.dataset.id;
+          const exists = data.edges.find(e => e.from === d.from && e.to === to);
+          if (exists) sel = { type: "edge", id: exists.id };
+          else {
+            const e = { id: uid(), from: d.from, to, style: newStyle, route: "auto" };
+            data.edges.push(e); sel = { type: "edge", id: e.id }; save();
+          }
+        }
+        return updateSelection();
+      }
+      d.el.classList.remove("dragging");
+      d.el.style.transform = "";
+      if (!d.moved) { sel = { type: "node", id: d.id }; return updateSelection(); }
+      const cell = !cancel && cellAt(ev.clientX, ev.clientY), n = byId(data.nodes, d.id);
+      if (cell && n) { n.row = cell.dataset.row; n.col = cell.dataset.col; sel = { type: "node", id: n.id }; save(); renderBoard(); renderInspector(); }
+      else drawEdges();
+    }
+    board.addEventListener("pointerup", endDrag);
+    board.addEventListener("pointercancel", endDrag);
+
+    board.addEventListener("dblclick", ev => {
+      const nodeEl = ev.target.closest(".node");
+      if (nodeEl) return editLabel(nodeEl.dataset.id, false);
+      const cell = ev.target.closest(".cell");
+      if (cell && !ev.target.closest(".node-wrap,button")) addNode(cell.dataset.row, cell.dataset.col);
+    });
+
+    // ===== 行・列の操作 =====
+    function moveItem(list, id, dir) {
+      const i = list.findIndex(x => x.id === id), j = i + dir;
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+
+    board.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-act]");
+      if (!b) return;
+      const act = b.dataset.act;
+      if (act === "add") { const c = b.closest(".cell"); return addNode(c.dataset.row, c.dataset.col); }
+      const roleId = b.closest("[data-role]")?.dataset.role, rowId = b.closest("[data-row]")?.dataset.row;
+      if (act === "role-left" || act === "role-right") moveItem(data.roles, roleId, act === "role-left" ? -1 : 1);
+      if (act === "row-up" || act === "row-down") moveItem(data.rows, rowId, act === "row-up" ? -1 : 1);
+      if (act === "role-del") {
+        const r = byId(data.roles, roleId), count = data.nodes.filter(n => n.col === roleId).length;
+        if (count && !confirm(`「${r.name || "名称未設定"}」の列と、その中の作業 ${count}件を削除しますか？`)) return;
+        data.roles = data.roles.filter(x => x.id !== roleId);
+      }
+      if (act === "row-del") {
+        const r = byId(data.rows, rowId), count = data.nodes.filter(n => n.row === rowId).length;
+        if (count && !confirm(`「${r.name || "名称未設定"}」の行と、その中の作業 ${count}件を削除しますか？`)) return;
+        data.rows = data.rows.filter(x => x.id !== rowId);
+      }
+      cleanup(); save(); renderBoard(); renderInspector();
+    });
+
+    // 業務名・担当名・情報項目・備考の入力
+    board.addEventListener("input", ev => {
+      const t = ev.target;
+      if (t.id === "title") data.title = t.value;
+      else if (t.classList.contains("role-name")) byId(data.roles, t.closest("[data-role]").dataset.role).name = t.value;
+      else if (t.classList.contains("row-name")) byId(data.rows, t.closest("[data-row]").dataset.row).name = t.value;
+      else if (t.classList.contains("remark")) byId(data.rows, t.dataset.row).remark = t.value;
+      else return;
+      save(); drawEdges();
+    });
+
+    // ===== キーボード =====
+    document.addEventListener("keydown", ev => {
+      if (ev.target.closest("input,textarea,select") || document.querySelector(".label-input")) return;
+      if ((ev.key === "Delete" || ev.key === "Backspace") && sel) { ev.preventDefault(); deleteSelected(); }
+      else if (ev.key === "Escape" && sel) { sel = null; updateSelection(); }
+      else if (ev.key === "Enter" && sel?.type === "node") { ev.preventDefault(); editLabel(sel.id, false); }
+    });
+
+    // ===== ツールバー =====
+    const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; clearTimeout(toast.timer); toast.timer = setTimeout(() => t.textContent = "", 3000); };
+
+    document.getElementById("add-row").addEventListener("click", () => {
+      const r = { id: uid(), name: "", remark: "" };
+      data.rows.push(r); save(); renderBoard();
+      board.querySelector(`.c-row[data-row="${r.id}"] textarea`).focus();
+    });
+    document.getElementById("add-role").addEventListener("click", () => {
+      const r = { id: uid(), name: "" };
+      data.roles.push(r); save(); renderBoard();
+      board.querySelector(`.c-head[data-role="${r.id}"] input`).focus();
+    });
+
+    const styleSeg = document.getElementById("new-style");
+    const syncStyle = () => styleSeg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === newStyle));
+    styleSeg.addEventListener("click", ev => {
+      const b = ev.target.closest("button"); if (!b) return;
+      newStyle = b.dataset.v; syncStyle();
+      try { localStorage.setItem(STYLE_KEY, newStyle); } catch {}
+    });
+
+    document.getElementById("export-btn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${data.title || "business-sequence"}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    const fileEl = document.getElementById("file");
+    document.getElementById("import-btn").addEventListener("click", () => fileEl.click());
+    fileEl.addEventListener("change", async () => {
+      const file = fileEl.files[0]; fileEl.value = "";
+      if (!file) return;
+      try {
+        const d = JSON.parse(await file.text());
+        if (!d || typeof d !== "object" || Array.isArray(d)) throw new Error();
+        if (!confirm("現在の図を読み込んだ内容で置き換えますか？")) return;
+        data = normalize(d); sel = null; save(); renderBoard(); renderInspector();
+        toast("読み込みました");
+      } catch { toast("JSONの形式が正しくありません"); }
+    });
+
+    document.getElementById("print-btn").addEventListener("click", () => { sel = null; updateSelection(); window.print(); });
+    document.getElementById("clear-btn").addEventListener("click", () => {
+      if (!confirm("現在の図を消して、新しい図を作成しますか？（必要なら先にJSON書き出しで保存してください）")) return;
+      data = EMPTY(); sel = null; save(); renderBoard(); renderInspector();
+      document.getElementById("title").focus();
+    });
+
+    syncStyle();
+    renderBoard();
+    renderInspector();
+  </script>
+</body>
+</html>

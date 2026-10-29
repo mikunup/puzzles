@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="業務定義シートの整理項目を確認し、＋ボタンで業務ごとの業務定義シートを追加・入力できる雛形。">
+  <title>業務定義シート</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
+      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
+      --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854; --tint:#fafaf6;
+      --rule:#5d7466; --head:#e3eee6;
+    }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.7; }
+    header,main,footer { width:min(1180px,calc(100% - 48px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.08em; }
+    .mark { display:inline-block; flex-shrink:0; width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); margin-right:5px; }
+    .note { font-size:12px; color:var(--muted); }
+    button,input,textarea { font-family:inherit; color:inherit; }
+    button { cursor:pointer; }
+    :focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+
+    /* ページ切り替え */
+    .pages { display:flex; align-items:flex-end; gap:4px; margin-top:28px; border-bottom:1px solid var(--line); overflow-x:auto; }
+    .page-tab { flex-shrink:0; max-width:220px; padding:10px 16px; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; background:transparent; font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .page-tab:hover { color:var(--green); }
+    .page-tab[aria-selected="true"] { color:var(--green); border-bottom-color:var(--green); font-weight:700; }
+    .page-tab .num { font:11px ui-monospace,monospace; color:var(--brown); margin-right:6px; }
+    .add-tab { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; margin:0 0 6px 8px; padding:5px 14px; border:1.5px dashed var(--green); border-radius:7px; background:#fff; color:var(--green); font-size:13px; font-weight:700; white-space:nowrap; }
+    .add-tab:hover { background:var(--hover); border-style:solid; }
+    .plus { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--green); color:#fff; font-size:13px; line-height:1; }
+
+    .page { padding:36px 0 12px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--brown); margin:0 0 10px; }
+    h1 { font-size:clamp(28px,4vw,40px); line-height:1.4; letter-spacing:.025em; margin:0 0 10px; }
+    h1 span { color:var(--brown); }
+    h2 { font-size:18px; margin:0; letter-spacing:.03em; }
+    .lead { font-size:14px; color:var(--muted); margin:0 0 28px; max-width:780px; }
+    .section-title { display:flex; align-items:baseline; gap:12px; margin:36px 0 14px; }
+    .number { font:13px monospace; color:var(--brown); }
+
+    .btn { background:transparent; color:var(--green); border:1px solid var(--line); border-radius:5px; padding:6px 14px; font-size:13px; white-space:nowrap; }
+    .btn:hover { background:var(--hover); }
+    .btn.primary { background:var(--green); color:#fff; border-color:var(--green); }
+    .btn.primary:hover { background:#0b5a31; }
+    .btn.danger { color:#a4472f; }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+    .spacer { flex:1; }
+
+    /* 1ページ目：整理項目 */
+    .card { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    .guide { width:100%; border-collapse:collapse; font-size:14px; }
+    .guide th,.guide td { padding:13px 20px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    .guide thead th { background:var(--head); color:var(--ink); font-size:13px; }
+    .guide tbody tr:last-child > * { border-bottom:0; }
+    .guide tbody th { width:190px; font-weight:700; white-space:nowrap; }
+    .guide tbody th .en { display:block; font:10px ui-monospace,monospace; color:var(--brown); letter-spacing:.1em; font-weight:400; }
+    .big-add { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; margin-top:28px; padding:22px; border:2px dashed var(--green); border-radius:12px; background:#fff; color:var(--green); font-size:16px; font-weight:700; }
+    .big-add:hover { background:var(--hover); border-style:solid; }
+    .big-add .plus { width:28px; height:28px; font-size:20px; }
+    .sheet-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+    .sheet-card { display:block; padding:16px 18px; border:1px solid var(--line); border-left:4px solid var(--green); border-radius:9px; background:#fff; text-align:left; font-size:13px; }
+    .sheet-card:hover { background:var(--hover); }
+    .sheet-card strong { display:block; font-size:15px; margin-bottom:4px; }
+    .sheet-card small { display:block; color:var(--muted); font-size:12px; }
+    .empty { margin:0; padding:24px; border:1px dashed var(--line); border-radius:9px; color:var(--muted); font-size:13px; text-align:center; }
+
+    /* 業務定義シート */
+    .sheet {
+      display:grid; grid-template-columns:1.05fr .85fr .85fr 1.6fr;
+      grid-template-areas:
+        "brand label title title"
+        "ph th tmh purh"
+        "pl tv tmv purv"
+        "pl fh fh purv"
+        "pl fv fv purv"
+        "inh doh doh outh"
+        "inl dov dov done"
+        "inl dov dov deliv";
+      border-top:1.5px solid var(--rule); border-left:1.5px solid var(--rule); background:#fff;
+    }
+    .sheet > * { position:relative; min-width:0; border-right:1.5px solid var(--rule); border-bottom:1.5px solid var(--rule); }
+    .s-brand { grid-area:brand; display:grid; place-items:center; padding:12px; background:var(--green); color:#fff; font-size:20px; font-weight:700; letter-spacing:.1em; }
+    .s-label { grid-area:label; display:grid; place-items:center; font-size:15px; font-weight:700; background:var(--tint); }
+    .s-title { grid-area:title; display:flex; }
+    .s-title input { width:100%; padding:14px 20px; border:0; background:transparent; font-size:19px; font-weight:700; }
+    .h { display:grid; place-items:center; min-height:44px; padding:6px 10px; background:var(--head); font-size:15px; font-weight:700; letter-spacing:.06em; }
+    .h small { font-size:10px; font-weight:400; color:var(--muted); letter-spacing:0; }
+    .h-people { grid-area:ph; } .h-trigger { grid-area:th; } .h-time { grid-area:tmh; } .h-purpose { grid-area:purh; }
+    .h-freq { grid-area:fh; } .h-input { grid-area:inh; } .h-do { grid-area:doh; } .h-output { grid-area:outh; }
+    .h-input,.h-do,.h-output { font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif; letter-spacing:.12em; }
+    /* INPUT ▶ DO ▶ OUTPUT の三角 */
+    .h-input::after,.h-do::after { content:""; position:absolute; z-index:2; top:50%; right:-12px; margin-top:-13px; border-style:solid; border-width:13px 0 13px 18px; border-color:transparent transparent transparent var(--green); }
+    .v-people { grid-area:pl; } .v-trigger { grid-area:tv; } .v-time { grid-area:tmv; } .v-purpose { grid-area:purv; }
+    .v-freq { grid-area:fv; } .v-input { grid-area:inl; } .v-do { grid-area:dov; } .v-done { grid-area:done; } .v-deliv { grid-area:deliv; }
+    .v-trigger,.v-time { min-height:72px; }
+    .v-input,.v-do { min-height:260px; }
+    .sheet textarea,.sheet .v-trigger input,.sheet .v-time input { display:block; width:100%; height:100%; padding:12px 16px; border:0; background:transparent; font-size:14px; line-height:1.7; resize:none; }
+    .sheet .v-trigger input,.sheet .v-time input { text-align:center; }
+    .sheet input:focus,.sheet textarea:focus { outline:2px solid var(--green); outline-offset:-2px; background:#fdfefc; }
+    ::placeholder { color:#a9b4ac; }
+    .sub { display:block; padding:10px 16px 0; font-size:13px; font-weight:700; color:var(--ink); }
+    .v-done,.v-deliv { display:flex; flex-direction:column; min-height:130px; }
+    .v-done textarea,.v-deliv textarea { flex:1; padding-top:4px; }
+
+    .blist { list-style:none; margin:0; padding:10px 8px 10px 14px; }
+    .blist li { display:flex; align-items:center; gap:4px; }
+    .blist li::before { content:"・"; flex-shrink:0; color:var(--ink); font-weight:700; }
+    .blist input { flex:1; min-width:0; padding:5px 6px; border:0; border-bottom:1px dashed transparent; background:transparent; font-size:14px; }
+    .blist input:hover { border-bottom-color:var(--line); }
+    .blist input:focus { outline:none; border-bottom:1px solid var(--green); background:#fdfefc; }
+    .list-hint { padding:0 16px 10px; font-size:11px; color:#a9b4ac; }
+
+    .freq { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 18px; height:100%; padding:14px 16px; font-size:14px; }
+    .freq label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+    .freq input[type=radio] { accent-color:var(--green); width:16px; height:16px; margin:0; }
+    .freq .other { display:inline-flex; align-items:center; gap:6px; }
+    .freq .other input[type=text] { width:150px; padding:3px 8px; border:0; border-bottom:1px solid var(--line); background:transparent; font-size:14px; }
+    .freq .other input[type=text]:focus { outline:none; border-bottom-color:var(--green); }
+
+    .sheet-tools { margin-bottom:16px; }
+    .meta { font-size:12px; color:var(--muted); }
+
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 20px; padding:28px 0 36px; color:var(--muted); font-size:12px; }
+    #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); padding:10px 20px; border-radius:7px; color:#fff; background:var(--green); font-size:13px; }
+    #toast:empty { display:none; }
+    #print-area { display:none; }
+
+    @media(max-width:760px) {
+      header,main,footer { width:calc(100% - 32px); }
+      .sheet { display:flex; flex-direction:column; }
+      .h-input::after,.h-do::after { top:auto; bottom:-14px; right:50%; margin:0 -13px 0 0; border-width:18px 13px 0 13px; border-color:var(--green) transparent transparent transparent; }
+      .v-input,.v-do { min-height:160px; }
+      .guide tbody th { width:auto; }
+    }
+    @media print {
+      @page { size:A4 landscape; margin:12mm; }
+      body { background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      header,footer,.pages,.sheet-tools,.big-add,.no-print,.list-hint,#toast { display:none !important; }
+      main { width:100%; }
+      .page { padding:0; }
+      ::placeholder { color:transparent; }
+      body.print-all main { display:none; }
+      body.print-all #print-area { display:block; }
+      .print-page { break-after:page; }
+      .print-page:last-child { break-after:auto; }
+      .v-input,.v-do { min-height:200px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"></span>BUSINESS DEFINITION</div>
+    <span class="note">データはこのブラウザに保存されます</span>
+  </header>
+
+  <main>
+    <nav class="pages" id="pages" role="tablist" aria-label="ページ"></nav>
+    <div id="page"></div>
+  </main>
+
+  <div id="print-area"></div>
+  <footer><span>業務定義シート ／ 業務の輪郭をつかむ</span><span>リストの欄：Enterで行を追加 ・ 空の行でBackspaceで削除</span></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="file" accept=".json,application/json" hidden>
+
+  <script>
+    // ===== 設定 =====
+    const STORAGE_KEY = "bizdef.sheets";
+    const PAGE_KEY = "bizdef.page";
+    const LIST_ROWS = 6; // 新しいシートの箇条書きの初期行数
+    // 整理項目（1ページ目の説明と、入力欄のヒントに使います）
+    const GUIDE = [
+      { key: "title", name: "業務名", text: "この業務の名称を記載します" },
+      { key: "people", name: "担当者・関係者", text: "業務に関わる人を記載します。主担当だけでなく、関係者も含めましょう" },
+      { key: "trigger", name: "トリガー", text: "業務が始まるきっかけ（例：月初、依頼の受領など）を明確にします" },
+      { key: "time", name: "所要時間", text: "処理にかかる平均的な時間を記載します" },
+      { key: "freq", name: "発生頻度", text: "業務がどのくらいの頻度で発生するかを記載します" },
+      { key: "purpose", name: "目的", text: "この業務がなぜ存在するのか、何を達成するためのものかを書きます" },
+      { key: "inputs", name: "INPUT", text: "業務に必要な情報や資料を具体的に列挙します" },
+      { key: "do", name: "DO", text: "処理の内容を簡潔に書き出します。詳細化は後のステップで行います" },
+      { key: "output", name: "OUTPUT", text: "「完了」と見なす状態と、その際に得られる成果物を明確にします" },
+    ];
+    // 入力欄に薄く表示する記入例
+    const EXAMPLES = {
+      people: "例：営業（主担当）", inputs: "例：受注データ",
+      doneState: "例：請求書が確定し、顧客へ送付されている", deliverable: "例：請求書（PDF）、売上仕訳",
+    };
+    const FREQ = { daily: "毎日", weekly: "週次", monthly: "月次", other: "その他" };
+    // ================
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const hint = key => GUIDE.find(g => g.key === key).text;
+    const today = () => { const d = new Date(); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
+
+    const blank = () => ({
+      id: uid(), title: "", people: Array(LIST_ROWS).fill(""), trigger: "", time: "",
+      freq: "", freqOther: "", purpose: "", inputs: Array(LIST_ROWS).fill(""), do: "",
+      doneState: "", deliverable: "", updated: today(),
+    });
+    function normalize(s) {
+      const b = blank(), str = v => String(v ?? ""), list = v => Array.isArray(v) && v.length ? v.map(str) : [""];
+      return {
+        ...b, id: str(s.id) || b.id, title: str(s.title), people: list(s.people), trigger: str(s.trigger), time: str(s.time),
+        freq: FREQ[s.freq] ? s.freq : "", freqOther: str(s.freqOther), purpose: str(s.purpose), inputs: list(s.inputs),
+        do: str(s.do), doneState: str(s.doneState), deliverable: str(s.deliverable), updated: str(s.updated) || b.updated,
+      };
+    }
+    // シートが1枚もないときは、空白のシートを1枚用意する
+    function load() {
+      try {
+        const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]").map(normalize);
+        if (list.length) return list;
+      } catch {}
+      return [blank()];
+    }
+    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sheets)); } catch {} }
+
+    let sheets = load();
+    let current = "guide"; // "guide" またはシートの id
+    try { current = localStorage.getItem(PAGE_KEY) || "guide"; } catch {}
+    const pageEl = document.getElementById("page");
+    const byId = id => sheets.find(s => s.id === id);
+
+    // ===== ページ切り替え =====
+    const sheetName = s => s.title.trim() || "無題のシート";
+    function renderTabs() {
+      document.getElementById("pages").innerHTML =
+        `<button class="page-tab" role="tab" data-page="guide" aria-selected="${current === "guide"}"><span class="num">00</span>整理項目</button>` +
+        sheets.map((s, i) => `<button class="page-tab" role="tab" data-page="${s.id}" aria-selected="${current === s.id}" title="${esc(sheetName(s))}"><span class="num">${String(i + 1).padStart(2, "0")}</span>${esc(sheetName(s))}</button>`).join("") +
+        `<button class="add-tab" data-add><span class="plus">＋</span>シートを追加</button>`;
+    }
+    function go(id) {
+      current = id === "guide" || byId(id) ? id : "guide";
+      try { localStorage.setItem(PAGE_KEY, current); } catch {}
+      renderTabs();
+      pageEl.innerHTML = current === "guide" ? guideHtml() : sheetPageHtml(byId(current));
+      window.scrollTo({ top: 0 });
+    }
+    function addSheet(from) {
+      const s = from ? { ...normalize(from), id: uid(), title: from.title ? `${from.title}（コピー）` : "", updated: today() } : blank();
+      sheets.push(s); save(); go(s.id);
+      pageEl.querySelector('[data-k="title"]').focus();
+    }
+    document.getElementById("pages").addEventListener("click", ev => {
+      if (ev.target.closest("[data-add]")) return addSheet();
+      const b = ev.target.closest("[data-page]"); if (b) go(b.dataset.page);
+    });
+
+    // ===== 1ページ目：整理項目 =====
+    function guideHtml() {
+      const freqText = s => s.freq === "other" ? (s.freqOther || "その他") : FREQ[s.freq] || "頻度未設定";
+      return `<section class="page">
+        <p class="eyebrow">BUSINESS DEFINITION SHEET</p>
+        <h1>業務定義シートの<span>整理項目</span></h1>
+        <p class="lead">業務全体を俯瞰して、業務の輪郭をつかむためのシートです。次の項目を、業務ごとに1枚ずつ整理していきます。</p>
+        <div class="card"><table class="guide">
+          <thead><tr><th scope="col">項目</th><th scope="col">内容</th></tr></thead>
+          <tbody>${GUIDE.map(g => `<tr><th scope="row">${g.name}</th><td>${g.text}</td></tr>`).join("")}</tbody>
+        </table></div>
+        <button class="big-add no-print" data-add-sheet><span class="plus">＋</span>業務定義シートを追加する</button>
+        <div class="section-title"><span class="number">${String(sheets.length).padStart(2, "0")} /</span><h2>作成したシート</h2><span class="spacer"></span>
+          <span class="toolbar no-print">
+            <button class="btn" data-act="import">JSON読み込み</button>
+            <button class="btn" data-act="export"${sheets.length ? "" : " disabled"}>JSON書き出し</button>
+            <button class="btn" data-act="print-all"${sheets.length ? "" : " disabled"}>すべて印刷</button>
+          </span></div>
+        ${sheets.length ? `<div class="sheet-list">${sheets.map(s => {
+          const people = s.people.filter(p => p.trim());
+          return `<button class="sheet-card" data-page="${s.id}"><strong>${esc(sheetName(s))}</strong>` +
+            `<small>${esc(freqText(s))}${s.time ? ` ・ ${esc(s.time)}` : ""}</small>` +
+            `<small>${people.length ? esc(people.slice(0, 3).join("、")) + (people.length > 3 ? " ほか" : "") : "担当者未設定"}</small>` +
+            `<small>更新：${esc(s.updated)}</small></button>`;
+        }).join("")}</div>` : `<p class="empty">まだシートがありません。「＋ 業務定義シートを追加する」から作成してください。</p>`}
+      </section>`;
+    }
+
+    // ===== 業務定義シート =====
+    function listHtml(field, items) {
+      return `<ul class="blist" data-list="${field}">${items.map((v, i) =>
+        `<li><input value="${esc(v)}" data-i="${i}" placeholder="${i === 0 ? esc(EXAMPLES[field]) : ""}" aria-label="${field === "people" ? "担当者・関係者" : "INPUT"} ${i + 1}"></li>`).join("")}</ul>`;
+    }
+
+    function sheetHtml(s, readonly) {
+      const ro = readonly ? " readonly" : "";
+      const ta = (k, rows = 4) => `<textarea data-k="${k}" rows="${rows}" placeholder="${esc(typeof EXAMPLES[k] === "string" ? EXAMPLES[k] : hint(k))}"${ro}>${esc(s[k])}</textarea>`;
+      return `<div class="sheet" data-sheet="${s.id}">
+        <div class="s-brand">業務定義シート</div>
+        <div class="s-label">業務名</div>
+        <div class="s-title"><input data-k="title" value="${esc(s.title)}" placeholder="${esc(hint("title"))}" aria-label="業務名"${ro}></div>
+        <div class="h h-people">担当者・関係者</div>
+        <div class="v-people">${listHtml("people", s.people)}${readonly ? "" : `<div class="list-hint">Enterで行を追加</div>`}</div>
+        <div class="h h-trigger">トリガー</div>
+        <div class="v-trigger"><input data-k="trigger" value="${esc(s.trigger)}" placeholder="例：月初、依頼の受領など" aria-label="トリガー"${ro}></div>
+        <div class="h h-time">所要時間</div>
+        <div class="v-time"><input data-k="time" value="${esc(s.time)}" placeholder="例：約2時間" aria-label="所要時間"${ro}></div>
+        <div class="h h-freq">発生頻度</div>
+        <div class="v-freq"><div class="freq" role="radiogroup" aria-label="発生頻度">
+          ${["daily", "weekly", "monthly"].map(k => `<label><input type="radio" name="freq-${s.id}" value="${k}"${s.freq === k ? " checked" : ""}${readonly ? " disabled" : ""}>${FREQ[k]}</label>`).join("")}
+          <span class="other"><label><input type="radio" name="freq-${s.id}" value="other"${s.freq === "other" ? " checked" : ""}${readonly ? " disabled" : ""}>その他</label>
+          （<input type="text" data-k="freqOther" value="${esc(s.freqOther)}" placeholder="例：四半期ごと" aria-label="その他の頻度"${ro}>）</span>
+        </div></div>
+        <div class="h h-purpose">目的</div>
+        <div class="v-purpose">${ta("purpose", 6)}</div>
+        <div class="h h-input">INPUT</div>
+        <div class="v-input">${listHtml("inputs", s.inputs)}${readonly ? "" : `<div class="list-hint">Enterで行を追加</div>`}</div>
+        <div class="h h-do">DO</div>
+        <div class="v-do">${ta("do", 10)}</div>
+        <div class="h h-output">OUTPUT</div>
+        <div class="v-done"><span class="sub">＜完了とみなす状態＞</span>${ta("doneState", 3)}</div>
+        <div class="v-deliv"><span class="sub">＜成果物＞</span>${ta("deliverable", 3)}</div>
+      </div>`;
+    }
+
+    function sheetPageHtml(s) {
+      const i = sheets.indexOf(s);
+      return `<section class="page">
+        <div class="toolbar sheet-tools">
+          <span class="eyebrow" style="margin:0">SHEET ${String(i + 1).padStart(2, "0")}</span>
+          <span class="meta">更新：<span id="updated">${esc(s.updated)}</span></span>
+          <span class="spacer"></span>
+          <button class="btn" data-act="duplicate">複製</button>
+          <button class="btn" data-act="print">印刷・PDF</button>
+          <button class="btn danger" data-act="delete">削除</button>
+          <button class="btn primary" data-act="add">＋ 次のシートを追加</button>
+        </div>
+        ${sheetHtml(s)}
+      </section>`;
+    }
+
+    // ===== 入力 =====
+    function touch(s) {
+      s.updated = today(); save();
+      const u = document.getElementById("updated"); if (u) u.textContent = s.updated;
+    }
+    pageEl.addEventListener("input", ev => {
+      const t = ev.target, sheetEl = t.closest("[data-sheet]");
+      if (!sheetEl) return;
+      const s = byId(sheetEl.dataset.sheet);
+      if (t.dataset.k) {
+        s[t.dataset.k] = t.value;
+        if (t.dataset.k === "freqOther" && t.value && s.freq !== "other") {
+          s.freq = "other"; sheetEl.querySelector('input[type=radio][value="other"]').checked = true;
+        }
+        if (t.dataset.k === "title") renderTabs();
+      } else if (t.closest("[data-list]")) {
+        s[t.closest("[data-list]").dataset.list][+t.dataset.i] = t.value;
+      } else if (t.type === "radio") {
+        s.freq = t.value;
+      }
+      touch(s);
+    });
+
+    // 箇条書き：Enterで追加、空行でBackspaceで削除、↑↓で移動
+    pageEl.addEventListener("keydown", ev => {
+      const ul = ev.target.closest("[data-list]");
+      if (!ul || ev.isComposing || ev.keyCode === 229) return;
+      const s = byId(ev.target.closest("[data-sheet]").dataset.sheet), field = ul.dataset.list, list = s[field], i = +ev.target.dataset.i;
+      const redraw = focus => {
+        ul.outerHTML = listHtml(field, list);
+        const input = pageEl.querySelector(`[data-sheet="${s.id}"] [data-list="${field}"] input[data-i="${focus}"]`);
+        input.focus(); input.setSelectionRange(input.value.length, input.value.length);
+        touch(s);
+      };
+      if (ev.key === "Enter") { ev.preventDefault(); list.splice(i + 1, 0, ""); redraw(i + 1); }
+      else if (ev.key === "Backspace" && ev.target.value === "" && list.length > 1) { ev.preventDefault(); list.splice(i, 1); redraw(Math.max(0, i - 1)); }
+      else if (ev.key === "ArrowUp" && i > 0) { ev.preventDefault(); ul.querySelector(`input[data-i="${i - 1}"]`).focus(); }
+      else if (ev.key === "ArrowDown" && i < list.length - 1) { ev.preventDefault(); ul.querySelector(`input[data-i="${i + 1}"]`).focus(); }
+    });
+
+    // ===== ボタン =====
+    const toast = msg => { const t = document.getElementById("toast"); t.textContent = msg; clearTimeout(toast.timer); toast.timer = setTimeout(() => t.textContent = "", 3000); };
+    const fileEl = document.getElementById("file");
+
+    pageEl.addEventListener("click", ev => {
+      if (ev.target.closest("[data-add-sheet]")) return addSheet();
+      const card = ev.target.closest(".sheet-card"); if (card) return go(card.dataset.page);
+      const act = ev.target.closest("[data-act]")?.dataset.act; if (!act) return;
+      const s = byId(current);
+      if (act === "add") addSheet();
+      if (act === "duplicate") { addSheet(s); toast("シートを複製しました"); }
+      if (act === "print") window.print();
+      if (act === "delete") {
+        if (!confirm(`「${sheetName(s)}」を削除しますか？`)) return;
+        const i = sheets.indexOf(s);
+        sheets.splice(i, 1); save();
+        go(sheets[i - 1]?.id || sheets[0]?.id || "guide");
+      }
+      if (act === "export") {
+        const blob = new Blob([JSON.stringify(sheets, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "業務定義シート.json"; a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      if (act === "import") fileEl.click();
+      if (act === "print-all") {
+        document.getElementById("print-area").innerHTML = sheets.map(x => `<div class="print-page">${sheetHtml(x, true)}</div>`).join("");
+        document.body.classList.add("print-all");
+        window.print();
+      }
+    });
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("print-all");
+      document.getElementById("print-area").innerHTML = "";
+    });
+
+    fileEl.addEventListener("change", async () => {
+      const file = fileEl.files[0]; fileEl.value = "";
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        const list = (Array.isArray(data) ? data : [data]).filter(x => x && typeof x === "object").map(normalize);
+        if (!list.length) throw new Error();
+        const replace = sheets.length && confirm(`${list.length}件のシートを読み込みます。\nOK：今のシートを置き換える ／ キャンセル：今のシートの後ろに追加する`);
+        list.forEach(x => { if (sheets.some(s => s.id === x.id)) x.id = uid(); });
+        sheets = replace ? list : sheets.concat(list);
+        save(); go("guide"); toast(`${list.length}件のシートを読み込みました`);
+      } catch { toast("JSONの形式が正しくありません"); }
+    });
+
+    go(current);
+  </script>
+</body>
+</html>

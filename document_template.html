@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="左に目次、右に本文を配置した説明資料のHTMLテンプレート。">
+  <!-- 資料の内容に合わせてタイトル・説明文・各セクションを書き換えてください。 -->
+  <title>説明資料のタイトル｜DOCUMENT NOTE</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --green:#044523;
+      --brown:#7e513c;
+      --paper:#f6f5ef;
+      --ink:#203a2c;
+      --muted:#627067;
+      --line:#dce2d9;
+      --surface:#ffffff;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; overflow-wrap:anywhere; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .skip-link { position:fixed; top:12px; left:12px; padding:8px 16px; background:var(--surface); transform:translateY(-160%); z-index:10; }
+    .skip-link:focus { transform:translateY(0); }
+    .layout { width:min(1240px,calc(100% - 64px)); margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:64px; align-items:start; }
+    .sidebar { position:sticky; top:0; max-height:100dvh; overflow-y:auto; padding:40px 24px 32px 0; border-right:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.08em; }
+    .mark { flex-shrink:0; width:15px; height:15px; margin-right:5px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .sidebar-description { color:var(--muted); font-size:12px; margin:16px 0 35px; }
+    .toc-label { color:var(--brown); font-size:10px; font-weight:700; letter-spacing:.18em; margin:0 0 12px; }
+    .toc { list-style:none; margin:0; padding:0; }
+    .toc li { margin:5px 0; }
+    .toc a { display:flex; align-items:baseline; gap:12px; padding:9px 12px; text-decoration:none; border-radius:6px; font-size:13px; }
+    .toc a:hover,.toc a:focus-visible { background:#eaf0e8; }
+    .toc-number { font:11px ui-monospace,monospace; color:var(--brown); }
+    .sidebar-note { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:11px; color:var(--muted); }
+    main { min-width:0; padding-top:36px; }
+    .document-header { padding:0 0 38px; }
+    .breadcrumb { font-size:11px; color:var(--muted); margin:0 0 36px; }
+    .eyebrow { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 14px; }
+    h1 { font-size:clamp(30px,3.5vw,44px); line-height:1.5; letter-spacing:.025em; margin:0 0 20px; }
+    .lead { max-width:650px; color:var(--muted); font-size:15px; margin:0 0 24px; }
+    .metadata { display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; font-size:12px; }
+    .metadata div { display:flex; gap:10px; }
+    .metadata dt { color:var(--muted); }
+    .metadata dd { margin:0; }
+    section { border-top:1px solid var(--line); padding:36px 0 40px; scroll-margin-top:24px; }
+    .section-heading { display:flex; align-items:baseline; gap:14px; margin-bottom:20px; }
+    .section-number { font:13px ui-monospace,monospace; color:var(--brown); }
+    h2 { font-size:23px; letter-spacing:.03em; margin:0; }
+    h3 { font-size:16px; margin:24px 0 12px; }
+    p { margin:0 0 16px; font-size:14px; }
+    .muted { color:var(--muted); }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .panel h3 { margin-top:0; }
+    .panel > :last-child { margin-bottom:0; }
+    .two-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .callout { padding:18px 22px; border-left:3px solid var(--brown); border-radius:0 8px 8px 0; background:#eaece3; font-size:13px; margin:20px 0 0; }
+    .callout strong { display:block; margin-bottom:4px; }
+    ul,ol { padding-left:22px; font-size:14px; }
+    li + li { margin-top:8px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+    thead { background:#eaece3; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:500; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.92em; }
+    pre { overflow:auto; margin:16px 0 0; background:#eaece3; border:1px solid var(--line); border-radius:8px; padding:20px; font-size:12px; line-height:1.75; overflow-wrap:normal; }
+    .preview { min-height:140px; border:1px dashed #b8c4b9; border-radius:8px; padding:24px; background:var(--surface); display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .caption { color:var(--muted); font-size:12px; margin-top:10px; }
+    .steps { list-style:none; padding:0; margin:0; counter-reset:step; }
+    .steps li { display:grid; grid-template-columns:30px 1fr; gap:14px; margin:0; padding:16px 0; border-bottom:1px solid var(--line); counter-increment:step; }
+    .steps li::before { content:counter(step,decimal-leading-zero); font:12px/30px ui-monospace,monospace; color:var(--brown); }
+    .steps li:last-child { border:0; }
+    .steps strong { display:block; font-size:14px; }
+    .steps p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .reference-list { list-style:none; padding:0; margin:0; }
+    .reference-list li { border-bottom:1px solid var(--line); padding:14px 0; margin:0; }
+    .reference-list small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:24px 0 36px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    @media(max-width:900px) {
+      .layout { width:calc(100% - 40px); grid-template-columns:190px minmax(0,1fr); gap:32px; }
+      .sidebar { padding-right:16px; }
+      .brand { font-size:11px; }
+      .two-columns { grid-template-columns:1fr; }
+    }
+    @media(max-width:680px) {
+      .layout { width:calc(100% - 36px); grid-template-columns:1fr; gap:0; }
+      .sidebar { position:static; max-height:none; overflow:visible; padding:28px 0 24px; border-right:0; border-bottom:1px solid var(--line); }
+      .sidebar-description { margin:12px 0 20px; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 8px; }
+      .toc li { margin:0; }
+      .toc a { padding:7px 8px; font-size:12px; gap:8px; }
+      .sidebar-note { display:none; }
+      main { padding-top:24px; }
+      .breadcrumb { margin-bottom:24px; }
+      h2 { font-size:20px; }
+      .panel { padding:20px; }
+      section { padding:28px 0 32px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .layout { display:block; width:100%; }
+      .sidebar,.skip-link,.back-to-top { display:none; }
+      main { padding:0; }
+      .panel,.callout,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+  </style>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main-content">本文へスキップ</a>
+  <div class="layout">
+    <aside class="sidebar" aria-label="資料のナビゲーション">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>DOCUMENT NOTE</div>
+      <p class="sidebar-description">説明資料のタイトル<br>ドキュメントテンプレート</p>
+      <nav aria-labelledby="toc-title">
+        <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
+        <!-- セクションを追加するときは、hrefと本文のidを揃えてください。 -->
+        <ol class="toc">
+          <li><a href="#overview"><span class="toc-number">01</span>はじめに</a></li>
+          <li><a href="#concept"><span class="toc-number">02</span>基本の考え方</a></li>
+          <li><a href="#example"><span class="toc-number">03</span>構成・サンプル</a></li>
+          <li><a href="#procedure"><span class="toc-number">04</span>使い方・手順</a></li>
+          <li><a href="#specification"><span class="toc-number">05</span>仕様・補足</a></li>
+          <li><a href="#references"><span class="toc-number">06</span>参考資料</a></li>
+        </ol>
+      </nav>
+      <div class="sidebar-note">この雛形の使い方<br>見出し・説明文・サンプルを、資料の内容に合わせて差し替えてください。</div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="document-header">
+        <p class="breadcrumb">ドキュメント / カテゴリー名</p>
+        <p class="eyebrow">DOCUMENTATION TEMPLATE</p>
+        <h1>説明資料のタイトル</h1>
+        <p class="lead">この資料で伝えたい内容を、2〜3文で記載します。何についての説明か、誰に向けた資料か、読むことで何がわかるかをまとめてください。</p>
+        <dl class="metadata"><div><dt>対象</dt><dd>［想定する読者］</dd></div><div><dt>更新日</dt><dd>［YYYY.MM.DD］</dd></div><div><dt>版数</dt><dd>［v1.0］</dd></div></dl>
+      </header>
+
+      <!-- SECTION: このsectionを複製して章を追加できます。idは重複させないでください。 -->
+      <section id="overview" aria-labelledby="overview-title">
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="overview-title">はじめに</h2></div>
+        <p>［テーマの概要を記載します。背景や解決したい課題を説明し、この資料の目的を伝えます。］</p>
+        <div class="panel"><h3>この資料でわかること</h3><ul><li>［理解できること・その1］</li><li>［理解できること・その2］</li><li>［理解できること・その3］</li></ul></div>
+        <aside class="callout" aria-label="前提条件"><strong>読む前に</strong>［必要な知識・準備・対象範囲などを記載します。不要な場合は、この補足枠を削除できます。］</aside>
+      </section>
+
+      <section id="concept" aria-labelledby="concept-title">
+        <div class="section-heading"><span class="section-number">02 /</span><h2 id="concept-title">基本の考え方</h2></div>
+        <p>［資料の中心となる考え方や用語を説明します。最初に結論を示し、理由や具体例を続けると読みやすくなります。］</p>
+        <div class="two-columns"><article class="panel"><h3>ポイント A</h3><p class="muted">［1つ目の重要な考え方を記載します。］</p></article><article class="panel"><h3>ポイント B</h3><p class="muted">［2つ目の重要な考え方を記載します。］</p></article></div>
+      </section>
+
+      <section id="example" aria-labelledby="example-title">
+        <div class="section-heading"><span class="section-number">03 /</span><h2 id="example-title">構成・サンプル</h2></div>
+        <p>［見本・図・画面・実装例などを配置し、具体的な構成を説明します。］</p>
+        <!-- 図を載せる場合は、下の枠をimgやfigureに差し替えてください。 -->
+        <div class="preview">図・画像・コンポーネントの見本をここに配置</div>
+        <p class="caption">図1：［見本の説明・見てほしいポイント］</p>
+        <h3>コードの掲載例</h3>
+        <pre><code>&lt;!-- この部分を、説明したいコードに差し替えます。 --&gt;
+&lt;article class="panel"&gt;
+  &lt;h3&gt;見出し&lt;/h3&gt;
+  &lt;p&gt;説明文を記載します。&lt;/p&gt;
+&lt;/article&gt;</code></pre>
+      </section>
+
+      <section id="procedure" aria-labelledby="procedure-title">
+        <div class="section-heading"><span class="section-number">04 /</span><h2 id="procedure-title">使い方・手順</h2></div>
+        <p>［作業の流れを、実行する順番に記載します。各手順には行動と確認ポイントをまとめます。］</p>
+        <ol class="steps"><li><div><strong>準備する</strong><p>［必要なファイル・情報・環境を用意します。］</p></div></li><li><div><strong>設定・実行する</strong><p>［操作する箇所と、入力・選択する内容を記載します。］</p></div></li><li><div><strong>結果を確認する</strong><p>［完了した状態と、確認するポイントを記載します。］</p></div></li></ol>
+      </section>
+
+      <section id="specification" aria-labelledby="specification-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="specification-title">仕様・補足</h2></div>
+        <p>［数値・ルール・条件などを表で整理します。］</p>
+        <div class="table-wrap" role="region" aria-label="仕様一覧" tabindex="0"><table><thead><tr><th scope="col">項目</th><th scope="col">値・設定</th><th scope="col">補足</th></tr></thead><tbody><tr><th scope="row">［項目 A］</th><td>［値・設定］</td><td>［利用条件・理由］</td></tr><tr><th scope="row">［項目 B］</th><td>［値・設定］</td><td>［利用条件・理由］</td></tr><tr><th scope="row">［項目 C］</th><td>［値・設定］</td><td>［利用条件・理由］</td></tr></tbody></table></div>
+        <aside class="callout" aria-label="補足事項"><strong>補足事項</strong>［例外・制約・追加の説明がある場合に記載します。］</aside>
+      </section>
+
+      <section id="references" aria-labelledby="references-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="references-title">参考資料</h2></div>
+        <p>［関連する資料へのリンクを記載します。以下はこの雛形のデザインの参照元です。］</p>
+        <ul class="reference-list"><li><a href="atomic_component.html">Atomic Components — デザインの要素 ↗</a><small>背景色・アイコン・文字・余白・UI部品の説明資料。</small></li><li><a href="color.html">COLOR NOTE — カラーコードの説明 ↗</a><small>元となった配色とレイアウトのページ。</small></li></ul>
+      </section>
+      <footer><span>DOCUMENT NOTE / ［資料名・作成者］</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>

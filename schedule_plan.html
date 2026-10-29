@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="プロジェクトの目的・マイルストーン・ガントチャート・WBS・体制・リスクをまとめるスケジュール計画書の雛形。">
+  <title>スケジュール計画書</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
+      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
+      --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; }
+    header,main,footer { width:min(1080px,calc(100% - 48px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    a { color:var(--green); text-underline-offset:5px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.08em; }
+    .mark { display:inline-block; flex-shrink:0; width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); margin-right:5px; }
+    .intro { display:flex; justify-content:space-between; align-items:flex-start; gap:32px; padding:60px 0 35px; }
+    .intro-text { max-width:760px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--brown); margin:0 0 18px; }
+    h1 { font-size:clamp(32px,4.5vw,51px); line-height:1.45; letter-spacing:.025em; margin:0 0 23px; }
+    h1 span { color:var(--brown); }
+    p { margin:0 0 16px; }
+    .lead { font-size:15px; color:var(--muted); }
+    nav { display:flex; flex-wrap:wrap; gap:8px 23px; padding:0 0 32px; font-size:13px; }
+    section { padding:42px 0 48px; border-top:1px solid var(--line); scroll-margin-top:20px; }
+    .section-title { display:flex; align-items:baseline; gap:15px; margin-bottom:20px; }
+    .number { font-family:monospace; font-size:13px; color:var(--brown); }
+    h2 { font-size:23px; margin:0; letter-spacing:.03em; }
+    .note { font-size:12px; color:var(--muted); }
+    .placeholder { color:var(--muted); }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.93em; }
+    [contenteditable="true"] { border-radius:3px; }
+    [contenteditable="true"]:hover { background:var(--hover); }
+    :focus-visible { outline:3px solid var(--focus); outline-offset:4px; }
+
+    /* 承認欄 */
+    .sign { display:flex; flex-shrink:0; background:#fff; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
+    .sign div { width:84px; text-align:center; font-size:11px; color:var(--muted); }
+    .sign div + div { border-left:1px solid var(--line); }
+    .sign span { display:block; padding:4px 0; border-bottom:1px solid var(--line); letter-spacing:.1em; }
+    .sign i { display:block; height:60px; }
+
+    /* 表 */
+    .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 24px; overflow:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; text-align:left; }
+    th,td { padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+    tbody tr:last-child > * { border-bottom:0; }
+    th { color:var(--muted); font-weight:500; white-space:nowrap; }
+    .facts th { width:150px; }
+    .phase td { padding:14px 14px 6px; font-size:11px; font-weight:700; letter-spacing:.12em; color:var(--brown); }
+    .mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; }
+
+    /* ガントチャート */
+    .gantt { table-layout:fixed; min-width:920px; }
+    .gantt th,.gantt td { padding:0 10px; height:34px; vertical-align:middle; }
+    .gantt th.task,.gantt td.task { width:210px; }
+    .gantt th.who,.gantt td.who { width:80px; }
+    .gantt th.week { padding:6px 0; text-align:center; font:11px/1.4 ui-monospace,monospace; }
+    .gantt td.cell { padding:0; position:relative; border-left:1px dashed var(--line); }
+    .gantt .phase td { height:auto; }
+    .bar { position:absolute; top:11px; bottom:11px; left:0; right:0; background:var(--green); }
+    .bar.done { background:#9db3a5; }
+    .bar.start { left:4px; border-radius:3px 0 0 3px; }
+    .bar.end { right:4px; border-top-right-radius:3px; border-bottom-right-radius:3px; }
+    .ms { color:var(--brown); text-align:center; font-size:15px; }
+    .today { background:var(--hover); }
+    .gantt th.today { color:var(--green); font-weight:700; }
+    .legend { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:14px; font-size:12px; color:var(--muted); }
+    .legend span::before { content:""; display:inline-block; width:16px; height:10px; margin-right:6px; vertical-align:middle; border-radius:2px; }
+    .legend .l-plan::before { background:var(--green); }
+    .legend .l-done::before { background:#9db3a5; }
+    .legend .l-today::before { background:var(--hover); border:1px solid var(--line); }
+    .legend .l-ms::before { content:"◆"; color:var(--brown); width:auto; height:auto; }
+
+    /* 状態ラベル */
+    .status { display:inline-block; padding:1px 10px; border:1px solid var(--line); border-radius:5px; font-size:11px; white-space:nowrap; }
+    .s-todo { color:var(--muted); background:transparent; }
+    .s-doing { color:#fff; background:var(--green); border-color:var(--green); }
+    .s-done { color:var(--green); background:var(--hover); }
+    .s-late { color:#fff; background:var(--brown); border-color:var(--brown); }
+
+    footer { display:flex; justify-content:space-between; gap:20px; border-top:1px solid var(--line); padding:24px 0 36px; color:var(--muted); font-size:12px; }
+    @media(max-width:720px) {
+      header,main,footer { width:calc(100% - 36px); }
+      .intro { flex-direction:column-reverse; padding:38px 0 24px; }
+      .sign { align-self:flex-end; }
+      section { padding:32px 0; }
+      h2 { font-size:20px; }
+      .card { padding:4px 14px; }
+      footer { flex-direction:column; }
+    }
+    @media print {
+      header,main,footer { width:100%; }
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      nav { display:none; }
+      .intro { padding-top:24px; }
+      [contenteditable="true"]:hover { background:none; }
+      .section-title { break-after:avoid; }
+      .card,tr { break-inside:avoid; }
+      .card { overflow:visible; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"></span><span contenteditable="true">PROJECT NAME</span></div>
+    <span class="note" contenteditable="true">Ver. 1.0 ／ 2026.10.29</span>
+  </header>
+  <main>
+    <div class="intro">
+      <div class="intro-text">
+        <p class="eyebrow">PROJECT SCHEDULE PLAN</p>
+        <h1 contenteditable="true">〇〇プロジェクト<br><span>スケジュール計画書</span></h1>
+        <p class="lead" contenteditable="true">本書は、〇〇プロジェクトの目的・期間・マイルストーン・作業計画・体制を定め、関係者間で進め方を共有するための資料です。</p>
+        <p class="note" contenteditable="true">作成日：2026年10月29日 ／ 作成者：〇〇部 〇〇 〇〇</p>
+      </div>
+      <div class="sign" aria-label="承認欄">
+        <div><span>承認</span><i></i></div>
+        <div><span>確認</span><i></i></div>
+        <div><span>作成</span><i></i></div>
+      </div>
+    </div>
+    <nav aria-label="目次">
+      <a href="#basic">01 基本情報</a><a href="#purpose">02 目的・概要</a><a href="#milestone">03 マイルストーン</a><a href="#gantt-section">04 全体スケジュール</a><a href="#wbs">05 タスク一覧</a><a href="#team">06 体制</a><a href="#meeting">07 会議体</a><a href="#risk">08 リスク</a><a href="#history">09 変更履歴</a>
+    </nav>
+
+    <section id="basic">
+      <div class="section-title"><span class="number">01 /</span><h2>基本情報 — Overview</h2></div>
+      <div class="card"><table class="facts"><tbody>
+        <tr><th scope="row">プロジェクト名</th><td contenteditable="true">〇〇システム導入プロジェクト</td></tr>
+        <tr><th scope="row">プロジェクト期間</th><td contenteditable="true">2026年11月2日 〜 2027年1月29日（約3か月）</td></tr>
+        <tr><th scope="row">責任者</th><td contenteditable="true">〇〇部 〇〇 〇〇</td></tr>
+        <tr><th scope="row">関係部署</th><td contenteditable="true">〇〇部、〇〇部、外部委託先（〇〇株式会社）</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section id="purpose">
+      <div class="section-title"><span class="number">02 /</span><h2>目的・概要 — Purpose</h2></div>
+      <div class="card"><table class="facts"><tbody>
+        <tr><th scope="row">目的</th><td contenteditable="true"><span class="placeholder">本プロジェクトで達成したいこと、背景を記載します。</span></td></tr>
+        <tr><th scope="row">スコープ</th><td contenteditable="true"><span class="placeholder">対象範囲／対象外を記載します。</span></td></tr>
+        <tr><th scope="row">成果物</th><td contenteditable="true"><span class="placeholder">要件定義書、設計書、システム一式、操作マニュアル など</span></td></tr>
+        <tr><th scope="row">前提条件・制約</th><td contenteditable="true"><span class="placeholder">予算、体制、利用可能な環境、外部要因など</span></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section id="milestone">
+      <div class="section-title"><span class="number">03 /</span><h2>マイルストーン — Milestones</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">No.</th><th scope="col">マイルストーン</th><th scope="col">期日</th><th scope="col">判定基準</th><th scope="col">状態</th></tr></thead>
+        <tbody id="milestone-body"></tbody>
+      </table></div>
+    </section>
+
+    <section id="gantt-section">
+      <div class="section-title"><span class="number">04 /</span><h2>全体スケジュール — Timeline</h2></div>
+      <div class="card"><table class="gantt" id="gantt"></table></div>
+      <div class="legend"><span class="l-plan">予定</span><span class="l-done">完了</span><span class="l-ms">マイルストーン</span><span class="l-today">今週</span></div>
+    </section>
+
+    <section id="wbs">
+      <div class="section-title"><span class="number">05 /</span><h2>タスク一覧 — WBS</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">WBS</th><th scope="col">タスク</th><th scope="col">担当</th><th scope="col">開始</th><th scope="col">終了</th><th scope="col">日数</th><th scope="col">前提</th><th scope="col">状態</th></tr></thead>
+        <tbody id="wbs-body"></tbody>
+      </table></div>
+      <p class="note" style="margin-top:14px">日数は土日を除いた営業日数です。祝日は考慮していません。</p>
+    </section>
+
+    <section id="team">
+      <div class="section-title"><span class="number">06 /</span><h2>体制・役割 — Team</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">役割</th><th scope="col">氏名</th><th scope="col">所属</th><th scope="col">主な責任</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">プロジェクトオーナー</td><td contenteditable="true">〇〇 〇〇</td><td contenteditable="true">〇〇部</td><td contenteditable="true">最終意思決定、予算承認</td></tr>
+          <tr><td contenteditable="true">プロジェクトマネージャー</td><td contenteditable="true">〇〇 〇〇</td><td contenteditable="true">〇〇部</td><td contenteditable="true">計画・進捗・課題管理</td></tr>
+          <tr><td contenteditable="true">開発リーダー</td><td contenteditable="true">〇〇 〇〇</td><td contenteditable="true">〇〇株式会社</td><td contenteditable="true">設計・開発の統括</td></tr>
+          <tr><td contenteditable="true">メンバー</td><td contenteditable="true">〇〇 〇〇</td><td contenteditable="true">〇〇部</td><td contenteditable="true">テスト、マニュアル作成</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="meeting">
+      <div class="section-title"><span class="number">07 /</span><h2>会議体・進捗報告 — Meetings</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">会議名</th><th scope="col">頻度</th><th scope="col">参加者</th><th scope="col">目的</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">定例進捗会議</td><td contenteditable="true">毎週月曜 10:00</td><td contenteditable="true">PM、各リーダー</td><td contenteditable="true">進捗・課題の共有</td></tr>
+          <tr><td contenteditable="true">ステアリングコミッティ</td><td contenteditable="true">月1回</td><td contenteditable="true">オーナー、PM</td><td contenteditable="true">重要事項の意思決定</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="risk">
+      <div class="section-title"><span class="number">08 /</span><h2>リスクと対策 — Risks</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">No.</th><th scope="col">リスク</th><th scope="col">影響度</th><th scope="col">発生確率</th><th scope="col">対策</th><th scope="col">担当</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td contenteditable="true">要件確定の遅延</td><td contenteditable="true">高</td><td contenteditable="true">中</td><td contenteditable="true">期日を設けたレビュー会を実施し、未決事項は課題管理表で追跡</td><td contenteditable="true">PM</td></tr>
+          <tr><td class="mono">2</td><td contenteditable="true">要員の不足</td><td contenteditable="true">中</td><td contenteditable="true">中</td><td contenteditable="true">バックアップ要員を事前に確保</td><td contenteditable="true">PM</td></tr>
+          <tr><td class="mono">3</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="history">
+      <div class="section-title"><span class="number">09 /</span><h2>変更履歴 — History</h2></div>
+      <div class="card"><table>
+        <thead><tr><th scope="col">版</th><th scope="col">日付</th><th scope="col">変更内容</th><th scope="col">変更者</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" contenteditable="true">1.0</td><td class="mono" contenteditable="true">2026/10/29</td><td contenteditable="true">初版作成</td><td contenteditable="true">〇〇 〇〇</td></tr>
+          <tr><td class="mono" contenteditable="true"></td><td class="mono" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+  <footer><span contenteditable="true">〇〇プロジェクト / スケジュール計画書</span><span contenteditable="true">〇〇部</span></footer>
+
+  <script>
+    // ===== ここを編集してスケジュールを作成します =====
+    // チャートの開始日（月曜日推奨）と表示する週数
+    const CHART_START = "2026-11-02";
+    const WEEKS = 13;
+
+    // phase: 見出し行 / ms: マイルストーン（end のみ）/ status: todo | doing | done | late
+    const TASKS = [
+      { phase: "PHASE 1 — 要件定義" },
+      { wbs: "1.1", name: "現状業務ヒアリング", who: "〇〇", start: "2026-11-02", end: "2026-11-13", dep: "-", status: "done" },
+      { wbs: "1.2", name: "要件定義書作成", who: "〇〇", start: "2026-11-09", end: "2026-11-20", dep: "1.1", status: "doing" },
+      { ms: true, wbs: "M1", name: "要件定義完了", end: "2026-11-20", criteria: "要件定義書の承認", status: "todo" },
+      { phase: "PHASE 2 — 設計・開発" },
+      { wbs: "2.1", name: "基本設計", who: "〇〇", start: "2026-11-23", end: "2026-12-04", dep: "1.2", status: "todo" },
+      { wbs: "2.2", name: "詳細設計", who: "〇〇", start: "2026-12-07", end: "2026-12-11", dep: "2.1", status: "todo" },
+      { wbs: "2.3", name: "開発・単体テスト", who: "〇〇", start: "2026-12-14", end: "2027-01-08", dep: "2.2", status: "todo" },
+      { ms: true, wbs: "M2", name: "開発完了", end: "2027-01-08", criteria: "単体テスト完了報告", status: "todo" },
+      { phase: "PHASE 3 — テスト・リリース" },
+      { wbs: "3.1", name: "結合・総合テスト", who: "〇〇", start: "2027-01-11", end: "2027-01-22", dep: "2.3", status: "todo" },
+      { wbs: "3.2", name: "ユーザー受入テスト", who: "〇〇", start: "2027-01-18", end: "2027-01-27", dep: "3.1", status: "todo" },
+      { ms: true, wbs: "M3", name: "本番リリース", end: "2027-01-29", criteria: "リリース判定会議で承認", status: "todo" },
+    ];
+    // ================================================
+
+    const STATUS = { todo: ["未着手", "s-todo"], doing: ["進行中", "s-doing"], done: ["完了", "s-done"], late: ["遅延", "s-late"] };
+    const DAY = 86400000;
+    const d = s => new Date(s + "T00:00:00");
+    const fmt = dt => `${dt.getMonth() + 1}/${dt.getDate()}`;
+    const badge = s => `<span class="status ${STATUS[s][1]}">${STATUS[s][0]}</span>`;
+    const weekIndex = s => Math.floor((d(s) - d(CHART_START)) / DAY / 7);
+    const workdays = (a, b) => {
+      let n = 0;
+      for (let t = d(a); t <= d(b); t = new Date(t.getTime() + DAY)) if (t.getDay() % 6) n++;
+      return n;
+    };
+
+    // ガントチャート
+    const todayWeek = Math.floor((new Date() - d(CHART_START)) / DAY / 7);
+    let html = `<thead><tr><th class="task" scope="col">タスク</th><th class="who" scope="col">担当</th>`;
+    for (let i = 0; i < WEEKS; i++) {
+      const w = new Date(d(CHART_START).getTime() + i * 7 * DAY);
+      html += `<th class="week${i === todayWeek ? " today" : ""}" scope="col">${fmt(w)}</th>`;
+    }
+    html += `</tr></thead><tbody>`;
+    for (const t of TASKS) {
+      if (t.phase) { html += `<tr class="phase"><td colspan="${WEEKS + 2}">${t.phase}</td></tr>`; continue; }
+      html += `<tr><td class="task">${t.name}</td><td class="who">${t.who || ""}</td>`;
+      const s = t.ms ? weekIndex(t.end) : weekIndex(t.start), e = weekIndex(t.end);
+      for (let i = 0; i < WEEKS; i++) {
+        const cls = i === todayWeek ? "cell today" : "cell";
+        if (t.ms) html += `<td class="${cls}">${i === e ? `<div class="ms" title="${t.end}">◆</div>` : ""}</td>`;
+        else if (i >= s && i <= e) {
+          const bar = ["bar", t.status === "done" && "done", i === s && "start", i === e && "end"].filter(Boolean).join(" ");
+          html += `<td class="${cls}"><div class="${bar}" title="${t.start} 〜 ${t.end}"></div></td>`;
+        } else html += `<td class="${cls}"></td>`;
+      }
+      html += `</tr>`;
+    }
+    document.getElementById("gantt").innerHTML = html + `</tbody>`;
+
+    // マイルストーン表・WBS表
+    let ms = "", wbs = "", n = 0;
+    for (const t of TASKS) {
+      if (t.phase) { wbs += `<tr class="phase"><td colspan="8">${t.phase}</td></tr>`; continue; }
+      if (t.ms) {
+        ms += `<tr><td class="mono">${++n}</td><td>${t.name}</td><td class="mono">${t.end.replaceAll("-", "/")}</td><td>${t.criteria || ""}</td><td>${badge(t.status)}</td></tr>`;
+        continue;
+      }
+      wbs += `<tr><td class="mono">${t.wbs}</td><td>${t.name}</td><td>${t.who}</td><td class="mono">${fmt(d(t.start))}</td><td class="mono">${fmt(d(t.end))}</td>` +
+             `<td class="mono">${workdays(t.start, t.end)}日</td><td class="mono">${t.dep}</td><td>${badge(t.status)}</td></tr>`;
+    }
+    document.getElementById("milestone-body").innerHTML = ms;
+    document.getElementById("wbs-body").innerHTML = wbs;
+  </script>
+</body>
+</html>
