@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="COLOR NOTEの背景色・アイコン・文字・余白・UI部品を、見本とCSSで説明するデザイン資料。">
+  <title>Atomic Components｜COLOR NOTE デザイン資料</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
+      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; }
+    header,main,footer { width:min(1080px,calc(100% - 48px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    a { color:var(--green); text-underline-offset:5px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.08em; }
+    .mark { display:inline-block; flex-shrink:0; width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 #7e513c; margin-right:5px; }
+    .intro { padding:60px 0 35px; max-width:760px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--brown); margin:0 0 18px; }
+    h1 { font-size:clamp(32px,4.5vw,51px); line-height:1.45; letter-spacing:.025em; margin:0 0 23px; }
+    h1 span { color:var(--brown); }
+    p { margin:0 0 16px; }
+    .lead { font-size:15px; color:var(--muted); }
+    nav { display:flex; flex-wrap:wrap; gap:8px 23px; padding:0 0 32px; font-size:13px; }
+    section { padding:42px 0 48px; border-top:1px solid var(--line); scroll-margin-top:20px; }
+    .section-title { display:flex; align-items:baseline; gap:15px; margin-bottom:20px; }
+    .number { font-family:monospace; font-size:13px; color:var(--brown); }
+    h2 { font-size:23px; margin:0; letter-spacing:.03em; }
+    h3 { font-size:16px; margin:0 0 12px; }
+    .note,.caption { font-size:12px; color:var(--muted); }
+    .description { font-size:14px; color:var(--muted); max-width:760px; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.93em; }
+    pre { margin:16px 0 0; padding:20px; background:#eaece3; border:1px solid var(--line); border-radius:8px; overflow:auto; line-height:1.7; font-size:12px; tab-size:2; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; }
+    .specimen { border:1px solid var(--line); border-radius:12px; background:#fff; padding:28px; min-width:0; }
+    .paper-demo { background:var(--paper); padding:28px; border-radius:8px; border:1px solid var(--line); }
+    .white-demo { background:#fff; border:1px solid var(--line); padding:20px; border-radius:8px; }
+    .color-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }
+    .token { overflow:hidden; border:1px solid var(--line); border-radius:9px; background:#fff; }
+    .swatch { height:70px; border-bottom:1px solid var(--line); background:var(--swatch); }
+    .token-text { padding:15px 18px; }
+    .token-text strong,.token-text code { display:block; }
+    .token-text small { color:var(--muted); font-size:12px; }
+    .icon-stage { min-height:170px; display:flex; align-items:center; justify-content:center; gap:60px; background:var(--paper); border:1px solid var(--line); border-radius:8px; }
+    .mark-large { transform:scale(4); margin:30px; }
+    .icon-caption { margin-top:16px; font-size:12px; color:var(--muted); }
+    .facts { margin:0; display:grid; grid-template-columns:105px 1fr; font-size:13px; }
+    .facts dt,.facts dd { padding:9px 0; border-bottom:1px solid var(--line); margin:0; }
+    .facts dt { color:var(--muted); }
+    .type-sample { padding:18px 0; border-bottom:1px solid var(--line); }
+    .type-sample:first-child { padding-top:0; }
+    .type-sample:last-child { border:0; padding-bottom:0; }
+    .sample-title { font-size:clamp(32px,4.5vw,51px); font-weight:700; line-height:1.45; letter-spacing:.025em; }
+    .sample-title span { color:var(--brown); }
+    .type-meta { display:block; color:var(--muted); font:11px/1.7 ui-monospace,monospace; margin-top:7px; }
+    .table-wrap { overflow:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; text-align:left; }
+    th,td { padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--muted); font-weight:500; }
+    .copy { background:transparent; color:var(--green); border:1px solid var(--line); border-radius:5px; padding:4px 9px; font-size:11px; }
+    button { font-family:inherit; cursor:pointer; }
+    button:hover,.hover-sample { background:#eaf0e8; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .focus-sample { outline:3px solid #b07854; outline-offset:4px; }
+    .state-row { display:flex; flex-wrap:wrap; gap:28px; align-items:center; padding:15px 0; }
+    .state-item { text-align:center; }
+    .state-item small { display:block; font-size:11px; color:var(--muted); margin-top:12px; }
+    .hero-link { display:inline-block; color:var(--green); text-decoration:none; border-bottom:1px solid var(--green); padding-bottom:4px; font-size:14px; }
+    .range-row { display:flex; align-items:center; gap:16px; font-size:13px; margin:24px 0 8px; }
+    input[type=range] { width:100%; accent-color:var(--green); cursor:pointer; }
+    .image-frame { padding:22px; margin:0; background:white; border:1px solid var(--line); border-radius:16px; }
+    .image-frame img { width:100%; max-width:240px; height:auto; display:block; margin:auto; border-radius:5px; }
+    figcaption { margin-top:15px; color:var(--muted); font-size:11px; display:flex; justify-content:space-between; gap:8px; }
+    .assembly { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+    .color-card { max-width:320px; }
+    .color-card .swatch { height:128px; background:var(--green); border:1px solid #00000014; border-radius:9px 9px 0 0; }
+    .color-info { padding:20px; background:#fff; border:1px solid var(--line); border-top:0; border-radius:0 0 9px 9px; }
+    .color-info h3 { font-size:15px; margin:0 0 9px; }
+    .code-line { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .code-line code { font-size:21px; }
+    .space-item { display:flex; align-items:center; gap:18px; margin:12px 0; font-size:12px; }
+    .space-item code { width:44px; flex-shrink:0; }
+    .space-bar { height:12px; width:var(--size); background:var(--brown); border-radius:2px; }
+    .radius-row { display:flex; gap:22px; flex-wrap:wrap; margin-top:25px; }
+    .radius-box { width:60px; height:60px; background:var(--paper); border:1px solid var(--green); border-radius:var(--radius); display:grid; place-items:center; font-size:11px; }
+    footer { display:flex; justify-content:space-between; gap:20px; border-top:1px solid var(--line); padding:24px 0 36px; color:var(--muted); font-size:12px; }
+    #status { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); padding:10px 20px; border-radius:7px; color:#fff; background:var(--green); font-size:13px; }
+    #status:empty { display:none; }
+    @media(max-width:720px) {
+      header,main,footer { width:calc(100% - 36px); }
+      .intro { padding:38px 0 24px; }
+      .split,.assembly { grid-template-columns:1fr; gap:24px; }
+      .color-grid { grid-template-columns:repeat(2,1fr); }
+      .specimen { padding:20px; }
+      section { padding:32px 0; }
+      h2 { font-size:20px; }
+      footer { flex-direction:column; }
+    }
+    @media print {
+      header,main,footer { width:100%; }
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      nav,#status { display:none; }
+      .specimen,.token,figure,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"></span>COLOR NOTE</div>
+    <a href="color.html">元のページを見る ↗</a>
+  </header>
+  <main>
+    <div class="intro">
+      <p class="eyebrow">DESIGN REFERENCE / ATOMIC COMPONENTS</p>
+      <h1>心地よさをつくる、<br>小さな<span>デザインの要素。</span></h1>
+      <p class="lead"><code>color.html</code>の背景の色味や重なったアイコンを、再利用できる部品として整理しました。色・形・文字・余白から、それらを組み合わせたUIまで、見本とCSSで説明します。</p>
+      <p class="note">掲載する数値は元ページの実装値です。この資料自体のレイアウトには、説明用のスタイルを追加しています。</p>
+    </div>
+    <nav aria-label="資料の目次">
+      <a href="#colors">01 配色・背景</a><a href="#icon">02 アイコン</a><a href="#type">03 文字</a><a href="#controls">04 操作部品</a><a href="#geometry">05 形・余白</a><a href="#assembly">06 組み合わせ</a>
+    </nav>
+
+    <section id="colors" aria-labelledby="colors-title">
+      <div class="section-title"><span class="number">01 /</span><h2 id="colors-title">配色と背景 — Foundations</h2></div>
+      <p class="description">画像から取り出した深緑・茶色・白を中心に、ページ用の背景色・文字色・罫線色を加えています。背景はわずかに黄みを含む明るい色。白いカードを重ねると、面の違いが穏やかに見えます。</p>
+      <div class="split">
+        <div class="paper-demo"><p class="eyebrow">PAGE BACKGROUND · #F6F5EF</p><div class="white-demo"><strong>白い面を、やさしい背景に。</strong><p class="caption" style="margin:8px 0 0">カードは #FFFFFF。輪郭は #DCE2D9 の1px線で区切ります。</p></div></div>
+        <pre><code>/* 元ページの基本トークン */
+:root {
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink:   #203a2c;
+  --muted: #627067;
+  --line:  #dce2d9;
+}
+body { background: var(--paper); }</code></pre>
+      </div>
+      <div class="color-grid">
+        <article class="token"><div class="swatch" style="--swatch:#f6f5ef"></div><div class="token-text"><strong>Paper</strong><code>--paper / #F6F5EF</code><small>ページ全体の背景・プリセットボタン</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#ffffff"></div><div class="token-text"><strong>White</strong><code>#FFFFFF</code><small>画像フレーム・カード・操作パネル</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#044523"></div><div class="token-text"><strong>Forest green</strong><code>--green / #044523</code><small>マーク・リンク・操作部品の主役色</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#7e513c"></div><div class="token-text"><strong>Earth brown</strong><code>--brown / #7E513C</code><small>マークの奥・強調語・節番号</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#203a2c"></div><div class="token-text"><strong>Ink</strong><code>--ink / #203A2C</code><small>見出し・基本の文字色</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#627067"></div><div class="token-text"><strong>Muted</strong><code>--muted / #627067</code><small>説明文・キャプション・注記</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#dce2d9"></div><div class="token-text"><strong>Line</strong><code>--line / #DCE2D9</code><small>セクションの区切り・外枠</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#eaece3"></div><div class="token-text"><strong>Diagram surface</strong><code>#EAECE3</code><small>元ページのHEX分解図の背景</small></div></article>
+        <article class="token"><div class="swatch" style="--swatch:#eaf0e8"></div><div class="token-text"><strong>Hover</strong><code>#EAF0E8</code><small>コピーボタンのホバー背景</small></div></article>
+      </div>
+      <p class="note" style="margin-top:18px">深緑・茶色・白はtome.jpgの代表色です。PaperなどのUI用の色はページのデザインとして加えたものです。</p>
+    </section>
+
+    <section id="icon" aria-labelledby="icon-title">
+      <div class="section-title"><span class="number">02 /</span><h2 id="icon-title">重なった四角 — Icon atom</h2></div>
+      <p class="description">ヘッダーの小さなマークは、深緑の角丸四角と、右上にずらした茶色の影でできています。2色の重なりが、参照画像のパズルピースを思わせる形です。</p>
+      <div class="split">
+        <div>
+          <div class="icon-stage"><div class="brand"><span class="mark" aria-hidden="true"></span>COLOR NOTE</div><span class="mark mark-large" role="img" aria-label="4倍に拡大した二色の四角いマーク"></span></div>
+          <p class="icon-caption">左：原寸とロゴタイプ ／ 右：形を確認するための4倍表示</p>
+          <dl class="facts"><dt>前面</dt><dd>15 × 15px / 深緑</dd><dt>角の丸み</dt><dd>3px</dd><dt>奥の四角</dt><dd>茶色 / 右に5px、上に5px</dd><dt>影のぼかし</dt><dd>0px。輪郭が明確な四角として表示</dd><dt>文字との間隔</dt><dd>gap 10px ＋ マークの右余白 5px</dd></dl>
+        </div>
+        <div>
+          <pre><code>&lt;div class="brand"&gt;
+  &lt;span class="mark" aria-hidden="true"&gt;&lt;/span&gt;
+  COLOR NOTE
+&lt;/div&gt;
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.mark {
+  width: 15px;
+  height: 15px;
+  background: var(--green);
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 #7e513c;
+  margin-right: 5px;
+}</code></pre>
+          <p class="note" style="margin-top:14px">画像ファイルを使わず、1個のspanで描画できます。隣の文字がブランド名を伝えるため、装飾マークにはaria-hidden="true"を指定しています。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="type" aria-labelledby="type-title">
+      <div class="section-title"><span class="number">03 /</span><h2 id="type-title">文字の役割 — Typography atoms</h2></div>
+      <div class="split">
+        <div class="specimen">
+          <div class="type-sample"><div class="eyebrow" style="margin:0">A SMALL GUIDE TO COLOR CODES</div><span class="type-meta">Eyebrow / 11px / 700 / .2em / Brown</span></div>
+          <div class="type-sample"><div class="sample-title">色を、<span>コード</span>で<br>読み解こう。</div><span class="type-meta">H1 / clamp(32px, 4.5vw, 51px) / line-height 1.45</span></div>
+          <div class="type-sample"><div class="section-title" style="margin:0"><span class="number">01 /</span><span style="font-size:23px;font-weight:700;letter-spacing:.03em">画像をつくる、3つの色。</span></div><span class="type-meta">H2 / 23px / .03em　Number / 13px / monospace</span></div>
+          <div class="type-sample"><p style="font-size:14px;color:var(--muted);margin:0">説明文には落ち着いた緑がかった文字色を使い、ゆったりと行間を取ります。</p><span class="type-meta">Body copy / 14px / line-height 1.85 / Muted</span></div>
+          <div class="type-sample"><code style="font-size:21px">#044523</code><span class="type-meta">Color code / 21px / monospace</span></div>
+        </div>
+        <div>
+          <h3>読みものと数値で、書体を使い分ける。</h3>
+          <p class="description">文章はOS標準のサンセリフを優先し、日本語はヒラギノやメイリオなどにフォールバックします。コード・数値には等幅書体を使い、文字と情報の役割を分けています。</p>
+          <pre><code>body {
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", Meiryo, sans-serif;
+  line-height: 1.85;
+}
+code, output {
+  font-family: ui-monospace, SFMono-Regular,
+    Consolas, monospace;
+}</code></pre>
+          <p class="note" style="margin-top:14px">書体の見え方は端末によって異なります。元ページでは外部Webフォントを読み込んでいません。720px以下ではH2を20pxに調整します。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls" aria-labelledby="controls-title">
+      <div class="section-title"><span class="number">04 /</span><h2 id="controls-title">小さな操作 — Control atoms</h2></div>
+      <div class="split">
+        <div class="specimen">
+          <h3>コピーボタンの状態</h3>
+          <div class="state-row">
+            <div class="state-item"><button class="copy" data-copy="#044523">コピー</button><small>通常</small></div>
+            <div class="state-item"><button class="copy hover-sample" data-copy="#044523">コピー</button><small>ホバーの見本</small></div>
+            <div class="state-item"><button class="copy focus-sample" data-copy="#044523">コピー</button><small>フォーカスの見本</small></div>
+          </div>
+          <p class="caption">クリックで #044523 をコピーできます。Tabキーでも操作とフォーカスの見え方を確認できます。</p>
+          <a class="hero-link" href="#assembly">組み合わせの見本へ ↓</a>
+          <div class="range-row"><label for="range-demo">R / 赤</label><input id="range-demo" type="range" min="0" max="255" value="4"><output id="range-output" for="range-demo">4</output></div>
+          <p class="caption">スライダーはaccent-colorで深緑を指定。形はブラウザ標準です。この見本は数値だけを更新します。</p>
+        </div>
+        <div>
+          <pre><code>.copy {
+  background: transparent;
+  color: var(--green);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 11px;
+}
+button:hover { background: #eaf0e8; }
+:focus-visible {
+  outline: 3px solid #b07854;
+  outline-offset: 4px;
+}
+input[type=range] {
+  accent-color: var(--green);
+}</code></pre>
+          <p class="note" style="margin-top:14px">リンクの「↓」「↗」は文字で表現しています。フォーカスの茶色い輪郭は、キーボードで現在の操作位置を見つけるための要素です。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="geometry" aria-labelledby="geometry-title">
+      <div class="section-title"><span class="number">05 /</span><h2 id="geometry-title">形と余白 — Geometry &amp; spacing</h2></div>
+      <p class="description">細い罫線、控えめな角丸、広めの余白を繰り返します。元ページの面やカードには浮き上がる影を付けず、背景色と1pxの線でまとまりを示しています。</p>
+      <div class="split">
+        <div class="specimen">
+          <h3>角丸の使い分け</h3>
+          <div class="radius-row"><div class="radius-box" style="--radius:3px">3px</div><div class="radius-box" style="--radius:5px">5px</div><div class="radius-box" style="--radius:9px">9px</div><div class="radius-box" style="--radius:12px">12px</div><div class="radius-box" style="--radius:16px">16px</div></div>
+          <p class="caption" style="margin-top:20px">3px：マーク / 5px：ボタン・画像 / 9px：色カード / 12px：図・操作パネル / 16px：画像フレーム</p>
+          <h3 style="margin-top:28px">余白の見本</h3>
+          <div class="space-item"><code>10px</code><div class="space-bar" style="--size:10px"></div><span>ブランド内部のgap</span></div>
+          <div class="space-item"><code>20px</code><div class="space-bar" style="--size:20px"></div><span>色カードの内側・カード間</span></div>
+          <div class="space-item"><code>22px</code><div class="space-bar" style="--size:22px"></div><span>画像フレームの内側</span></div>
+          <div class="space-item"><code>48px</code><div class="space-bar" style="--size:48px"></div><span>説明エリアの列間</span></div>
+          <div class="space-item"><code>64px</code><div class="space-bar" style="--size:64px"></div><span>ヒーローの列間</span></div>
+        </div>
+        <div>
+          <h3>元ページのレイアウト仕様</h3>
+          <div class="table-wrap"><table><thead><tr><th scope="col">対象</th><th scope="col">PC</th><th scope="col">720px以下</th></tr></thead><tbody>
+            <tr><th scope="row">ページ幅</th><td>最大1080px<br>左右24px余白</td><td>左右18px余白</td></tr>
+            <tr><th scope="row">ヒーロー</th><td>1.1fr : 1fr<br>gap 64px</td><td>1列<br>gap 30px</td></tr>
+            <tr><th scope="row">色カード</th><td>3列 / gap 20px</td><td>1列 / gap 15px<br>色面は幅90pxで左側へ</td></tr>
+            <tr><th scope="row">説明エリア</th><td>2列 / gap 48px</td><td>1列 / gap 22px</td></tr>
+            <tr><th scope="row">セクション</th><td>上42px / 下48px</td><td>上下32px</td></tr>
+          </tbody></table></div>
+          <pre><code>main, header, footer {
+  width: min(1080px, calc(100% - 48px));
+  margin: auto;
+}
+@media (max-width: 720px) {
+  main, header, footer {
+    width: calc(100% - 36px);
+  }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="assembly" aria-labelledby="assembly-title">
+      <div class="section-title"><span class="number">06 /</span><h2 id="assembly-title">部品を組み合わせる — Molecules</h2></div>
+      <p class="description">ここでは、色・文字・線・ボタンなどの小さな部品を「Atoms」、それらを組み合わせたまとまりを「Molecules」として整理しています。さらにヘッダーや配色セクションへと組み上げると、元ページの構成になります。</p>
+      <div class="assembly">
+        <article>
+          <h3>色面 ＋ ラベル ＋ コード ＋ ボタン</h3>
+          <div class="color-card"><div class="swatch" role="img" aria-label="深緑の色見本"></div><div class="color-info"><h3>深緑 / Forest green</h3><div class="code-line"><code>#044523</code><button class="copy" data-copy="#044523" aria-label="深緑のカラーコードをコピー">コピー</button></div><p class="caption" style="margin:6px 0 0"><code>RGB(4, 69, 35)</code> · 手前のピース</p></div></div>
+          <p class="note" style="margin-top:18px">色カード：上の色面と下の情報面を接続。外側だけを9pxで丸め、ひとつのまとまりに見せています。</p>
+        </article>
+        <article>
+          <h3>白い面 ＋ 画像 ＋ キャプション</h3>
+          <figure class="image-frame"><img src="tome.jpg" width="576" height="576" alt="深緑と茶色のパズルピースが重なった参照画像"><figcaption><span>REFERENCE IMAGE</span><span>tome.jpg</span></figcaption></figure>
+          <p class="note" style="margin-top:18px">画像フレーム：内側22px、外周16pxの角丸、1pxの罫線。資料では画像を最大240pxに縮小しています。</p>
+        </article>
+      </div>
+      <pre><code>Foundations  色 / 書体 / 余白 / 角丸
+     ↓
+Atoms       マーク / ラベル / コード / ボタン / 罫線
+     ↓
+Molecules   ブランド表示 / セクション見出し / 色カード / 画像フレーム
+     ↓
+Sections    ヘッダー / ヒーロー / 配色一覧 / 色の操作パネル
+     ↓
+Page        color.html</code></pre>
+      <p class="note" style="margin-top:16px">再利用するときは、まず基本トークンを定義し、必要な部品のCSSとHTMLを組み合わせてください。マークの茶色は元のCSSでは直接指定されています。配色を一括管理するならvar(--brown)に置き換えられます。</p>
+    </section>
+  </main>
+  <footer><span>COLOR NOTE / Atomic Components</span><a href="color.html">参照元：color.html ↗</a></footer>
+  <div id="status" role="status" aria-live="polite"></div>
+  <script>
+    const range = document.getElementById('range-demo');
+    range.addEventListener('input', () => {
+      document.getElementById('range-output').value = range.value;
+    });
+    let timer;
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const status = document.getElementById('status');
+        clearTimeout(timer);
+        try {
+          await navigator.clipboard.writeText(button.dataset.copy);
+          status.textContent = button.dataset.copy + ' をコピーしました';
+        } catch {
+          status.textContent = '選択してコピーしてください：' + button.dataset.copy;
+        }
+        timer = setTimeout(() => { status.textContent = ''; }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>

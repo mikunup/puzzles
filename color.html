@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="tome.jpgの配色を使って、HEXとRGBのカラーコードの読み方を学ぶページです。">
+  <title>カラーコードの説明｜tome.jpgの配色</title>
+  <style>
+    :root { color-scheme: light; --green:#044523; --brown:#7e513c; --paper:#f6f5ef; --ink:#203a2c; --muted:#627067; --line:#dce2d9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; }
+    main,header,footer { width:min(1080px,calc(100% - 48px)); margin:auto; }
+    header { display:flex; justify-content:space-between; align-items:center; padding:25px 0; border-bottom:1px solid var(--line); font-size:13px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.08em; }
+    .mark { width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 #7e513c; margin-right:5px; }
+    header a { color:var(--muted); text-underline-offset:5px; }
+    .hero { display:grid; grid-template-columns:1.1fr 1fr; gap:64px; align-items:center; padding:68px 0 56px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--brown); margin:0 0 18px; }
+    h1 { font-size:clamp(32px,4.5vw,51px); line-height:1.45; letter-spacing:.025em; margin:0 0 23px; }
+    h1 span { color:var(--brown); }
+    .intro { color:var(--muted); font-size:15px; max-width:440px; }
+    .hero-link { display:inline-block; margin-top:17px; color:var(--green); text-decoration:none; border-bottom:1px solid var(--green); padding-bottom:4px; font-size:14px; }
+    figure { margin:0; }
+    .image-frame { padding:22px; background:white; border:1px solid var(--line); border-radius:16px; }
+    .image-frame img { width:100%; height:auto; display:block; border-radius:5px; }
+    figcaption { display:flex; justify-content:space-between; gap:8px; margin-top:15px; color:var(--muted); font-size:11px; }
+    section { padding:42px 0 48px; border-top:1px solid var(--line); scroll-margin-top:20px; }
+    .section-title { display:flex; align-items:baseline; gap:15px; margin-bottom:20px; }
+    .number { font-family:monospace; font-size:13px; color:var(--brown); }
+    h2 { font-size:23px; margin:0; letter-spacing:.03em; }
+    .section-note { color:var(--muted); font-size:14px; margin:0 0 25px; }
+    .palette { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .swatch { height:128px; border-radius:9px 9px 0 0; border:1px solid rgba(0,0,0,.08); }
+    .color-info { background:#fff; padding:20px; border:1px solid var(--line); border-top:0; border-radius:0 0 9px 9px; }
+    .color-info h3 { margin:0 0 9px; font-size:15px; }
+    .code-line { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    code,output { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .code-line code { font-size:21px; }
+    .rgb { margin:6px 0 0; color:var(--muted); font-size:12px; }
+    button { cursor:pointer; font:inherit; }
+    .copy { background:transparent; color:var(--green); border:1px solid var(--line); border-radius:5px; padding:4px 9px; font-size:11px; }
+    button:hover { background:#eaf0e8; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .explanation { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+    p { margin-top:0; }
+    .body-copy { font-size:14px; color:var(--muted); }
+    .hex-diagram { display:flex; justify-content:center; gap:10px; background:#eaece3; border-radius:12px; padding:29px 18px; }
+    .hex-part { text-align:center; }
+    .hex-part strong { display:block; background:white; border-bottom:3px solid var(--part); padding:7px 14px; border-radius:5px; font-family:monospace; font-size:33px; line-height:1.6; }
+    .hex-part small { display:block; margin-top:9px; font-size:11px; color:var(--muted); }
+    .hash { font:33px/1.6 monospace; padding:7px 0; }
+    .examples { margin-top:19px; font-size:12px; color:var(--muted); text-align:center; }
+    .experiment { display:grid; grid-template-columns:1fr 1.2fr; gap:38px; padding:30px; border:1px solid var(--line); background:white; border-radius:12px; }
+    .preview { min-height:220px; border-radius:8px; background:#044523; display:flex; align-items:center; justify-content:center; border:1px solid #0001; }
+    .preview output { background:#ffffffed; color:#203a2c; padding:8px 18px; border-radius:5px; font-size:24px; }
+    .controls { align-self:center; }
+    .slider-row { display:grid; grid-template-columns:68px 1fr 36px; align-items:center; gap:12px; margin:12px 0; font-size:13px; }
+    .slider-row output { text-align:right; }
+    input[type=range] { width:100%; accent-color:var(--green); cursor:pointer; }
+    .result { margin:18px 0 0; padding-top:14px; border-top:1px solid var(--line); font-size:14px; }
+    .presets { display:flex; gap:8px; flex-wrap:wrap; margin-top:15px; }
+    .presets button { font-size:12px; border:1px solid var(--line); border-radius:5px; padding:5px 12px; background:var(--paper); color:var(--ink); }
+    .note { margin:20px 0 0; color:var(--muted); font-size:12px; }
+    footer { padding:23px 0 35px; border-top:1px solid var(--line); font-size:11px; color:var(--muted); display:flex; justify-content:space-between; gap:12px; }
+    #copy-status { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--green); color:white; border-radius:7px; font-size:13px; padding:10px 20px; z-index:2; }
+    #copy-status:empty { display:none; }
+    @media(max-width:720px) {
+      main,header,footer { width:calc(100% - 36px); }
+      .hero { grid-template-columns:1fr; gap:30px; padding:38px 0; }
+      .image-frame { max-width:420px; width:100%; justify-self:center; }
+      .palette { grid-template-columns:1fr; gap:15px; }
+      .palette article { display:grid; grid-template-columns:90px 1fr; }
+      .swatch { height:100%; border-radius:9px 0 0 9px; }
+      .color-info { border:1px solid var(--line); border-left:0; border-radius:0 9px 9px 0; padding:16px; }
+      .explanation,.experiment { grid-template-columns:1fr; gap:22px; }
+      .experiment { padding:20px; }
+      .preview { min-height:160px; }
+      h2 { font-size:20px; }
+      section { padding:32px 0; }
+      footer { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"></span>COLOR NOTE</div>
+    <a href="#palette">画像の配色を見る ↗</a>
+  </header>
+  <main>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">A SMALL GUIDE TO COLOR CODES</p>
+        <h1>色を、<span>コード</span>で<br>読み解こう。</h1>
+        <p class="intro">深緑のピースと、茶色のピース。<br>この画像の色は、どんな数字で表せるでしょう。<br>身近な配色から、カラーコードの仕組みを紹介します。</p>
+        <a class="hero-link" href="#basics">カラーコードの読み方へ ↓</a>
+      </div>
+      <figure class="image-frame">
+        <img src="tome.jpg" width="576" height="576" alt="白地に、白い文字の入った深緑のパズルピースと茶色のパズルピースが重なる画像">
+        <figcaption><span>REFERENCE IMAGE</span><span>tome.jpg · 576 × 576 px</span></figcaption>
+      </figure>
+    </div>
+
+    <section id="palette" aria-labelledby="palette-title">
+      <div class="section-title"><span class="number">01 /</span><h2 id="palette-title">画像をつくる、3つの色。</h2></div>
+      <p class="section-note">画像内で多く使われているピクセルの値から、代表的な3色を取り出しました。</p>
+      <div class="palette">
+        <article>
+          <div class="swatch" style="background:#044523" role="img" aria-label="深緑の色見本"></div>
+          <div class="color-info"><h3>深緑 <span lang="en">/ Forest green</span></h3><div class="code-line"><code>#044523</code><button class="copy" data-copy="#044523" aria-label="深緑のカラーコードをコピー">コピー</button></div><p class="rgb"><code>RGB(4, 69, 35)</code> · 手前のピース</p></div>
+        </article>
+        <article>
+          <div class="swatch" style="background:#7e513c" role="img" aria-label="茶色の色見本"></div>
+          <div class="color-info"><h3>茶色 <span lang="en">/ Earth brown</span></h3><div class="code-line"><code>#7E513C</code><button class="copy" data-copy="#7E513C" aria-label="茶色のカラーコードをコピー">コピー</button></div><p class="rgb"><code>RGB(126, 81, 60)</code> · 奥のピース</p></div>
+        </article>
+        <article>
+          <div class="swatch" style="background:#fff" role="img" aria-label="白の色見本"></div>
+          <div class="color-info"><h3>白 <span lang="en">/ White</span></h3><div class="code-line"><code>#FFFFFF</code><button class="copy" data-copy="#FFFFFF" aria-label="白のカラーコードをコピー">コピー</button></div><p class="rgb"><code>RGB(255, 255, 255)</code> · 背景と文字</p></div>
+        </article>
+      </div>
+      <p class="note">※ JPEG画像には圧縮による微妙な色の違いがあります。上記は輪郭や細かな色差を除いた代表色です。</p>
+    </section>
+
+    <section id="basics" aria-labelledby="basics-title">
+      <div class="section-title"><span class="number">02 /</span><h2 id="basics-title">「#」のあとに、色のレシピ。</h2></div>
+      <div class="explanation">
+        <div class="body-copy">
+          <p>カラーコードは、色を数字や文字で指定するための表記です。Webでよく使われる<strong>HEX（16進数）</strong>では、<code>#</code>のあとに6桁を並べて色を表します。</p>
+          <p>2桁ずつ、<strong>赤（R）・緑（G）・青（B）</strong>の光の強さを指定します。各色は<code>00</code>〜<code>FF</code>。普段の10進数に直すと、0〜255になります。</p>
+          <p>深緑の<code>#044523</code>なら、赤は4、緑は69、青は35。緑の値がもっとも大きく、全体の値が低いため、暗い緑色になります。</p>
+        </div>
+        <div>
+          <div class="hex-diagram" aria-label="#044523は、赤04、緑45、青23に分かれます">
+            <span class="hash">#</span>
+            <div class="hex-part" style="--part:#b25448"><strong>04</strong><small>RED · 赤<br>4 / 255</small></div>
+            <div class="hex-part" style="--part:#37774d"><strong>45</strong><small>GREEN · 緑<br>69 / 255</small></div>
+            <div class="hex-part" style="--part:#4f7299"><strong>23</strong><small>BLUE · 青<br>35 / 255</small></div>
+          </div>
+          <p class="examples">16進数の並び：0〜9 → A・B・C・D・E・F<br><code>#000000</code> は黒 ／ <code>#FFFFFF</code> は白</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="try-title">
+      <div class="section-title"><span class="number">03 /</span><h2 id="try-title">数字を動かして、色をつくろう。</h2></div>
+      <p class="section-note">RGBは、同じ色を0〜255の数値で表す方法。スライダーで、光の混ざり方を確かめてみましょう。</p>
+      <div class="experiment">
+        <div class="preview" id="preview"><output id="hex-value" aria-label="HEXカラーコード">#044523</output></div>
+        <div class="controls">
+          <div class="slider-row"><label for="red">R / 赤</label><input id="red" type="range" min="0" max="255" value="4"><output for="red" id="red-value">4</output></div>
+          <div class="slider-row"><label for="green">G / 緑</label><input id="green" type="range" min="0" max="255" value="69"><output for="green" id="green-value">69</output></div>
+          <div class="slider-row"><label for="blue">B / 青</label><input id="blue" type="range" min="0" max="255" value="35"><output for="blue" id="blue-value">35</output></div>
+          <p class="result"><code id="rgb-value">rgb(4, 69, 35)</code></p>
+          <div class="presets" aria-label="画像の色に戻す"><button data-rgb="4,69,35">深緑にする</button><button data-rgb="126,81,60">茶色にする</button><button data-rgb="255,255,255">白にする</button></div>
+        </div>
+      </div>
+      <noscript><p class="note">スライダーで色を変更するにはJavaScriptを有効にしてください。</p></noscript>
+    </section>
+  </main>
+  <footer><span>COLOR NOTE — カラーコードの説明</span><span>参考画像：tome.jpg</span></footer>
+  <div id="copy-status" role="status" aria-live="polite"></div>
+  <script>
+    const channels = ['red', 'green', 'blue'].map(id => document.getElementById(id));
+    function updateColor() {
+      const values = channels.map(input => Number(input.value));
+      const hex = '#' + values.map(value => value.toString(16).padStart(2, '0')).join('').toUpperCase();
+      channels.forEach(input => { document.getElementById(input.id + '-value').value = input.value; });
+      document.getElementById('preview').style.backgroundColor = hex;
+      document.getElementById('hex-value').value = hex;
+      document.getElementById('rgb-value').textContent = `rgb(${values.join(', ')})`;
+    }
+    channels.forEach(input => input.addEventListener('input', updateColor));
+    document.querySelectorAll('[data-rgb]').forEach(button => {
+      button.addEventListener('click', () => {
+        button.dataset.rgb.split(',').forEach((value, i) => { channels[i].value = value; });
+        updateColor();
+      });
+    });
+    let statusTimer;
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const status = document.getElementById('copy-status');
+        clearTimeout(statusTimer);
+        try {
+          await navigator.clipboard.writeText(button.dataset.copy);
+          status.textContent = button.dataset.copy + ' をコピーしました';
+        } catch {
+          status.textContent = 'カラーコードを選択してコピーしてください：' + button.dataset.copy;
+        }
+        statusTimer = setTimeout(() => { status.textContent = ''; }, 4000);
+      });
+    });
+  </script>
+</body>
+</html>
