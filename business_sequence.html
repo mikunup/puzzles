@@ -342,6 +342,27 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 <!-- bases:styles:end -->
+
+<style>
+/* bases/display.html：作業タブの共通デザイン */
+.work-tabsbar { display:flex; align-items:center; gap:4px; margin:0; padding:3px 0; border:0; flex-shrink:0; }
+.work-tabs { display:flex; align-items:stretch; gap:4px; flex:0 1 auto; min-width:0; margin:0; padding:0; border:0; overflow-x:auto; }
+.work-tabs .work-tab-item { display:inline-flex; align-items:stretch; flex:0 0 auto; width:max-content; margin:0; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); }
+.work-tabs .work-tab-item:has([aria-selected="true"]) { background:transparent; color:var(--green); border-bottom-color:var(--green); }
+.work-tabs [role="tab"] { flex-shrink:0; margin:0; padding:6px 2px 6px 10px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); font-size:13px; line-height:1.5; white-space:nowrap; text-decoration:none; }
+.work-tabs .work-tab-item [role="tab"] { border-bottom:0; }
+.work-tabs [role="tab"][aria-selected="true"] { background:transparent; color:var(--green); border-bottom-color:var(--green); font-weight:600; text-decoration:none; }
+.work-tabs [role="tab"]:hover { background:var(--hover); color:var(--green); }
+.work-tabs [role="tab"] .work-tab-number { margin-right:6px; color:var(--brown); font:inherit; }
+.work-tabs [role="tab"][aria-selected="true"] .work-tab-number { color:var(--brown); }
+.work-tabs .work-tab-delete { display:inline-grid; place-items:center; flex-shrink:0; width:auto; height:auto; min-width:24px; margin:0; padding:6px 4px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:16px; line-height:1.22; text-decoration:none; }
+.work-tabs .work-tab-item .work-tab-delete:hover { background:var(--hover); color:var(--brown); }
+.work-tabsbar #add-tab { display:grid; place-items:center; flex-shrink:0; width:30px; height:30px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--green); font-size:20px; line-height:1; }
+.work-tabsbar #add-tab:hover { background:var(--hover); }
+body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
+.work-tabsbar button:focus-visible { outline-offset:-3px; }
+@media print { .work-tabsbar { display:none; } }
+</style>
 </head>
 <body data-layout="workspace">
   <header>
@@ -350,6 +371,7 @@ button:disabled { cursor: default; }
   </header>
   <main>
     <section class="editor" id="editor" aria-label="業務シーケンス図の編集">
+      <div class="tabsbar work-tabsbar"><div id="tabs" class="tabs work-tabs" role="tablist" aria-label="業務シーケンス図"></div><button type="button" class="work-tab-add" id="add-tab" aria-label="タブを追加" title="タブを追加">＋</button></div>
       <div class="workspace-head"><label class="workspace-title" for="title"><span>業務名：</span><input id="title" type="text" placeholder="業務名タイトル" aria-label="業務名"></label><span id="mode-state" class="note" role="status">通常モード</span><button class="btn panel-toggle" id="panel-toggle" aria-expanded="true" aria-controls="inspector" title="オブジェクトを閉じる">☰ オブジェクト</button><button class="icon-button" id="focus-toggle" aria-label="選択作業に集中" title="選択作業に集中（o）" aria-pressed="false">◎</button><button class="icon-button" id="fullscreen" aria-label="全画面表示" title="全画面表示（f）" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
       <h2 class="print-title" id="print-title"></h2>
       <div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button class="btn" id="exit-focus">集中を解除</button></div>
@@ -359,7 +381,6 @@ button:disabled { cursor: default; }
         </div>
         <aside class="inspector" id="inspector" aria-label="未配置オブジェクト"></aside>
       </div>
-      <div class="tabsbar"><div id="tabs" class="tabs" role="tablist" aria-label="業務シーケンス図"></div><button type="button" id="add-tab" aria-label="タブを追加" title="タブを追加">＋</button></div>
       <dialog id="items-dialog" aria-labelledby="items-heading">
         <form id="items-form"><h2 id="items-heading">オブジェクトを一括追加</h2>
           <div class="bulk-switch" role="radiogroup" aria-label="追加する種類"><label><input type="radio" name="item-kind" id="items-action" value="action" checked>作業</label><label><input type="radio" name="item-kind" id="items-doc" value="doc">帳票</label></div>
@@ -853,11 +874,11 @@ button:disabled { cursor: default; }
       const signature=JSON.stringify([workspace.active,workspace.tabs.map(t=>[t.id,t.data.title])]);if(signature===tabsSignature)return;tabsSignature=signature;
       const tabs=document.getElementById("tabs");tabs.replaceChildren();
       workspace.tabs.forEach((tab,index)=>{
-        const item=document.createElement("div");item.className="tab-item";item.setAttribute("role","presentation");
-        const b=document.createElement("button");b.type="button";b.id="sequence-tab-"+tab.id;b.textContent=tab.data.title||"無題";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(tab.id===workspace.active));b.setAttribute("aria-controls","editor");b.tabIndex=tab.id===workspace.active?0:-1;
+        const item=document.createElement("div");item.className="tab-item work-tab-item";item.setAttribute("role","presentation");
+        const b=document.createElement("button");b.type="button";b.id="sequence-tab-"+tab.id;const number=document.createElement("span");number.className="work-tab-number";number.textContent=String(index).padStart(2,"0");b.append(number,document.createTextNode(tab.data.title||"無題"));b.setAttribute("role","tab");b.setAttribute("aria-selected",String(tab.id===workspace.active));b.setAttribute("aria-controls","editor");b.tabIndex=tab.id===workspace.active?0:-1;
         b.addEventListener("click",()=>activateTab(tab.id));
         b.addEventListener("keydown",ev=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(ev.key))return;ev.preventDefault();const i=ev.key==="Home"?0:ev.key==="End"?workspace.tabs.length-1:(index+(ev.key==="ArrowRight"?1:-1)+workspace.tabs.length)%workspace.tabs.length;activateTab(workspace.tabs[i].id);document.getElementById("sequence-tab-"+workspace.active).focus();});
-        const remove=document.createElement("button");remove.type="button";remove.className="tab-delete";remove.textContent="−";remove.setAttribute("aria-label","タブを削除："+(tab.data.title||"無題"));remove.title="タブを削除";remove.addEventListener("click",()=>deleteTab(tab.id));
+        const remove=document.createElement("button");remove.type="button";remove.className="tab-delete work-tab-delete";remove.textContent="×";remove.setAttribute("aria-label","タブを削除："+(tab.data.title||"無題"));remove.title="タブを削除";remove.addEventListener("click",()=>deleteTab(tab.id));
         item.append(b,remove);tabs.append(item);
       });
       document.getElementById("editor").setAttribute("role","tabpanel");document.getElementById("editor").setAttribute("aria-labelledby","sequence-tab-"+workspace.active);

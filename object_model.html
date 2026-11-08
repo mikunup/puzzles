@@ -381,11 +381,33 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 <!-- bases:styles:end -->
+
+<style>
+/* bases/display.html：作業タブの共通デザイン */
+.work-tabsbar { display:flex; align-items:center; gap:4px; margin:0; padding:3px 0; border:0; flex-shrink:0; }
+.work-tabs { display:flex; align-items:stretch; gap:4px; flex:0 1 auto; min-width:0; margin:0; padding:0; border:0; overflow-x:auto; }
+.work-tabs .work-tab-item { display:inline-flex; align-items:stretch; flex:0 0 auto; width:max-content; margin:0; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); }
+.work-tabs .work-tab-item:has([aria-selected="true"]) { background:transparent; color:var(--green); border-bottom-color:var(--green); }
+.work-tabs [role="tab"] { flex-shrink:0; margin:0; padding:6px 2px 6px 10px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); font-size:13px; line-height:1.5; white-space:nowrap; text-decoration:none; }
+.work-tabs .work-tab-item [role="tab"] { border-bottom:0; }
+.work-tabs [role="tab"][aria-selected="true"] { background:transparent; color:var(--green); border-bottom-color:var(--green); font-weight:600; text-decoration:none; }
+.work-tabs [role="tab"]:hover { background:var(--hover); color:var(--green); }
+.work-tabs [role="tab"] .work-tab-number { margin-right:6px; color:var(--brown); font:inherit; }
+.work-tabs [role="tab"][aria-selected="true"] .work-tab-number { color:var(--brown); }
+.work-tabs .work-tab-delete { display:inline-grid; place-items:center; flex-shrink:0; width:auto; height:auto; min-width:24px; margin:0; padding:6px 4px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:16px; line-height:1.22; text-decoration:none; }
+.work-tabs .work-tab-item .work-tab-delete:hover { background:var(--hover); color:var(--brown); }
+.work-tabsbar #add-tab { display:grid; place-items:center; flex-shrink:0; width:30px; height:30px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--green); font-size:20px; line-height:1; }
+.work-tabsbar #add-tab:hover { background:var(--hover); }
+body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
+.work-tabsbar button:focus-visible { outline-offset:-3px; }
+@media print { .work-tabsbar { display:none; } }
+</style>
 </head>
 <body data-layout="workspace">
   <header><div class="header-content"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / OBJECT MODEL</div><div class="header-heading"><p class="eyebrow">OBJECT → COLLECTION</p><h1>オブジェクトを、箱で整理する。</h1></div></div><a href="README.html">資料一覧へ ↗</a></header>
   <main>
     <section class="editor" id="editor" role="tabpanel" aria-label="オブジェクトモデルの編集">
+      <div class="tabsbar work-tabsbar"><div class="tabs work-tabs" id="tabs" role="tablist" aria-label="オブジェクトモデル"></div><button class="work-tab-add" id="add-tab" title="タブを追加" aria-label="タブを追加">＋</button></div>
       <div class="workspace-head"><label class="model-name" for="model-title">モデル名：<input id="model-title" placeholder="モデル名" aria-label="モデル名"></label><div class="view-switch" role="group" aria-label="表示モード"><button id="view-cards" aria-pressed="true">オブジェクト</button><button id="view-graph" aria-pressed="false">関係図</button><button id="view-relations" aria-pressed="false">関係一覧</button></div><button class="icon-button" id="focus-toggle" aria-label="選択項目に集中" title="集中ON／OFF（o）" aria-pressed="false">◎</button><button class="icon-button" id="fullscreen" aria-label="全画面表示" title="全画面表示（f）" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
       <div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button class="btn" id="exit-focus">集中を解除</button></div>
       <div class="toolbar edit-actions"><button class="btn" id="add-object-top">＋ オブジェクト</button><button class="btn" id="add-coll-top">＋ コレクション</button><span class="note" id="mode-state" role="status">通常モード</span></div>
@@ -407,7 +429,6 @@ button:disabled { cursor: default; }
       </div>
       <div id="graph-view" class="mode-pane" hidden><p class="relation-note">矢印は「参照する側 → 参照先」です。ラベルは参照プロパティ名です。コレクションの構成は関係一覧で確認できます。</p><div id="graph-scroll" class="graph-scroll"><div id="graph-stage" class="graph-stage"></div></div></div>
       <div id="relations-view" class="mode-pane" hidden><p class="relation-note">行＝参照元、列＝参照先。セル内は参照プロパティ名です。件数・多重度は定義されていないため表示していません。</p><div id="relations-content"></div></div>
-      <div class="tabsbar"><div class="tabs" id="tabs" role="tablist" aria-label="オブジェクトモデル"></div><button id="add-tab" title="タブを追加" aria-label="タブを追加">＋</button></div>
     </section>
     <details class="help"><summary>キーボード・編集操作</summary><p>Esc / 入力欄のEnter：入力を確定して選択項目へ戻る（説明欄のEnterは改行）。入力欄から抜けるとVimキーが使えます。</p><p>j / k：次／前の項目 · h / l：参照元／参照先へ<br>i：オブジェクトを追加 · Shift+i：コレクションを追加 · e：名前を編集 · d：選択項目を削除<br>z：選択カードの開閉 · o：選択項目と関係先に集中／解除 · f：全画面ON／OFF · v：表示モード切替<br>t / Shift+t：次／前のタブ · gg / Shift+g：先頭／末尾 · u / Ctrl+r：元に戻す／やり直す</p><p>プロパティや操作は各カードの「＋」で追加します。参照型プロパティの参照先を指定すると、関係図と関係一覧へ自動反映されます。Enum型では「＋ 候補」で保存値・表示名を追加し、初期値を選べます。候補の入力は確定時に保存し、空欄・保存値の重複は元の値に戻します。</p></details>
     <details class="help"><summary>見取り図と表示設定</summary>
@@ -1009,8 +1030,8 @@ button:disabled { cursor: default; }
     function renderTabs(){
       const signature=JSON.stringify([workspace.active,workspace.tabs.map(t=>[t.id,t.name])]);if(signature===tabsSignature)return;tabsSignature=signature;const tabs=document.getElementById("tabs");tabs.replaceChildren();
       workspace.tabs.forEach((tab,index)=>{
-        const item=document.createElement("div");item.className="tab-item";item.setAttribute("role","presentation");const b=document.createElement("button");b.type="button";b.id="model-tab-"+tab.id;b.textContent=tab.name||"無題";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(tab.id===workspace.active));b.setAttribute("aria-controls","editor");b.tabIndex=tab.id===workspace.active?0:-1;b.addEventListener("click",()=>switchTab(tab.id));b.addEventListener("keydown",ev=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(ev.key))return;ev.preventDefault();const next=ev.key==="Home"?0:ev.key==="End"?workspace.tabs.length-1:(index+(ev.key==="ArrowRight"?1:-1)+workspace.tabs.length)%workspace.tabs.length;switchTab(workspace.tabs[next].id);document.getElementById("model-tab-"+workspace.active).focus();});
-        const remove=document.createElement("button");remove.type="button";remove.className="tab-delete";remove.textContent="−";remove.setAttribute("aria-label","タブを削除："+tab.name);remove.title="タブを削除";remove.addEventListener("click",()=>deleteTab(tab.id));item.append(b,remove);tabs.append(item);
+        const item=document.createElement("div");item.className="tab-item work-tab-item";item.setAttribute("role","presentation");const b=document.createElement("button");b.type="button";b.id="model-tab-"+tab.id;const number=document.createElement("span");number.className="work-tab-number";number.textContent=String(index).padStart(2,"0");b.append(number,document.createTextNode(tab.name||"無題"));b.setAttribute("role","tab");b.setAttribute("aria-selected",String(tab.id===workspace.active));b.setAttribute("aria-controls","editor");b.tabIndex=tab.id===workspace.active?0:-1;b.addEventListener("click",()=>switchTab(tab.id));b.addEventListener("keydown",ev=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(ev.key))return;ev.preventDefault();const next=ev.key==="Home"?0:ev.key==="End"?workspace.tabs.length-1:(index+(ev.key==="ArrowRight"?1:-1)+workspace.tabs.length)%workspace.tabs.length;switchTab(workspace.tabs[next].id);document.getElementById("model-tab-"+workspace.active).focus();});
+        const remove=document.createElement("button");remove.type="button";remove.className="tab-delete work-tab-delete";remove.textContent="×";remove.setAttribute("aria-label","タブを削除："+tab.name);remove.title="タブを削除";remove.addEventListener("click",()=>deleteTab(tab.id));item.append(b,remove);tabs.append(item);
       });document.getElementById("editor").setAttribute("aria-labelledby","model-tab-"+workspace.active);
     }
     function loadActiveTab(){

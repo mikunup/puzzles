@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="COLOR NOTEの背景色・アイコン・文字・余白・UI部品を、見本とCSSで説明するデザイン資料。">
+  <meta name="description" content="puzzlesの配色・UI部品と、追加・削除・フォーカス・集中などのアイコンや状態の意味を、見本とCSSで説明するデザイン資料。">
   <title>Atomic Components｜COLOR NOTE デザイン資料</title>
   <style>
     :root {
@@ -105,6 +105,25 @@
       .specimen,.token,figure,pre,tr { break-inside:avoid; }
       pre { white-space:pre-wrap; overflow-wrap:anywhere; }
     }
+
+    .meaning-table { min-width:620px; }
+    .meaning-table th { color:var(--ink); font-weight:600; min-width:140px; }
+    .meaning-table td:first-child { width:90px; text-align:center; }
+    .symbol { display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:36px; font-size:24px; color:var(--green); white-space:nowrap; }
+    .meaning-heading { margin:32px 0 18px; font-size:19px; }
+    .meaning-states { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+    .meaning-states .specimen { padding:22px; }
+    .meaning-demo { display:flex; align-items:center; min-height:74px; margin-bottom:18px; }
+    .focus-example,.selected-example,.concentration-example { display:inline-block; padding:7px 12px; font-size:13px; border-radius:5px; }
+    .focus-example { border:1px solid var(--line); outline:3px solid var(--focus); outline-offset:4px; }
+    .selected-example { color:var(--green); font-weight:600; border-radius:0; border-bottom:2px solid var(--green); }
+    .tab-specimen { display:flex; align-items:center; gap:4px; overflow-x:auto; font-size:13px; }
+    .tab-specimen-item { display:inline-flex; align-items:center; gap:8px; flex-shrink:0; padding:6px 4px 6px 10px; border-bottom:2px solid transparent; color:var(--muted); }
+    .tab-specimen-item.active { color:var(--green); font-weight:600; border-bottom-color:var(--green); }
+    .tab-specimen-icon { display:inline-grid; place-items:center; min-width:24px; font-size:16px; font-weight:400; }
+    .concentration-example { background:var(--hover); color:var(--green); }
+    @media(max-width:960px) { .meaning-states { grid-template-columns:1fr; } }
+    @media print { .meaning-table { min-width:0; } .meaning-states { grid-template-columns:1fr; } .meaning-table th,.meaning-table td { padding:8px; } }
   </style>
 <!-- bases:styles:start -->
 <style>
@@ -215,11 +234,11 @@ button:disabled { cursor: default; }
     <div class="intro">
       <p class="eyebrow">DESIGN REFERENCE / ATOMIC COMPONENTS</p>
       <h1>心地よさをつくる、<br>小さな<span>デザインの要素。</span></h1>
-      <p class="lead"><code>color.html</code>の背景の色味や重なったアイコンを、再利用できる部品として整理しました。色・形・文字・余白から、それらを組み合わせたUIまで、見本とCSSで説明します。</p>
+      <p class="lead"><code>color.html</code>の背景の色味や重なったアイコンを、再利用できる部品として整理しました。色・形・文字・余白から、それらを組み合わせたUIまで、見本とCSSで説明します。puzzlesの編集画面で使うアイコンや、フォーカス・選択・集中の意味も整理しています。</p>
       <p class="note">掲載する数値は元ページの実装値です。この資料自体のレイアウトには、説明用のスタイルを追加しています。</p>
     </div>
     <nav aria-label="資料の目次">
-      <a href="#colors">01 配色・背景</a><a href="#icon">02 アイコン</a><a href="#type">03 文字</a><a href="#controls">04 操作部品</a><a href="#geometry">05 形・余白</a><a href="#assembly">06 組み合わせ</a>
+      <a href="#colors">01 配色・背景</a><a href="#icon">02 アイコン</a><a href="#type">03 文字</a><a href="#controls">04 操作部品</a><a href="#geometry">05 形・余白</a><a href="#assembly">06 組み合わせ</a><a href="#meanings">07 アイコンとパーツの意味</a>
     </nav>
 
     <section id="colors" aria-labelledby="colors-title">
@@ -415,6 +434,46 @@ Sections    ヘッダー / ヒーロー / 配色一覧 / 色の操作パネル
      ↓
 Page        color.html</code></pre>
       <p class="note" style="margin-top:16px">再利用するときは、まず基本トークンを定義し、必要な部品のCSSとHTMLを組み合わせてください。マークの茶色は元のCSSでは直接指定されています。配色を一括管理するならvar(--brown)に置き換えられます。</p>
+    </section>
+    <section id="meanings" aria-labelledby="meanings-title">
+      <div class="section-title"><span class="number">07 /</span><h2 id="meanings-title">アイコンとパーツの意味 — UI vocabulary</h2></div>
+      <p class="description">puzzlesの画面で使う記号と、操作の意味をまとめます。下の記号は説明用の見本です。実際の操作対象は、隣の文字・ボタンの説明・操作ヘルプで確認してください。</p>
+      <div class="table-wrap"><table class="meaning-table"><thead><tr><th scope="col">見本</th><th scope="col">意味</th><th scope="col">使い方・注意点</th></tr></thead><tbody>
+        <tr><td><span class="symbol" aria-hidden="true">＋</span></td><th scope="row">追加する</th><td>タブ・項目・作業・プロパティなどを新しく作ります。タブ横ならタブを追加、項目横ならその項目を基準に追加します。アウトラインの行の「＋」は、直後に同じ階層の項目を追加します。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">×</span></td><th scope="row">削除する</th><td>対応するタブや項目を削除します。タブの「×」はタブ内の内容も削除の対象です。折りたたみや集中の解除とは別の操作です。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">×</span></td><th scope="row">閉じる</th><td>ダイアログの端では「閉じる」を示します。タブ・行・列・プロパティなどの横では「削除」を示すため、ボタンの説明で対象と操作を確認します。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">◎</span></td><th scope="row">選択項目に集中する</th><td>表示範囲を選択中の作業や関連項目に絞ります。オブジェクト整理では選択項目と関係先、アウトラインでは対象と直下の1階層までを表示します。「集中を解除」で全体へ戻ります。Vim操作の対応キーは<code>o</code>です。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></span></td><th scope="row">全画面にする</th><td>四隅を広げた形のアイコンです。編集領域を画面いっぱいに広げます。表示する対象を絞る「集中」とは役割が異なります。対応するツールでは<code>f</code>で切り替えられます。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">☰</span></td><th scope="row">補助パネルを開閉する</th><td>見取り図やオブジェクトなどの補助領域を開いたり閉じたりします。閉じるとメインの作業領域に幅を使えます。パネルを閉じても内容は削除されません。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">▸ ▾</span></td><th scope="row">展開・折りたたみ</th><td>右向きは閉じた状態、下向きは開いた状態の見本です。子項目やカードの詳細を表示・非表示にします。画面によって<code>▶ / ▼</code>などの形も使います。対応キーは<code>z</code>です。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">⠿</span></td><th scope="row">ドラッグのつまみ</th><td>押したまま動かし、項目の位置や配置を変更します。アウトラインでは順序・階層を変更し、業務シーケンス図では未配置オブジェクトをマスへ移します。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">↑ ↓ ← →</span></td><th scope="row">移動・関係の向き</th><td>操作ボタンでは順序や階層の移動、図の接続線では情報や作業の流れを表します。業務シーケンス図の実線は作業の流れ・情報の受け渡し、点線は参照・帳票とのやりとりです。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">‹ ›</span></td><th scope="row">前・次へ進む</th><td>カレンダーでは前／次の月・週、業務シーケンス図の列では左右への移動に使います。移動する単位は各ボタンの説明に従います。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">✓</span></td><th scope="row">完了を示す</th><td>タスクが終わったことを示します。アウトラインでは完了／未完了の切り替えに使います。入力位置を示すフォーカスや、編集中の選択状態とは別の状態です。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">◆</span></td><th scope="row">完了予定日を示す</th><td>カレンダーのタスク帯の終端や完了予定一覧に付けます。作業が終わる予定の日付を表し、実際に完了したことを示す「✓」とは区別します。</td></tr>
+        <tr><td><span class="symbol" aria-hidden="true">↗ / ↓ / ↑</span></td><th scope="row">リンク先・ページ内の移動</th><td>資料リンクの「↗」は別資料への移動、「↓」は後の説明へ、「先頭へ ↑」はページ上部への移動を示します。別タブで開くかはリンクの設定によります。</td></tr>
+      </tbody></table></div>
+
+      <h3 class="meaning-heading">フォーカス・選択・集中を区別する</h3>
+      <div class="meaning-states">
+        <article class="specimen"><div class="meaning-demo"><span class="focus-example">編集する</span></div><h3>フォーカス：いまキーが届く場所</h3><p class="description">茶色の輪郭は、キーボード操作の対象を示します。Tabなどでボタンや入力欄へ移動し、EnterやSpaceで操作します。入力欄にフォーカスがある間は文字入力を優先し、Escで抜けてからVim操作を使います。</p><p class="note">輪郭はフォーカス状態の静的な見本です。ページ上部のコピーボタンでは、Tabキーで実際のフォーカス表示を確認できます。</p></article>
+        <article class="specimen"><div class="meaning-demo"><span class="selected-example">選択中のタブ</span></div><h3>選択：どの作業を対象にするか</h3><p class="description">選択中のタブは深緑の文字・太字・タブ全体の下辺線で区別します。背景の塗り・外枠・文字の下線は付けません。カードや行の枠・背景は、編集や集中の対象となる項目を示します。別のボタンへフォーカスを移しても、選択対象がそのままの場合があります。</p></article>
+        <article class="specimen"><div class="meaning-demo"><span class="concentration-example">◎ 選択項目に集中</span></div><h3>集中：いま見る範囲を絞る</h3><p class="description">選択項目に表示を絞り、目の前の作業を追いやすくします。集中中の対象と、解除する操作を画面上に示します。見えていない項目のデータは残っています。対象範囲は各ツールで異なります。</p></article>
+      </div>
+
+      <h3 class="meaning-heading">共通タブ：outline.htmlのデザインを採用</h3>
+      <div class="specimen"><div class="tab-specimen" role="img" aria-label="タブの静的な見本。請求書を選択中。各タイトルの右に削除の×、末尾に追加の＋。"><span class="tab-specimen-item">受注<span class="tab-specimen-icon">×</span></span><span class="tab-specimen-item active">請求書<span class="tab-specimen-icon">×</span></span><span class="tab-specimen-icon">＋</span></div><p class="description">タブは編集領域の上に配置します。タイトルと「×」をひとまとまりにし、枠なし・背景なしで並べます。選択中だけ深緑の文字・太字・下辺線を使い、文字の下線は付けません。タイトルで切り替え、「×」で確認後に削除、「＋」で追加します。</p><p class="note">静的な見本です。操作ボタンは個別に実装し、削除には対象を含む読み上げ名を付けます。配置と操作の詳細は<a href="display.html#tabs">画面設計のタブの基準</a>を参照してください。</p></div>
+
+      <h3 class="meaning-heading">文字付きの部品にも、役割を持たせる</h3>
+      <div class="table-wrap"><table><thead><tr><th scope="col">パーツ</th><th scope="col">意味・使い分け</th></tr></thead><tbody>
+        <tr><th scope="row">主操作のボタン</th><td>深緑の塗りと白い文字で、保存や追加など、その場で進める主な操作を示します。削除などの操作は、対象と結果が分かる名前を付けます。</td></tr>
+        <tr><th scope="row">無効なボタン</th><td>薄い表示で、今は実行できないことを示します。選択対象がない場合の編集など、条件が整うと使えるようになります。</td></tr>
+        <tr><th scope="row">表示切り替え</th><td>「オブジェクト／関係図／関係一覧」「月／週」など、同じ内容の見せ方を切り替えます。案件やモデルを分ける作業タブとは、切り替える対象が異なります。</td></tr>
+        <tr><th scope="row">読み込み・保存・コピー</th><td>読み込みはファイルから内容を取り込み、JSON保存はファイルへ書き出し、コピーはクリップボードへ内容を送ります。ブラウザ内の自動保存とは保存先が異なります。</td></tr>
+        <tr><th scope="row">元に戻す・やり直す</th><td>編集履歴を1段階戻す・戻した編集を進める操作です。対応するツールでは<code>u / Ctrl+r</code>を使います。履歴の保存範囲や再読み込み後の扱いは、各ツールのヘルプに従います。</td></tr>
+      </tbody></table></div>
+      <p class="note" style="margin-top:18px">実装時は、アイコンだけのボタンにも「タブを追加」「選択項目に集中」などの操作名を付け、<code>aria-label</code>で読み上げ名を、必要に応じて<code>title</code>で補足を指定します。開閉は<code>aria-expanded</code>、切り替えボタンは<code>aria-pressed</code>、選択中タブは<code>aria-selected</code>で状態を伝えます。</p>
+      <p class="note">画面構成と操作の基準：<a href="display.html">タブ・Vim操作・作業への集中 ↗</a></p>
     </section>
   </main>
   <footer><span>COLOR NOTE / Atomic Components</span><a href="color.html">参照元：color.html ↗</a></footer>

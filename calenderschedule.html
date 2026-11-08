@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="カレンダーで工程を入力し、ガントチャートとマトリクスシーケンス（業務フロー）で表示するスケジュールの雛形。">
-  <title>カレンダースケジュール</title>
+  <meta name="description" content="業務シーケンス図で整理した作業を月・週のタスクに落とし込み、担当・完了予定日・実績を可視化する業務整理ツール。">
+  <title>業務タスクの完了予定｜カレンダースケジュール</title>
   <style>
     :root {
       color-scheme:light;
@@ -152,6 +152,70 @@
       .btn,.tabs { display:none; }
       .scroll { overflow:visible; }
     }
+
+    /* 業務タスクの作業領域。共通CSSの同期範囲外で管理する。 */
+    header,main,footer { width:100%; }
+    header { padding:14px 24px; flex-wrap:wrap; }
+    main { padding:16px 24px; }
+    footer { padding:16px 24px 24px; }
+    .header-heading { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; }
+    .header-heading h1 { font-size:18px; }
+    .workspace { padding:12px; border:1px solid var(--line); border-radius:12px; background:white; min-width:0; }
+    .toolbar { padding:0 0 12px; gap:8px 12px; }
+    .toolbar h2 { font-size:21px; margin:0; line-height:1.5; }
+    .toolbar .eyebrow { width:auto; }
+    .workspace-body { display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:12px; align-items:start; }
+    .workspace-body.panel-closed { grid-template-columns:minmax(0,1fr); }
+    .main-task { min-width:0; }
+    .panel { min-width:0; }
+    .calendar-scroll { overflow:auto; }
+    .calendar-surface { min-width:700px; }
+    .week { min-height:135px; }
+    .grid.week-view .week { min-height:440px; grid-template-rows:36px repeat(var(--max),38px) 30px; }
+    .grid.week-view .event { height:34px; }
+    .due-panel { border:1px solid var(--line); border-radius:8px; padding:14px; max-height:70dvh; overflow:auto; }
+    .due-panel h3 { font-size:14px; margin:0 0 10px; }
+    .due-list { display:grid; gap:8px; }
+    .due-item { width:100%; border:1px solid var(--line); border-left:3px solid var(--c); border-radius:6px; padding:10px; background:var(--paper); text-align:left; }
+    .due-item strong,.due-item small { display:block; }
+    .due-item small { color:var(--muted); margin-top:3px; font-size:11px; }
+    .due-item.is-selected { outline:2px solid var(--focus); outline-offset:-2px; }
+    .event.is-selected,.g-bar.is-selected,.m-card.is-selected { outline:3px solid var(--focus); outline-offset:-3px; }
+    .event.is-done,.g-bar.is-done,.m-card.is-done { opacity:.7; }
+    .focus-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px; margin-bottom:12px; background:var(--hover); border-radius:6px; font-size:12px; }
+    .tabsbar { display:flex; border-top:1px solid var(--line); margin-top:12px; padding-top:6px; }
+    .tabsbar .tabs { margin:0; border:0; flex:1; }
+    .help { margin:16px 0; font-size:12px; color:var(--muted); }
+    .help p { max-width:900px; }
+    .end-date { flex-shrink:0; margin-left:auto; padding-right:5px; font:10px ui-monospace,monospace; }
+    .btn:disabled { opacity:.45; }
+    dialog { max-height:calc(100dvh - 32px); overflow:auto; }
+    .completion-field { padding-top:8px; border-top:1px solid var(--line); }
+    body.editor-fullscreen { overflow:hidden; }
+    .workspace.is-fullscreen { position:fixed; inset:0; width:100%; height:100dvh; z-index:100; padding:16px; border:0; border-radius:0; overflow:auto; }
+    .workspace.is-fullscreen .calendar-scroll,.workspace.is-fullscreen .panel.scroll { max-height:calc(100dvh - 180px); overflow:auto; }
+    @media(max-width:900px) {
+      .workspace-body { grid-template-columns:minmax(0,1fr); }
+      .due-panel { max-height:260px; }
+    }
+    @media(max-width:760px) {
+      header { padding:12px 16px; }
+      main { padding:12px 16px; }
+      footer { padding:16px; }
+      .workspace { padding:8px; }
+      .toolbar h2 { font-size:18px; }
+      .toolbar .spacer { display:none; }
+    }
+    @media print {
+      body.editor-fullscreen { overflow:visible; }
+      dialog { display:none; }
+      .workspace,.workspace.is-fullscreen { position:static; width:100%; height:auto; padding:0; border:0; overflow:visible; }
+      .workspace-body { display:block; }
+      .due-panel,.tabsbar,.help,.focus-bar { display:none !important; }
+      .calendar-scroll { overflow:visible; }
+      .calendar-surface { min-width:0; }
+      main { padding:0; }
+    }
   </style>
 <!-- bases:styles:start -->
 <style>
@@ -252,69 +316,74 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 <!-- bases:styles:end -->
+
+<style>
+/* bases/display.html：作業タブの共通デザイン */
+.work-tabsbar { display:flex; align-items:center; gap:4px; margin:0; padding:3px 0; border:0; flex-shrink:0; }
+.work-tabs { display:flex; align-items:stretch; gap:4px; flex:0 1 auto; min-width:0; margin:0; padding:0; border:0; overflow-x:auto; }
+.work-tabs .work-tab-item { display:inline-flex; align-items:stretch; flex:0 0 auto; width:max-content; margin:0; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); }
+.work-tabs .work-tab-item:has([aria-selected="true"]) { background:transparent; color:var(--green); border-bottom-color:var(--green); }
+.work-tabs [role="tab"] { flex-shrink:0; margin:0; padding:6px 2px 6px 10px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); font-size:13px; line-height:1.5; white-space:nowrap; text-decoration:none; }
+.work-tabs .work-tab-item [role="tab"] { border-bottom:0; }
+.work-tabs [role="tab"][aria-selected="true"] { background:transparent; color:var(--green); border-bottom-color:var(--green); font-weight:600; text-decoration:none; }
+.work-tabs [role="tab"]:hover { background:var(--hover); color:var(--green); }
+.work-tabs [role="tab"] .work-tab-number { margin-right:6px; color:var(--brown); font:inherit; }
+.work-tabs [role="tab"][aria-selected="true"] .work-tab-number { color:var(--brown); }
+.work-tabs .work-tab-delete { display:inline-grid; place-items:center; flex-shrink:0; width:auto; height:auto; min-width:24px; margin:0; padding:6px 4px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:16px; line-height:1.22; text-decoration:none; }
+.work-tabs .work-tab-item .work-tab-delete:hover { background:var(--hover); color:var(--brown); }
+.work-tabsbar #add-tab { display:grid; place-items:center; flex-shrink:0; width:30px; height:30px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--green); font-size:20px; line-height:1; }
+.work-tabsbar #add-tab:hover { background:var(--hover); }
+body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
+.work-tabsbar button:focus-visible { outline-offset:-3px; }
+@media print { .work-tabsbar { display:none; } }
+</style>
 </head>
-<body data-layout="sheet">
+<body data-layout="workspace">
   <header>
-    <div class="brand"><span class="mark" aria-hidden="true"></span><span contenteditable="true">PROJECT NAME</span></div>
-    <span class="note">予定はこのブラウザに保存されます</span>
+    <div class="header-heading"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / BUSINESS TASKS</div><h1>業務タスクの完了予定</h1></div>
+    <a href="business_sequence.html">業務シーケンス図へ ↗</a><a href="README.html">資料一覧へ ↗</a>
   </header>
-
   <main>
-    <div class="toolbar">
-      <p class="eyebrow" id="eyebrow"></p>
-      <h1 id="heading"></h1>
-      <span class="note mono" id="period"></span>
-      <button class="btn cal-only" id="today-btn">今日</button>
-      <button class="btn icon cal-only" id="prev-btn" aria-label="前の月">‹</button>
-      <button class="btn icon cal-only" id="next-btn" aria-label="次の月">›</button>
-      <span class="spacer"></span>
-      <button class="btn primary" id="add-btn">＋ 予定を追加</button>
-    </div>
-
-    <div class="tabs" role="tablist" aria-label="表示切り替え">
-      <button class="tab" role="tab" id="view-tab-calendar" data-tab="calendar" aria-controls="panel-calendar"><span class="number">01</span>カレンダー</button>
-      <button class="tab" role="tab" id="view-tab-gantt" data-tab="gantt" aria-controls="panel-gantt"><span class="number">02</span>ガントチャート</button>
-      <button class="tab" role="tab" id="view-tab-matrix" data-tab="matrix" aria-controls="panel-matrix"><span class="number">03</span>マトリクスシーケンス</button>
-    </div>
-
-    <section class="panel" id="panel-calendar" role="tabpanel" aria-labelledby="view-tab-calendar" tabindex="0">
-      <div class="card">
-        <div class="weekdays"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
-        <div class="grid" id="grid"></div>
+    <section class="workspace" id="workspace" aria-label="業務タスクの計画">
+      <div class="tabsbar work-tabsbar"><div class="tabs work-tabs" role="tablist" aria-label="タスクの表示方法">
+        <button class="tab" role="tab" id="view-tab-calendar" data-tab="calendar" aria-controls="panel-calendar"><span class="work-tab-number">00</span>月のタスク</button>
+        <button class="tab" role="tab" id="view-tab-week" data-tab="week" aria-controls="panel-calendar"><span class="work-tab-number">01</span>週のタスク</button>
+        <button class="tab" role="tab" id="view-tab-gantt" data-tab="gantt" aria-controls="panel-gantt"><span class="work-tab-number">02</span>ガントチャート</button>
+        <button class="tab" role="tab" id="view-tab-matrix" data-tab="matrix" aria-controls="panel-matrix"><span class="work-tab-number">03</span>担当・前工程</button>
+      </div></div>
+      <div class="toolbar">
+        <p class="eyebrow" id="eyebrow"></p><h2 id="heading"></h2><span class="note mono" id="period"></span>
+        <button class="btn cal-only" id="today-btn">今日</button><button class="btn icon cal-only" id="prev-btn" aria-label="前の月">‹</button><button class="btn icon cal-only" id="next-btn" aria-label="次の月">›</button>
+        <span class="spacer"></span><button class="btn" id="edit-selected">選択タスクを編集</button><button class="btn primary" id="add-btn">＋ タスクを追加</button>
+        <button class="btn" id="panel-toggle" aria-expanded="true" aria-controls="due-panel">完了予定を閉じる</button><button class="btn icon" id="fullscreen" aria-label="全画面表示" aria-pressed="false" title="全画面表示（f）">⛶</button>
       </div>
-      <p class="note hint">日付をクリック／ドラッグで追加 ・ 予定をドラッグで移動 ・ 予定の右端をドラッグで期間を変更</p>
-    </section>
-
-    <section class="panel" id="panel-gantt" role="tabpanel" aria-labelledby="view-tab-gantt" tabindex="0" hidden>
-      <div class="card scroll" id="gantt"></div>
-      <p class="note hint">レーンごとに工程を日付順で並べています。前工程を設定した工程は矢印でつながります。工程名・バーをクリックで編集。</p>
-    </section>
-
-    <section class="panel" id="panel-matrix" role="tabpanel" aria-labelledby="view-tab-matrix" tabindex="0" hidden>
-      <div class="card scroll" id="matrix"></div>
-      <p class="note hint">縦軸がレーン（担当・部署）、横軸が開始日ごとのステップです。番号は全体の実行順、矢印は前工程からの流れを表します。</p>
-    </section>
-  </main>
-
-  <footer>
-    <span>カレンダーで入力 → ガントチャート・マトリクスシーケンスで業務フローを確認</span>
-    <span>祝日は表示していません</span>
-  </footer>
-
+      <div class="focus-bar" id="focus-bar" hidden><span id="focus-label"></span><button class="btn" id="exit-focus">集中を解除</button></div>
+      <div class="workspace-body" id="workspace-body">
+        <div class="main-task">
+          <section class="panel" id="panel-calendar" role="tabpanel" aria-labelledby="view-tab-calendar" tabindex="0">
+            <div class="card calendar-scroll"><div class="calendar-surface"><div class="weekdays"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div><div class="grid" id="grid"></div></div></div>
+            <p class="note hint">帯は作業期間、◆は完了予定日。タスクをクリックして編集。日付のドラッグで追加、帯の移動・右端のドラッグで日程を変更できます。</p>
+          </section>
+          <section class="panel scroll" id="panel-gantt" role="tabpanel" aria-labelledby="view-tab-gantt" tabindex="0" hidden><div class="card scroll" id="gantt"></div><p class="note hint">担当ごとの作業期間と完了予定日を確認します。矢印は前工程との関係を表します。</p></section>
+          <section class="panel scroll" id="panel-matrix" role="tabpanel" aria-labelledby="view-tab-matrix" tabindex="0" hidden><div class="card scroll" id="matrix"></div><p class="note hint">担当と開始日でタスクを整理します。各カードに完了予定日と状態を表示します。</p></section>
+        </div>
+        <aside class="due-panel" id="due-panel" aria-labelledby="due-title"><h3 id="due-title">この月の完了予定</h3><p class="note">完了予定日順。選択して「編集」、またはダブルクリックで編集します。</p><div class="due-list" id="due-list"></div></aside>
+      </div>
   <!-- 予定の追加・編集 -->
   <dialog id="event-dialog">
     <form method="dialog" id="event-form">
-      <div class="dlg-head"><h2 id="dialog-title">予定を追加</h2><button class="btn icon" value="cancel" formnovalidate aria-label="閉じる">×</button></div>
+      <div class="dlg-head"><h2 id="dialog-title">タスクを追加</h2><button class="btn icon" value="cancel" formnovalidate aria-label="閉じる">×</button></div>
       <div class="dlg-body">
-        <label class="field">タイトル<input class="title-input" name="title" required placeholder="工程・作業名"></label>
+        <label class="field">作業名<input class="title-input" name="title" required placeholder="業務シーケンス図で整理した作業名"></label>
         <div class="row">
           <label class="field">開始日<input type="date" name="date" required></label>
-          <label class="field">終了日<input type="date" name="endDate" required></label>
+          <label class="field">完了予定日<input type="date" name="endDate" required></label>
         </div>
         <div class="row">
-          <label class="field">レーン（担当・部署）<input name="lane" list="lane-list" placeholder="例：営業部"></label>
+          <label class="field">担当・部署<input name="lane" list="lane-list" placeholder="例：営業部"></label>
           <label class="field">前工程<select name="prev"></select></label>
         </div>
+        <div class="row completion-field"><label class="field">状態<select name="status"><option value="planned">未着手</option><option value="doing">作業中</option><option value="done">完了</option></select></label><label class="field">実際の完了日<input type="date" name="completedOn"></label></div>
         <datalist id="lane-list"></datalist>
         <div class="field">色<div class="colors" id="colors"></div></div>
         <label class="field">メモ<textarea name="memo" rows="3" placeholder="成果物・補足など"></textarea></label>
@@ -332,8 +401,13 @@ button:disabled { cursor: default; }
   <dialog id="day-dialog">
     <div class="dlg-head"><h2 id="day-title"></h2><button class="btn icon" id="day-close" aria-label="閉じる">×</button></div>
     <div class="dlg-body"><div class="day-list" id="day-list"></div></div>
-    <div class="dlg-foot"><span class="spacer"></span><button class="btn primary" id="day-add">＋ この日に追加</button></div>
+    <div class="dlg-foot"><span class="spacer"></span><button class="btn primary" id="day-add">＋ この日にタスクを追加</button></div>
   </dialog>
+
+    </section>
+    <details class="help"><summary>使い方・キーボード操作</summary><p>業務シーケンス図で作業の流れを整理した後、作業名・担当・前工程をここに登録し、開始日と完了予定日を割り当てます。月で全体を見渡し、週で直近の完了予定を確認します。</p><p>入力欄から抜けた状態で、j / k：次／前のタスク、h / l：前／次の月・週、t / Shift+t：表示タブの切り替え、i：追加、e：選択タスクを編集、o：選択タスクに集中／解除、f：全画面。Escは入力中ならダイアログを閉じ、通常時は集中・全画面を解除します。タブ上では左右矢印・Home・Endも使えます。</p><p>参考となる月の作業期間・完了予定日・担当・前工程を並べ、業務フローを可視化するために使います。件数の集計や、現在日による予定日超過の判定は表示しません。予定はこのブラウザに保存されます。</p></details>
+  </main>
+  <footer><span>業務の流れを整理 → 月・週のタスクに日付を割り当て → 完了予定と実績を確認</span><span>日曜始まり・祝日表示なし</span></footer>
 
   <script>
     // ===== 設定 =====
@@ -380,7 +454,41 @@ button:disabled { cursor: default; }
     function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); } catch {} }
 
     let events = load();
-    let view = new Date(); view.setDate(1);
+    // 参考月のフローがすぐ見えるよう、最初のタスクがある月・週から表示する。
+    let view = events.length ? parse(events.map(e => e.date).sort()[0]) : new Date();
+    let selectedId = null, focusId = null, panelOpen = true, nativeFullscreen = false;
+    const STATUS = { planned: "未着手", doing: "作業中", done: "完了" };
+    const statusOf = e => STATUS[e.status] ? e.status : "planned";
+    const taskScope = () => events.filter(e => !focusId || e.id === focusId);
+    function periodRange() {
+      if (tab === "week") { const start = addDays(key(view), -view.getDay()); return [start, addDays(start, 6)]; }
+      return [key(new Date(view.getFullYear(), view.getMonth(), 1)), key(new Date(view.getFullYear(), view.getMonth() + 1, 0))];
+    }
+    function periodTasks() {
+      const [start, end] = periodRange();
+      return taskScope().filter(e => ["gantt", "matrix"].includes(tab) || e.date <= end && endOf(e) >= start).sort((a,b) => endOf(a).localeCompare(endOf(b)) || byStart(a,b));
+    }
+    function taskLabel(e) { return STATUS[statusOf(e)]; }
+    function selectTask(id) {
+      if (!events.some(e => e.id === id)) return;
+      selectedId = id;
+      document.querySelectorAll("[data-id]").forEach(el => {
+        el.classList.toggle("is-selected", el.dataset.id === id);
+        if (el.classList.contains("due-item")) el.setAttribute("aria-pressed", String(el.dataset.id === id));
+      });
+      document.getElementById("edit-selected").disabled = false;
+    }
+    function renderSupport() {
+      const list = periodTasks();
+      if (!list.some(e => e.id === selectedId)) selectedId = list[0]?.id || null;
+      document.getElementById("edit-selected").disabled = !selectedId;
+      document.getElementById("focus-bar").hidden = !focusId;
+      document.getElementById("focus-label").textContent = focusId ? "集中：" + (events.find(e => e.id === focusId)?.title || "") : "";
+      const [start, end] = periodRange();
+      const due = list.filter(e => ["gantt", "matrix"].includes(tab) || endOf(e) >= start && endOf(e) <= end);
+      document.getElementById("due-title").textContent = tab === "week" ? "この週の完了予定" : tab === "calendar" ? "この月の完了予定" : "全期間の完了予定";
+      document.getElementById("due-list").innerHTML = due.length ? due.map(e=>`<button class="due-item${e.id===selectedId?" is-selected":""}" data-id="${e.id}" style="--c:${e.color}" aria-pressed="${e.id===selectedId}"><strong>${esc(e.title)}</strong><small>◆ ${ymd(endOf(e))} 完了予定 ／ ${esc(laneName(e))}</small><small>${taskLabel(e)}${statusOf(e)==="done"&&e.completedOn?" ／ 実績 "+ymd(e.completedOn):""}</small></button>`).join("") : '<p class="note">この期間に完了予定のタスクはありません。</p>';
+    }
     let editingId = null;
     let tab = "calendar";
     try { tab = localStorage.getItem(TAB_KEY) || "calendar"; } catch {}
@@ -394,21 +502,22 @@ button:disabled { cursor: default; }
     const byStart = (a, b) => a.date.localeCompare(b.date) || endOf(a).localeCompare(endOf(b)) || a.title.localeCompare(b.title);
     const byDate = date => events.filter(e => e.date <= date && endOf(e) >= date).sort(byStart);
     // レーンは最初の工程が早い順
-    const laneOrder = () => [...new Set([...events].sort(byStart).map(laneName))];
+    const laneOrder = (list = events) => [...new Set([...list].sort(byStart).map(laneName))];
     // 全体の実行順（開始日 → レーン順）
-    function seqMap() {
-      const lanes = laneOrder();
-      const list = [...events].sort((a, b) => a.date.localeCompare(b.date) || lanes.indexOf(laneName(a)) - lanes.indexOf(laneName(b)) || byStart(a, b));
+    function seqMap(source = events) {
+      const lanes = laneOrder(source);
+      const list = [...source].sort((a, b) => a.date.localeCompare(b.date) || lanes.indexOf(laneName(a)) - lanes.indexOf(laneName(b)) || byStart(a, b));
       return new Map(list.map((e, i) => [e.id, i + 1]));
     }
     const arrowDefs = id => `<defs><marker id="${id}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>`;
-    const emptyHtml = `<p class="empty">予定がありません。カレンダーで工程を追加してください。</p>`;
+    const emptyHtml = `<p class="empty">タスクがありません。「タスクを追加」から作業名・担当・完了予定日を登録してください。</p>`;
 
     // ===== タブ =====
     const HEADINGS = {
-      calendar: ["MONTHLY SCHEDULE", () => `${view.getFullYear()}年<span>${view.getMonth() + 1}月</span>`],
+      calendar: ["MONTHLY TASKS", () => `${view.getFullYear()}年<span>${view.getMonth() + 1}月</span>`],
+      week: ["WEEKLY TASKS", () => { const [a,b] = periodRange(); return `${md(a)} 〜 ${md(b)}の週`; }],
       gantt: ["GANTT CHART", () => `ガント<span>チャート</span>`],
-      matrix: ["MATRIX SEQUENCE", () => `マトリクス<span>シーケンス</span>`],
+      matrix: ["TASK DEPENDENCIES", () => `担当・<span>前工程</span>`],
     };
     function setTab(t) {
       tab = HEADINGS[t] ? t : "calendar";
@@ -416,9 +525,12 @@ button:disabled { cursor: default; }
         b.setAttribute("aria-selected", String(b.dataset.tab === tab));
         b.tabIndex = b.dataset.tab === tab ? 0 : -1;
       });
-      document.querySelectorAll(".panel").forEach(p => p.hidden = p.id !== `panel-${tab}`);
-      document.querySelectorAll(".cal-only").forEach(el => el.hidden = tab !== "calendar");
+      document.querySelectorAll(".panel").forEach(p => p.hidden = p.id !== `panel-${tab === "week" ? "calendar" : tab}`);
+      document.querySelectorAll(".cal-only").forEach(el => el.hidden = !["calendar", "week"].includes(tab));
       try { localStorage.setItem(TAB_KEY, tab); } catch {}
+      document.getElementById("panel-calendar").setAttribute("aria-labelledby", "view-tab-" + (tab === "week" ? "week" : "calendar"));
+      document.getElementById("prev-btn").setAttribute("aria-label", tab === "week" ? "前の週" : "前の月");
+      document.getElementById("next-btn").setAttribute("aria-label", tab === "week" ? "次の週" : "次の月");
       refresh();
     }
     document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
@@ -441,24 +553,29 @@ button:disabled { cursor: default; }
       document.getElementById("eyebrow").textContent = HEADINGS[tab][0];
       document.getElementById("heading").innerHTML = HEADINGS[tab][1]();
       const period = document.getElementById("period");
-      if (tab !== "calendar" && events.length) {
-        const s = [...events].sort(byStart);
-        period.textContent = `${ymd(s[0].date)} 〜 ${ymd(s.map(endOf).sort().pop())} ・ ${events.length}工程`;
-      } else period.textContent = "";
-      ({ calendar: renderCalendar, gantt: renderGantt, matrix: renderMatrix })[tab]();
+      if (["gantt", "matrix"].includes(tab) && taskScope().length) {
+        const s = [...taskScope()].sort(byStart);
+        period.textContent = `${ymd(s[0].date)} 〜 ${ymd(s.map(endOf).sort().pop())} ・ ${s.length}タスク`;
+      } else { const [a,b]=periodRange(); period.textContent = `${ymd(a)} 〜 ${ymd(b)}`; }
+      renderSupport();
+      ({ calendar: renderCalendar, week: renderCalendar, gantt: renderGantt, matrix: renderMatrix })[tab]();
     }
 
     // ===== カレンダー =====
     function segment({ e, s, t }, lane, ws, we) {
-      const cls = ["event", e.date < ws && "cont-l", endOf(e) > we && "cont-r"].filter(Boolean).join(" ");
-      return `<button class="${cls}" style="--c:${e.color};grid-column:${s + 1}/${t + 2};grid-row:${lane + 2}" data-id="${e.id}" title="${esc(e.title)}（${esc(laneName(e))}・${rangeText(e)}）">` +
-        `<span class="title">${esc(e.title)}</span>${endOf(e) <= we ? '<span class="resize"></span>' : ""}</button>`;
+      const cls = ["event", e.id === selectedId && "is-selected", statusOf(e) === "done" && "is-done", e.date < ws && "cont-l", endOf(e) > we && "cont-r"].filter(Boolean).join(" ");
+      return `<button class="${cls}" style="--c:${e.color};grid-column:${s + 1}/${t + 2};grid-row:${lane + 2}" data-id="${e.id}" title="${esc(e.title)}（${esc(laneName(e))}・完了予定 ${ymd(endOf(e))}・${taskLabel(e)}）">` +
+        `<span class="title">${statusOf(e)==="done"?"✓ ":""}${esc(e.title)}</span>${endOf(e) <= we ? `<span class="end-date">◆${md(endOf(e))}</span>` : ""}${endOf(e) <= we ? '<span class="resize"></span>' : ""}</button>`;
     }
 
     function renderCalendar() {
+      const events = taskScope();
+      const maxRows = tab === "week" ? Math.max(5, Math.min(12, events.length)) : MAX_PER_DAY;
+      grid.style.setProperty("--max", maxRows);
+      grid.classList.toggle("week-view", tab === "week");
       const y = view.getFullYear(), m = view.getMonth();
-      const firstKey = key(new Date(y, m, 1 - new Date(y, m, 1).getDay()));
-      const weeks = Math.ceil((new Date(y, m, 1).getDay() + new Date(y, m + 1, 0).getDate()) / 7);
+      const firstKey = tab === "week" ? periodRange()[0] : key(new Date(y, m, 1 - new Date(y, m, 1).getDay()));
+      const weeks = tab === "week" ? 1 : Math.ceil((new Date(y, m, 1).getDay() + new Date(y, m + 1, 0).getDate()) / 7);
       const today = key(new Date());
       let html = "";
       for (let w = 0; w < weeks; w++) {
@@ -466,14 +583,14 @@ button:disabled { cursor: default; }
         html += `<div class="week" data-start="${ws}">`;
         for (let c = 0; c < 7; c++) {
           const k = addDays(ws, c), dt = parse(k);
-          const cls = ["day", dt.getMonth() !== m && "other", c === 0 && "sun", c === 6 && "sat", k === today && "today"].filter(Boolean).join(" ");
+          const cls = ["day", tab !== "week" && dt.getMonth() !== m && "other", c === 0 && "sun", c === 6 && "sat", k === today && "today"].filter(Boolean).join(" ");
           html += `<div class="${cls}" data-date="${k}" style="grid-column:${c + 1}"><span class="num">${dt.getDate() === 1 ? `${dt.getMonth() + 1}/1` : dt.getDate()}</span></div>`;
         }
         // 長い予定から順に、空いている段へ詰める
         const segs = events.filter(e => e.date <= we && endOf(e) >= ws)
           .map(e => ({ e, s: Math.max(0, diff(ws, e.date)), t: Math.min(6, diff(ws, endOf(e))) }))
           .sort((a, b) => a.s - b.s || (b.t - b.s) - (a.t - a.s) || byStart(a.e, b.e));
-        const lanes = Array.from({ length: MAX_PER_DAY }, () => Array(7).fill(false));
+        const lanes = Array.from({ length: maxRows }, () => Array(7).fill(false));
         const hidden = Array(7).fill(0);
         for (const g of segs) {
           const cols = Array.from({ length: g.t - g.s + 1 }, (_, i) => g.s + i);
@@ -483,7 +600,7 @@ button:disabled { cursor: default; }
           html += segment(g, lane, ws, we);
         }
         hidden.forEach((n, c) => {
-          if (n) html += `<button class="more" data-more="${addDays(ws, c)}" style="grid-column:${c + 1};grid-row:${MAX_PER_DAY + 2}">他${n}件</button>`;
+          if (n) html += `<button class="more" data-more="${addDays(ws, c)}" style="grid-column:${c + 1};grid-row:${maxRows + 2}">他${n}件</button>`;
         });
         html += `</div>`;
       }
@@ -576,14 +693,15 @@ button:disabled { cursor: default; }
     }
 
     function renderGantt() {
+      const events = taskScope();
       const el = document.getElementById("gantt");
       if (!events.length) { el.innerHTML = emptyHtml; return; }
-      const sorted = [...events].sort(byStart), seq = seqMap();
+      const sorted = [...events].sort(byStart), seq = seqMap(events);
       const start = addDays(sorted[0].date, -2);
       const end = addDays(sorted.map(endOf).sort().pop(), 3);
       const N = diff(start, end) + 1;
       const rows = [];
-      laneOrder().forEach(l => {
+      laneOrder(events).forEach(l => {
         rows.push({ lane: l });
         sorted.filter(e => laneName(e) === l).forEach(e => rows.push({ e }));
       });
@@ -610,8 +728,8 @@ button:disabled { cursor: default; }
         if (r.lane) { h += `<div class="g-label lane" style="grid-row:${row}">${esc(r.lane)}</div>`; return; }
         const e = r.e, s = diff(start, e.date), len = days(e);
         pos[e.id] = { x1: LABEL_W + s * DAY_W + 3, x2: LABEL_W + (s + len) * DAY_W - 3, y: HEAD_H + i * ROW_H + ROW_H / 2 };
-        h += `<button class="g-label" data-id="${e.id}" style="grid-row:${row}"><span>${seq.get(e.id)}. ${esc(e.title)}</span><small>${rangeText(e)} ・ ${len}日</small></button>`;
-        h += `<button class="g-bar" data-id="${e.id}" style="--c:${e.color};grid-row:${row};grid-column:${s + 2}/span ${len}" title="${esc(e.title)}（${rangeText(e)}）">${len > 1 ? esc(e.title) : ""}</button>`;
+        h += `<button class="g-label" data-id="${e.id}" style="grid-row:${row}"><span>${seq.get(e.id)}. ${esc(e.title)}</span><small>完了予定 ${md(endOf(e))} ・ ${taskLabel(e)}</small></button>`;
+        h += `<button class="g-bar${e.id===selectedId?" is-selected":""}${statusOf(e)==="done"?" is-done":""}" data-id="${e.id}" style="--c:${e.color};grid-row:${row};grid-column:${s + 2}/span ${len}" title="${esc(e.title)}（${rangeText(e)}）">${len > 1 ? esc(e.title) : ""}</button>`;
       });
       const links = events.filter(e => pos[e.prev] && pos[e.id])
         .map(e => `<path class="link" marker-end="url(#ah-gantt)" d="${ganttPath(pos[e.prev], pos[e.id])}"/>`).join("");
@@ -628,9 +746,10 @@ button:disabled { cursor: default; }
     }
 
     function renderMatrix() {
+      const events = taskScope();
       const el = document.getElementById("matrix");
       if (!events.length) { el.innerHTML = emptyHtml; return; }
-      const lanes = laneOrder(), seq = seqMap();
+      const lanes = laneOrder(events), seq = seqMap(events);
       const steps = [...new Set(events.map(e => e.date))].sort();
       let h = `<div class="matrix" style="grid-template-columns:150px repeat(${steps.length},minmax(190px,1fr))"><svg class="arrows" id="m-arrows"></svg>`;
       h += `<div class="m-corner">レーン ＼ ステップ</div>`;
@@ -640,8 +759,8 @@ button:disabled { cursor: default; }
         steps.forEach(d => {
           const list = events.filter(e => laneName(e) === l && e.date === d).sort(byStart);
           h += `<div class="m-cell">${list.map(e =>
-            `<button class="m-card" data-id="${e.id}" style="--c:${e.color}"><span class="no">${pad(seq.get(e.id))}</span>${esc(e.title)}` +
-            `<small>${rangeText(e)} ・ ${days(e)}日</small></button>`).join("")}</div>`;
+            `<button class="m-card${e.id===selectedId?" is-selected":""}${statusOf(e)==="done"?" is-done":""}" data-id="${e.id}" style="--c:${e.color}"><span class="no">${pad(seq.get(e.id))}</span>${esc(e.title)}` +
+            `<small>完了予定 ${md(endOf(e))} ・ ${taskLabel(e)}</small></button>`).join("")}</div>`;
         });
       });
       el.innerHTML = h + `</div>`;
@@ -686,7 +805,8 @@ button:disabled { cursor: default; }
     function openEvent(id, date, endDate) {
       const e = events.find(x => x.id === id);
       editingId = e ? e.id : null;
-      document.getElementById("dialog-title").textContent = e ? "予定を編集" : "予定を追加";
+      if (e) selectedId = e.id;
+      document.getElementById("dialog-title").textContent = e ? "タスクを編集" : "タスクを追加";
       document.getElementById("delete-btn").style.display = e ? "" : "none";
       form.title.value = e ? e.title : "";
       form.date.value = e ? e.date : date || key(new Date());
@@ -697,6 +817,9 @@ button:disabled { cursor: default; }
         .map(x => `<option value="${x.id}">${md(x.date)} ${esc(x.title)}（${esc(laneName(x))}）</option>`).join("");
       form.prev.value = e && events.some(x => x.id === e.prev) ? e.prev : "";
       form.memo.value = e ? e.memo || "" : "";
+      form.status.value = e ? statusOf(e) : "planned";
+      form.completedOn.value = e?.completedOn || "";
+      syncCompletionField();
       form.querySelector(`[name=color][value="${e ? e.color : COLORS[0]}"]`).checked = true;
       dayDialog.close();
       eventDialog.returnValue = "";
@@ -704,23 +827,32 @@ button:disabled { cursor: default; }
       form.title.focus();
     }
 
+    function syncCompletionField() {
+      const done = form.status.value === "done";
+      form.completedOn.disabled = !done;
+      form.completedOn.required = done;
+      if (done && !form.completedOn.value) form.completedOn.value = key(new Date());
+    }
+    form.status.addEventListener("change", syncCompletionField);
+
     eventDialog.addEventListener("close", () => {
       if (eventDialog.returnValue !== "save") return;
       const date = form.date.value;
       const data = {
         title: form.title.value.trim(), date, endDate: form.endDate.value > date ? form.endDate.value : date,
         lane: form.lane.value.trim(), prev: form.prev.value, color: form.color.value, memo: form.memo.value,
+        status: form.status.value, completedOn: form.status.value === "done" ? form.completedOn.value : "",
       };
       if (editingId) Object.assign(events.find(x => x.id === editingId), data);
-      else events.push({ id: uid(), ...data });
-      const [y, m] = date.split("-").map(Number);
-      view = new Date(y, m - 1, 1);
+      else { const id=uid(); events.push({ id, ...data }); selectedId=id; focusId=null; }
+      view = parse(date);
       save(); refresh();
     });
 
     document.getElementById("delete-btn").addEventListener("click", () => {
-      if (!confirm("この予定を削除しますか？")) return;
+      if (!confirm("このタスクを削除しますか？")) return;
       events = events.filter(x => x.id !== editingId);
+      if (focusId === editingId) focusId = null;
       events.forEach(x => { if (x.prev === editingId) x.prev = ""; });
       save(); refresh();
       eventDialog.close();
@@ -745,18 +877,53 @@ button:disabled { cursor: default; }
     document.getElementById("day-add").addEventListener("click", () => openEvent(null, dayDate));
 
     // ===== 月の切り替え =====
-    const shift = n => { view = new Date(view.getFullYear(), view.getMonth() + n, 1); refresh(); };
+    const shift = n => { view = tab === "week" ? parse(addDays(key(view), n * 7)) : new Date(view.getFullYear(), view.getMonth() + n, 1); refresh(); };
     document.getElementById("prev-btn").addEventListener("click", () => shift(-1));
     document.getElementById("next-btn").addEventListener("click", () => shift(1));
-    document.getElementById("today-btn").addEventListener("click", () => { view = new Date(); view.setDate(1); refresh(); });
-    document.getElementById("add-btn").addEventListener("click", () => openEvent(null));
+    document.getElementById("today-btn").addEventListener("click", () => { view = new Date(); refresh(); });
+    document.getElementById("add-btn").addEventListener("click", () => openEvent(null, key(view)));
+    document.getElementById("due-list").addEventListener("click", ev => { const b=ev.target.closest("[data-id]"); if(b) selectTask(b.dataset.id); });
+    document.getElementById("due-list").addEventListener("dblclick", ev => { const b=ev.target.closest("[data-id]"); if(b) openEvent(b.dataset.id); });
+    document.getElementById("edit-selected").addEventListener("click", () => { if(selectedId) openEvent(selectedId); });
+    document.getElementById("exit-focus").addEventListener("click", () => { focusId=null; refresh(); });
+    document.getElementById("panel-toggle").addEventListener("click", () => {
+      panelOpen=!panelOpen; document.getElementById("due-panel").hidden=!panelOpen;
+      document.getElementById("workspace-body").classList.toggle("panel-closed",!panelOpen);
+      document.getElementById("panel-toggle").setAttribute("aria-expanded",String(panelOpen));
+      document.getElementById("panel-toggle").textContent=panelOpen?"完了予定を閉じる":"完了予定を開く";
+      drawMatrixArrows();
+    });
+    function setFullscreen(active) {
+      document.getElementById("workspace").classList.toggle("is-fullscreen",active); document.body.classList.toggle("editor-fullscreen",active);
+      const button=document.getElementById("fullscreen"); button.setAttribute("aria-pressed",String(active));button.setAttribute("aria-label",active?"全画面表示を解除":"全画面表示");
+    }
+    async function toggleFullscreen() {
+      const workspace=document.getElementById("workspace");
+      if(workspace.classList.contains("is-fullscreen")) {
+        if(document.fullscreenElement===workspace) { try { await document.exitFullscreen(); } catch { return; } }
+        setFullscreen(false);
+      } else {
+        setFullscreen(true); if(workspace.requestFullscreen) { try { await workspace.requestFullscreen(); } catch { /* CSSによる全画面表示を維持 */ } }
+      }
+      drawMatrixArrows();
+    }
+    document.getElementById("fullscreen").addEventListener("click",toggleFullscreen);
+    document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement===document.getElementById("workspace"))nativeFullscreen=true;else if(nativeFullscreen){nativeFullscreen=false;setFullscreen(false);}});
     document.addEventListener("keydown", ev => {
-      if (ev.defaultPrevented || ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey ||
-          tab !== "calendar" || document.querySelector("dialog[open]") ||
-          ev.target.closest('input,textarea,select,[contenteditable="true"],[role="tablist"]') || drag) return;
-      if (ev.key === "ArrowLeft") { ev.preventDefault(); shift(-1); }
-      if (ev.key === "ArrowRight") { ev.preventDefault(); shift(1); }
-      if (ev.key === "t") document.getElementById("today-btn").click();
+      if(ev.defaultPrevented || ev.isComposing || ev.keyCode===229 || ev.altKey || ev.ctrlKey || ev.metaKey || document.querySelector("dialog[open]") || drag) return;
+      if(ev.target.closest('input,textarea,select,[contenteditable="true"]')) return;
+      if(ev.key==="Escape") { if(focusId){focusId=null;refresh();}else if(document.getElementById("workspace").classList.contains("is-fullscreen"))toggleFullscreen();return; }
+      if(ev.shiftKey && ev.key!=="T")return;
+      if(["j","k"].includes(ev.key)) {
+        ev.preventDefault();const list=periodTasks(),index=list.findIndex(e=>e.id===selectedId);
+        if(list.length){selectedId=list[Math.max(0,Math.min(list.length-1,index+(ev.key==="j"?1:-1)))].id;refresh();document.querySelector('.is-selected[data-id="'+selectedId+'"]')?.scrollIntoView({block:"nearest"});}
+      } else if(["t","T"].includes(ev.key)) { ev.preventDefault();if(ev.repeat)return;const tabs=Object.keys(HEADINGS),index=tabs.indexOf(tab);setTab(tabs[(index+(ev.key==="t"?1:-1)+tabs.length)%tabs.length]); }
+      else if(["h","l","ArrowLeft","ArrowRight"].includes(ev.key) && ["calendar","week"].includes(tab) && !ev.target.closest('[role="tablist"]')) { ev.preventDefault();shift(["h","ArrowLeft"].includes(ev.key)?-1:1); }
+      else if(ev.repeat)return;
+      else if(ev.key==="i"){ev.preventDefault();openEvent(null,key(view));}
+      else if(ev.key==="e"&&selectedId){ev.preventDefault();openEvent(selectedId);}
+      else if(ev.key==="o"&&(focusId||selectedId)){ev.preventDefault();focusId=focusId?null:selectedId;refresh();}
+      else if(ev.key==="f"){ev.preventDefault();toggleFullscreen();}
     });
 
     setTab(tab);

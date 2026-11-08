@@ -44,9 +44,11 @@
     .flow b { color:var(--brown); }
     .support { background:#f0f2ec; border-left:1px solid var(--line); padding:24px; font-size:12px; }
     .support p { color:var(--muted); }
-    .tab-strip { background:var(--paper); border-top:1px solid var(--line); border-bottom:0; gap:8px; }
-    .tab-example { padding:7px 18px; border:1px solid var(--line); border-radius:5px; color:var(--muted); }
-    .tab-example.active { background:var(--green); color:white; border-color:var(--green); }
+    .tab-strip { background:transparent; border-bottom:1px solid var(--line); gap:4px; flex-wrap:nowrap; overflow-x:auto; }
+    .tab-example { display:inline-flex; align-items:center; flex-shrink:0; gap:8px; padding:6px 4px 6px 10px; border-bottom:2px solid transparent; color:var(--muted); font-size:13px; white-space:nowrap; }
+    .tab-close { display:inline-grid; place-items:center; min-width:24px; font-size:16px; font-weight:400; }
+    .tab-example .tab-number { color:var(--brown); }
+    .tab-example.active { color:var(--green); font-weight:600; border-bottom-color:var(--green); }
     .principle { padding-left:20px; border-left:3px solid var(--brown); }
     .mode-path { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:22px; background:#eaece3; border-radius:8px; margin:24px 0; }
     kbd { display:inline-block; padding:1px 7px; border:1px solid #bac6b8; border-bottom-width:2px; border-radius:4px; background:white; color:var(--ink); font:12px/1.8 ui-monospace,monospace; white-space:nowrap; }
@@ -185,16 +187,20 @@ button:disabled { cursor: default; }
       <h2 id="tabs-title"><small>01 /</small>タブは、作業の文脈を切り替える場所。</h2>
       <p>案件・モデル・図など、ひとまとまりの作業を1つのタブに分けます。別の作業へ移っても、戻ったときに続きを始められるよう、内容や表示状態をタブ単位で扱います。下の図は、請求書の作業を選んでいる画面の見本です。</p>
       <figure>
-        <div class="workspace" role="img" aria-label="レイアウトの見本。左の広い領域に請求書の作業、右に補助情報、下に受注・請求書・入金確認のタブを配置。請求書を選択中。">
+        <div class="workspace" role="img" aria-label="レイアウトの見本。左の広い領域に請求書の作業、右に補助情報、上に受注・請求書・入金確認のタブと追加の＋を配置。請求書を選択中。">
+          <div class="tab-strip"><span class="tab-example"><span class="tab-number">00</span>受注<span class="tab-close">×</span></span><span class="tab-example active"><span class="tab-number">01</span>請求書<span class="tab-close">×</span></span><span class="tab-example"><span class="tab-number">02</span>入金確認<span class="tab-close">×</span></span><span class="tab-close">＋</span></div>
           <div class="workspace-top"><strong>請求書の業務フロー</strong><span>レイアウトの見本</span></div>
           <div class="workspace-body">
             <div class="canvas"><span class="canvas-label">MAIN WORKSPACE</span><h3>いま進めている作業</h3><div class="flow"><span>作成する</span><b aria-hidden="true">→</b><span>確認する</span><b aria-hidden="true">→</b><span>確定する</span></div></div>
             <div class="support"><h3>補助情報</h3><p>選択項目の詳細や操作を必要なときに参照します。</p><p>主役となる作業の隣に、控えめな幅で配置します。</p></div>
           </div>
-          <div class="tab-strip"><span class="tab-example">受注</span><span class="tab-example active">請求書 · 選択中</span><span class="tab-example">入金確認</span></div>
         </div>
         <figcaption>説明用の静的な見本です。タブはページ内の作業の切り替えを表し、ブラウザのタブとは別のものです。</figcaption>
       </figure>
+      <h3>採用するタブデザイン：outline.html</h3>
+      <p><a href="../outline.html">アウトライン</a>のタブを共通の基準にします。編集領域の上に置き、背景の塗りや外枠を付けず、選択中はタブ名を深緑・太字にし、タブ全体の下辺線で示します。文字自体には下線を付けません。</p>
+      <p>タブ名の前には、左から順に<code>00</code>、<code>01</code>、<code>02</code>…と番号を付けます。最初は00とし、1桁の番号は先頭を0で埋めて2桁で表示します。数字部分だけ茶色（<code>var(--brown)</code>）にし、選択中やタイトルの編集中も茶色を維持します。番号は表示順を表し、追加・削除後は現在の並び順で振り直します。保存するタブ名には番号を含めず、名前の編集中もタブ上の番号を維持します。</p>
+      <p>タイトルと削除「×」をひとまとまりに並べ、タイトルは切り替え、×はそのタブと内容の削除に使います。削除前に確認を表示し、右端の「＋」で新しいタブを追加します。タブが増えたら折り返さず横スクロールにします。各ボタンには操作名を付け、キーボードのフォーカスと選択状態を区別します。</p>
       <div class="explain"><div class="principle"><h3>名前と選択状態を明確にする</h3><p>何の作業か分かる名前を付け、選択中のタブを色と表示で区別します。編集対象は選択中のタブです。</p></div><div class="principle"><h3>切り替えて、続きを始める</h3><p>オブジェクト整理ではモデル・表示・選択状態などをタブごとに保存します。保存する状態や履歴の範囲は、各ツールの説明を確認してください。</p></div></div>
     </section>
 

@@ -29,6 +29,10 @@
     .page-tab:hover { color:var(--green); }
     .page-tab[aria-selected="true"] { color:var(--green); border-bottom-color:var(--green); font-weight:700; }
     .page-tab .num { font:11px ui-monospace,monospace; color:var(--brown); margin-right:6px; }
+    .sheet-tab { display:inline-flex; align-items:center; flex-shrink:0; margin-bottom:6px; border:1px solid var(--line); border-radius:7px; background:#fff; color:var(--muted); }
+    .sheet-tab .page-tab { margin:0; padding-right:8px; border:0; border-radius:7px 0 0 7px; }
+    .delete-tab { display:inline-grid; place-items:center; flex-shrink:0; width:28px; height:28px; margin:0 5px 0 0; padding:0; border:0; border-radius:5px; background:transparent; color:inherit; font-size:18px; text-decoration:none; }
+    .delete-tab:hover { background:var(--hover); color:#a4472f; }
     .add-tab { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; margin:0 0 6px 8px; padding:5px 14px; border:1.5px dashed var(--green); border-radius:7px; background:#fff; color:var(--green); font-size:13px; font-weight:700; white-space:nowrap; }
     .add-tab:hover { background:var(--hover); border-style:solid; }
     .plus { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--green); color:#fff; font-size:13px; line-height:1; }
@@ -179,17 +183,20 @@ button:disabled { cursor: default; }
   box-shadow: 5px -5px 0 var(--brown);
 }
 
-/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+/* 選択は塗り・太字で示す。横スクロール内でもフォーカスを見せる。 */
 [role="tab"][aria-selected="true"] {
   background: var(--green);
   color: #fff;
   border-bottom-color: var(--green);
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 [role="tab"][aria-selected="true"] .num,
 [role="tab"][aria-selected="true"] .number { color: inherit; }
+.page-tab[role="tab"][aria-selected="true"] .num { color:var(--brown); }
+.sheet-tab:has([aria-selected="true"]) { background:var(--green); border-color:var(--green); color:#fff; }
+.sheet-tab .page-tab[aria-selected="true"] { background:transparent; color:inherit; }
+.sheet-tab:has([aria-selected="true"]) .delete-tab:hover { background:rgba(255,255,255,.18); color:#fff; }
 [role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
 [role="tablist"] { min-width: 0; }
 [role="tabpanel"] { min-width: 0; }
@@ -249,6 +256,27 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 <!-- bases:styles:end -->
+
+<style>
+/* bases/display.html：作業タブの共通デザイン */
+.work-tabsbar { display:flex; align-items:center; gap:4px; margin:0; padding:3px 0; border:0; flex-shrink:0; }
+.work-tabs { display:flex; align-items:stretch; gap:4px; flex:0 1 auto; min-width:0; margin:0; padding:0; border:0; overflow-x:auto; }
+.work-tabs .work-tab-item { display:inline-flex; align-items:stretch; flex:0 0 auto; width:max-content; margin:0; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); }
+.work-tabs .work-tab-item:has([aria-selected="true"]) { background:transparent; color:var(--green); border-bottom-color:var(--green); }
+.work-tabs [role="tab"] { flex-shrink:0; margin:0; padding:6px 2px 6px 10px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); font-size:13px; line-height:1.5; white-space:nowrap; text-decoration:none; }
+.work-tabs .work-tab-item [role="tab"] { border-bottom:0; }
+.work-tabs [role="tab"][aria-selected="true"] { background:transparent; color:var(--green); border-bottom-color:var(--green); font-weight:600; text-decoration:none; }
+.work-tabs [role="tab"]:hover { background:var(--hover); color:var(--green); }
+.work-tabs [role="tab"] .work-tab-number { margin-right:6px; color:var(--brown); font:inherit; }
+.work-tabs [role="tab"][aria-selected="true"] .work-tab-number { color:var(--brown); }
+.work-tabs .work-tab-delete { display:inline-grid; place-items:center; flex-shrink:0; width:auto; height:auto; min-width:24px; margin:0; padding:6px 4px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:16px; line-height:1.22; text-decoration:none; }
+.work-tabs .work-tab-item .work-tab-delete:hover { background:var(--hover); color:var(--brown); }
+.work-tabsbar #add-tab { display:grid; place-items:center; flex-shrink:0; width:30px; height:30px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--green); font-size:20px; line-height:1; }
+.work-tabsbar #add-tab:hover { background:var(--hover); }
+body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
+.work-tabsbar button:focus-visible { outline-offset:-3px; }
+@media print { .work-tabsbar { display:none; } }
+</style>
 </head>
 <body data-layout="sheet">
   <header>
@@ -257,7 +285,7 @@ button:disabled { cursor: default; }
   </header>
 
   <main>
-    <nav class="pages" id="pages" role="tablist" aria-label="ページ"></nav>
+    <div class="work-tabsbar"><nav class="pages work-tabs" id="pages" role="tablist" aria-label="ページ"></nav><button class="work-tab-add" id="add-tab" type="button" aria-label="タブを追加" title="タブを追加">＋</button></div>
     <div id="page" role="tabpanel" tabindex="0"></div>
   </main>
 
@@ -329,9 +357,8 @@ button:disabled { cursor: default; }
     const sheetName = s => s.title.trim() || "無題のシート";
     function renderTabs() {
       document.getElementById("pages").innerHTML =
-        `<button class="page-tab" role="tab" id="sheet-tab-guide" data-page="guide" aria-controls="page" tabindex="${current === "guide" ? 0 : -1}" aria-selected="${current === "guide"}"><span class="num">00</span>整理項目</button>` +
-        sheets.map((s, i) => `<button class="page-tab" role="tab" id="sheet-tab-${esc(s.id)}" data-page="${esc(s.id)}" aria-controls="page" tabindex="${current === s.id ? 0 : -1}" aria-selected="${current === s.id}" title="${esc(sheetName(s))}"><span class="num">${String(i + 1).padStart(2, "0")}</span>${esc(sheetName(s))}</button>`).join("") +
-        `<button class="add-tab" data-add><span class="plus">＋</span>シートを追加</button>`;
+        `<button class="page-tab" role="tab" id="sheet-tab-guide" data-page="guide" aria-controls="page" tabindex="${current === "guide" ? 0 : -1}" aria-selected="${current === "guide"}"><span class="num work-tab-number">00</span>整理項目</button>` +
+        sheets.map((s, i) => `<span class="sheet-tab work-tab-item" role="presentation"><button class="page-tab" role="tab" id="sheet-tab-${esc(s.id)}" data-page="${esc(s.id)}" aria-controls="page" tabindex="${current === s.id ? 0 : -1}" aria-selected="${current === s.id}" title="${esc(sheetName(s))}"><span class="num work-tab-number">${String(i + 1).padStart(2, "0")}</span>${esc(sheetName(s))}</button><button class="delete-tab work-tab-delete" data-delete-sheet="${esc(s.id)}" aria-label="${esc(sheetName(s))}を削除" title="シートを削除">×</button></span>`).join("");
     }
     function go(id) {
       current = id === "guide" || byId(id) ? id : "guide";
@@ -346,8 +373,20 @@ button:disabled { cursor: default; }
       sheets.push(s); save(); go(s.id);
       pageEl.querySelector('[data-k="title"]').focus();
     }
+    function deleteSheet(id) {
+      const s = byId(id);
+      if (!s || !confirm(`「${sheetName(s)}」を削除しますか？`)) return;
+      const i = sheets.indexOf(s);
+      sheets.splice(i, 1); save();
+      if (current === id) go(sheets[i - 1]?.id || sheets[0]?.id || "guide");
+      else go(current);
+      document.getElementById("sheet-tab-" + current).focus();
+    }
+    document.getElementById("add-tab").addEventListener("click", () => addSheet());
     document.getElementById("pages").addEventListener("click", ev => {
       if (ev.target.closest("[data-add]")) return addSheet();
+      const remove = ev.target.closest("[data-delete-sheet]");
+      if (remove) return deleteSheet(remove.dataset.deleteSheet);
       const b = ev.target.closest("[data-page]"); if (b) go(b.dataset.page);
     });
 
@@ -498,10 +537,7 @@ button:disabled { cursor: default; }
       if (act === "duplicate") { addSheet(s); toast("シートを複製しました"); }
       if (act === "print") window.print();
       if (act === "delete") {
-        if (!confirm(`「${sheetName(s)}」を削除しますか？`)) return;
-        const i = sheets.indexOf(s);
-        sheets.splice(i, 1); save();
-        go(sheets[i - 1]?.id || sheets[0]?.id || "guide");
+        deleteSheet(s.id);
       }
       if (act === "export") {
         const blob = new Blob([JSON.stringify(sheets, null, 2)], { type: "application/json" });
