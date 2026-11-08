@@ -159,7 +159,105 @@
       .case-table td[data-label]::before { display:none; }
       .concept-reference,.case-detail,.result-tools { display:none; }
     }
-</style><link rel="stylesheet" href="bases/base.css">
+</style><!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
 </head>
 <body data-layout="document" id="top"><a class="skip-link" href="#main-content">本文へスキップ</a><div class="layout"><aside class="sidebar" aria-label="テスト資料の目次"><div class="brand"><span class="mark" aria-hidden="true"></span>DOCUMENT NOTE</div><p class="sidebar-description">Web自動販売機<br>画面単体テストケース</p><nav aria-labelledby="toc-title"><p class="toc-label" id="toc-title">CONTENTS / 目次</p><ol class="toc"><li><a href="#overview"><span class="toc-number">01</span>この資料の使い方</a></li><li><a href="#preparation"><span class="toc-number">02</span>準備データ</a></li><li><a href="#coverage"><span class="toc-number">03</span>テスト観点・ケース一覧</a></li><li><a href="#products"><span class="toc-number">04</span>商品選択</a><ol class="toc-sub"><li><a href="#concept-catalog">商品一覧の表示・選択</a></li><li><a href="#pw-product">商品詳細の表示と購入可否</a></li></ol></li><li><a href="#purchase"><span class="toc-number">05</span>購入・決済</a><ol class="toc-sub"><li><a href="#pw-quote">購入確認の条件判定</a></li><li><a href="#concept-payment">支払い実行・期限・二重操作</a></li><li><a href="#pw-order">注文状態の照会・完了表示・閲覧権限</a></li></ol></li><li><a href="#admin"><span class="toc-number">06</span>商品・在庫管理</a><ol class="toc-sub"><li><a href="#concept-admin-list">管理商品一覧とアクセス権限</a></li><li><a href="#pw-edit">商品編集の入力検証と権限</a></li><li><a href="#concept-edit-navigation">編集初期値・戻る・変更破棄</a></li><li><a href="#concept-save">保存結果・権限失効・同時更新</a></li></ol></li><li><a href="#record"><span class="toc-number">07</span>実施記録・出力</a></li><li><a href="#common"><span class="toc-number">08</span>共通項目テスト</a><ol class="toc-sub"><li><a href="#common-fetch">取得応答・再取得</a></li><li><a href="#concept-responsive">画面幅とレイアウト</a></li></ol></li></ol></nav><div class="sidebar-note"><a href="screen_design_template.html">画面・機能設計書へ ↗</a><br>目的 → 前提 → ケース表</div></aside><main id="main-content" tabindex="-1"><header class="document-header"><p class="breadcrumb"><a href="screen_design_template.html">画面・機能設計書</a> / 単体テスト</p><p class="eyebrow">WEB VENDING / SCREEN TEST CASES</p><h1>画面単体テスト<br>ケース一覧・実施記録</h1><p class="lead">条件を設定して、画面の表示と操作を確かめる。観点ごとに目的・前提・期待結果を揃えたテストケースです。</p><dl class="metadata"><div><dt>対象</dt><dd>7画面 / 11観点</dd></div><div><dt>ケース数</dt><dd>113件</dd></div><div><dt>実施状況</dt><dd id="execution-status">全113件未実施</dd></div></dl></header><section id="overview" aria-labelledby="overview-title"><div class="section-heading"><span class="section-number">01 /</span><h2 id="overview-title">この資料の使い方</h2></div><p>画面グループごとに、確認する目的・共通の前提・ケース表をまとめています。条件を設定し、期待する画面表示と操作を確認してOK／NGを記録します。</p><div class="reader-note"><strong>読む順番：</strong>確認すること → 前提 → ケース名と条件 → 期待結果 → 実施結果。ケースごとの詳しい準備・操作は「準備・操作の詳細」、用語や設定値は表の下から開けます。</div><div class="matrix-legend"><span><span class="kind">正常</span> 想定する利用・状態の確認</span><span><span class="kind validation">バリデーション</span> 入力や購入条件の不成立を確認</span><span><span class="kind error">異常</span> 通信失敗・権限拒否・競合などを確認</span></div><p class="caption">区分はテスト内容の分類です。バリデーションや異常でも、期待どおりに案内・操作抑止ができれば実施結果はOKです。売り切れ・非公開など、あらかじめ想定した表示状態の切り替えは正常に含めています。</p><details class="concept-reference"><summary>テスト範囲・組み合わせの選び方</summary><div><p>API・認証・時刻・ルーターはテスト用に差し替え、表示・入力・要求内容・遷移を確認します。残高・在庫の実更新や権限判定そのものはAPI・結合テストで確認します。</p><p>購入条件・商品編集では2条件の組み合わせを網羅するペアワイズを利用し、個々の境界値や操作手順も同じ表に収録しています。</p><p>同じ値でも操作順序が異なるケースは残しています。実施結果とメモはブラウザ内へ自動保存し、JSONにも書き出せます。設計書の実装を実行するページではありません。</p></div></details></section>
 <section id="preparation" aria-labelledby="preparation-title"><div class="section-heading"><span class="section-number">02 /</span><h2 id="preparation-title">準備データ</h2></div><p>各ケースは独立して実施し、毎回基準データへ戻してから、表の条件だけを上書きします。</p><details class="concept-reference"><summary>商品・注文・権限・応答・時刻の準備データを開く</summary><div><p>各ケースは独立して実行し、毎回同じ準備データへ戻します。ケースの「準備データ・差分」で指定した値だけ上書きしてください。</p><div class="table-wrap" role="region" aria-label="商品・残高・注文の準備データ" tabindex="0"><table><caption>商品・残高・注文の準備データ</caption><thead><tr><th scope="col">データID</th><th scope="col">内容</th><th scope="col">基本値・状態</th></tr></thead><tbody><tr><th scope="row">DATA-P</th><td>購入者向けの商品応答</td><td>DRINK-001：ミネラルウォーター・150円・公開・在庫8相当のavailable。DRINK-002：緑茶・180円・公開・在庫0相当のsold_out。購入者向け応答に在庫数は含めない。</td></tr><tr><th scope="row">DATA-W</th><td>デモウォレット</td><td>所有セッションS-BUYER / balance=500円。</td></tr><tr><th scope="row">DATA-Q</th><td>購入確認応答</td><td>DRINK-001・quantity=1・totalAmount=150・walletBalance=500・canPurchase=true。支払い後予定350円。</td></tr><tr><th scope="row">DATA-O</th><td>支払待ち注文</td><td>orderId=ORD-001 / owner=S-BUYER / DRINK-001 / 単価・合計150円 / quantity=1 / status=pending / expiresAt=2030-01-01T00:05:00Z。</td></tr><tr><th scope="row">DATA-PAID</th><td>支払い済み注文・残高</td><td>ORD-001 / status=paid / receiptNumber=VM-001 / 商品名=ミネラルウォーター / quantity=1 / totalAmount=150 / balance=350。</td></tr><tr><th scope="row">DATA-A</th><td>管理用商品応答</td><td>DRINK-001：ミネラルウォーター・price=150・stock=8・isPublished=true・version=3。DRINK-002：緑茶・180・0・true・version=1。DRINK-003：コーヒー・200・5・false・version=1。</td></tr></tbody></table></div><h3>認証・応答・時計の差し替え</h3><div class="table-wrap" role="region" aria-label="テスト用状態" tabindex="0"><table><caption>テスト用状態</caption><thead><tr><th scope="col">データID</th><th scope="col">設定</th><th scope="col">用途</th></tr></thead><tbody><tr><th scope="row">ROLE-B</th><td>購入者セッションS-BUYER。管理者ロールなし。</td><td>自分の注文だけ取得できる通常購入者</td></tr><tr><th scope="row">ROLE-X</th><td>別購入者セッションS-OTHER。</td><td>他セッションの注文を扱えないことを確認</td></tr><tr><th scope="row">ROLE-A</th><td>認証済み管理者・adminロール。</td><td>管理画面の取得・保存</td></tr><tr><th scope="row">ROLE-G</th><td>未ログイン。認証情報なし。</td><td>管理者ログインへの案内</td></tr><tr><th scope="row">PAY-OK</th><td>支払い・注文照会をpaid、受取VM-001、残高350で応答。</td><td>支払い成功表示。基準の注文150円に対応</td></tr><tr><th scope="row">PAY-WAIT</th><td>注文照会をprocessingに設定。応答は任意に遅延。</td><td>処理中表示・連打抑止</td></tr><tr><th scope="row">PAY-UNKNOWN</th><td>支払い要求の応答をタイムアウト。照会はprocessing。</td><td>結果不明後の再確認</td></tr><tr><th scope="row">SAVE-OK</th><td>保存成功応答。商品versionを4として返す。</td><td>保存成功と一覧再取得</td></tr><tr><th scope="row">SAVE-CONFLICT</th><td>保存をversion不一致の競合応答にする。</td><td>入力保持・最新値の再取得案内</td></tr><tr><th scope="row">NET-FAIL</th><td>商品取得を通信エラー応答にする。</td><td>取得失敗表示と再読込</td></tr><tr><th scope="row">CLOCK</th><td>固定時計：通常now=2030-01-01T00:00:00Z。期限テストでは差分を指定。</td><td>テストが実行日時に左右されないようにする</td></tr></tbody></table></div><h3>実行前の準備</h3><ol><li>対象画面を1つずつ起動できるテスト環境と、要求を記録できるAPIモックを用意します。</li><li>前ケースのストア・セッション・URL・API呼び出し履歴をリセットします。全注文テストにCLOCKを適用します。</li><li>ブラウザ・ビルド識別子・実施者・実施日を下の実施情報に記録します。</li><li>準備データとケースの差分を設定し、操作後のDOM・ボタン状態・遷移先・API要求回数を確認します。</li></ol><aside class="callout"><strong>境界条件の取り決め</strong>このテスト例はnow &lt; expiresAtを期限内、now &gt;= expiresAtを期限切れとして扱います。期限と完全一致する場合の扱いは、実装前に設計書にも合意・反映してください。文字数のケースは「あ」の繰り返しを使い、絵文字などの数え方は別途仕様確定が必要です。</aside></div></details></section>

@@ -71,7 +71,105 @@
     }
     @media print { header,main,footer { width:100%; } nav { display:none; } .workspace,tr,.principle { break-inside:avoid; } }
   </style>
-<link rel="stylesheet" href="base.css">
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
 </head>
 <body id="top">
   <header><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / DESIGN BASES</div><a href="../README.html">資料・ツール一覧へ ↗</a></header>
@@ -124,7 +222,7 @@
       <p class="note">上の見本は、広い画面ではメイン領域を可変幅、補助領域を220pxとし、720px以下では縦に並べています。数値は説明用の例で、各ツールでは扱う情報に合わせて調整します。</p>
     </section>
 
-    <section id="references" aria-labelledby="references-title"><h2 id="references-title">デザイン・レイアウトの基準を、bases/に。</h2><p><code>bases/</code>は、新しい画面を作るときや既存画面を整えるときに参照するディレクトリです。配色、部品、画面構成と操作の考え方をまとめています。</p><p class="note">共通CSSは<code>base.css</code>です。全13ページで読み込み、基本色・フォーカス・選択中タブの表示を共有します。作業画面は横幅を活かし、資料画面は目次を控えめな幅にして本文を広く確保します。ページ固有の図・表・印刷スタイルは各HTMLで定義します。</p><div class="references"><a href="color.html">配色とカラーコード ↗</a><a href="atomic_component.html">文字・余白・UI部品 ↗</a><a href="../object_model.html">操作例：オブジェクト整理 ↗</a><a href="../outline.html">操作例：アウトライン ↗</a></div></section>
+    <section id="references" aria-labelledby="references-title"><h2 id="references-title">デザイン・レイアウトの基準を、bases/に。</h2><p><code>bases/</code>は、新しい画面を作るときや既存画面を整えるときに参照するディレクトリです。配色、部品、画面構成と操作の考え方をまとめています。</p><h3>実装ルール：各HTMLは単独で動作させる</h3><p>各ページは、HTMLファイル1つをコピーしてブラウザで開くだけで、表示・操作できる形にします。<code>base.css</code>などの外部CSSや外部JavaScriptは読み込まず、必要なCSSは<code>&lt;style&gt;</code>、JavaScriptは<code>&lt;script&gt;</code>として各HTML内に記述してください。</p><p>表示に必要な画像などの素材もHTML内に埋め込みます。資料間のリンクや、利用者が選択して読み込むJSONなどは別ファイルとして扱えます。ブラウザ内保存のデータはHTMLに含まれないため、別の環境へ移す場合はJSONの書き出し・読み込みを使います。</p><p class="note">デザインを揃えるときは、この<code>bases/</code>の資料を参照し、必要なスタイルを各HTML内に反映します。作業画面は横幅を活かし、資料画面は本文を広く確保します。印刷スタイルも各HTML内に定義します。</p><h3>共通スタイルはbase.cssから各HTMLへ反映する</h3><p><code>bases/base.css</code>を共通スタイルの編集元として残します。ブラウザはこのファイルを読み込まず、各HTML内に埋め込んだCSSを使います。共通スタイルを変更するときは<code>base.css</code>を編集し、リポジトリ直下で<code>python3 bases/sync_styles.py</code>を実行して全ページへ反映してください。</p><p><code>python3 bases/sync_styles.py --watch</code>を起動しておくと、保存時に各HTMLを自動更新できます（Ctrl+Cで終了）。<code>python3 bases/sync_styles.py --check</code>はファイルを書き換えずに反映漏れを確認し、未反映がある場合は終了コード1を返します。ブラウザで表示中のページは更新後に再読み込みしてください。</p><p class="note">同期対象はリポジトリ直下と<code>bases/</code>直下のHTMLです。共通CSSは<code>&lt;!-- bases:styles:start --&gt;</code>と<code>&lt;!-- bases:styles:end --&gt;</code>で囲みます。この範囲は同期で上書きされるため、直接編集せず、ページ固有のCSSは範囲外に記述してください。新規HTMLにも開始・終了マーカーを1組追加し、同期コマンドを実行します。各HTML単独で動作するルールは維持します。</p><div class="references"><a href="color.html">配色とカラーコード ↗</a><a href="atomic_component.html">文字・余白・UI部品 ↗</a><a href="../object_model.html">操作例：オブジェクト整理 ↗</a><a href="../outline.html">操作例：アウトライン ↗</a></div></section>
   </main>
   <footer><span>PUZZLES / Layout &amp; Interaction</span><a href="#top">先頭へ ↑</a></footer>
 </body>
