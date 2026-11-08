@@ -8,8 +8,6 @@
   <style>
     :root {
       color-scheme:light;
-      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
-      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
       --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854; --tint:#fafaf6;
       --rule:#5d7466; --head:#e3eee6;
     }
@@ -152,8 +150,9 @@
       .v-input,.v-do { min-height:200px; }
     }
   </style>
+<link rel="stylesheet" href="bases/base.css">
 </head>
-<body>
+<body data-layout="sheet">
   <header>
     <div class="brand"><span class="mark" aria-hidden="true"></span>BUSINESS DEFINITION</div>
     <span class="note">データはこのブラウザに保存されます</span>
@@ -161,7 +160,7 @@
 
   <main>
     <nav class="pages" id="pages" role="tablist" aria-label="ページ"></nav>
-    <div id="page"></div>
+    <div id="page" role="tabpanel" tabindex="0"></div>
   </main>
 
   <div id="print-area"></div>
@@ -232,14 +231,15 @@
     const sheetName = s => s.title.trim() || "無題のシート";
     function renderTabs() {
       document.getElementById("pages").innerHTML =
-        `<button class="page-tab" role="tab" data-page="guide" aria-selected="${current === "guide"}"><span class="num">00</span>整理項目</button>` +
-        sheets.map((s, i) => `<button class="page-tab" role="tab" data-page="${s.id}" aria-selected="${current === s.id}" title="${esc(sheetName(s))}"><span class="num">${String(i + 1).padStart(2, "0")}</span>${esc(sheetName(s))}</button>`).join("") +
+        `<button class="page-tab" role="tab" id="sheet-tab-guide" data-page="guide" aria-controls="page" tabindex="${current === "guide" ? 0 : -1}" aria-selected="${current === "guide"}"><span class="num">00</span>整理項目</button>` +
+        sheets.map((s, i) => `<button class="page-tab" role="tab" id="sheet-tab-${esc(s.id)}" data-page="${esc(s.id)}" aria-controls="page" tabindex="${current === s.id ? 0 : -1}" aria-selected="${current === s.id}" title="${esc(sheetName(s))}"><span class="num">${String(i + 1).padStart(2, "0")}</span>${esc(sheetName(s))}</button>`).join("") +
         `<button class="add-tab" data-add><span class="plus">＋</span>シートを追加</button>`;
     }
     function go(id) {
       current = id === "guide" || byId(id) ? id : "guide";
       try { localStorage.setItem(PAGE_KEY, current); } catch {}
       renderTabs();
+      pageEl.setAttribute("aria-labelledby", "sheet-tab-" + current);
       pageEl.innerHTML = current === "guide" ? guideHtml() : sheetPageHtml(byId(current));
       window.scrollTo({ top: 0 });
     }
@@ -251,6 +251,19 @@
     document.getElementById("pages").addEventListener("click", ev => {
       if (ev.target.closest("[data-add]")) return addSheet();
       const b = ev.target.closest("[data-page]"); if (b) go(b.dataset.page);
+    });
+
+    document.getElementById("pages").addEventListener("keydown", ev => {
+      if (ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+      const selected = ev.target.closest('[role="tab"]');
+      if (!selected || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(ev.key)) return;
+      const tabs = Array.from(document.querySelectorAll('#pages [role="tab"]'));
+      const index = tabs.indexOf(selected);
+      const next = ev.key === "Home" ? 0 : ev.key === "End" ? tabs.length - 1 :
+        (index + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      ev.preventDefault();
+      go(tabs[next].dataset.page);
+      document.getElementById("sheet-tab-" + current).focus();
     });
 
     // ===== 1ページ目：整理項目 =====

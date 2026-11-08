@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="puzzlesの画面設計の基準。タブで作業を分け、Vimキーで移動し、メインのタスクに広い作業領域を確保する考え方を説明します。">
+  <title>作業に集中する画面｜puzzles デザイン・レイアウトの基準</title>
+  <style>
+    :root { color-scheme:light;       }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.85 -apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN",Meiryo,sans-serif; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    header, main, footer { width:calc(100% - 64px); max-width:1440px; margin:auto; }
+    header, footer { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:24px 0; font-size:12px; }
+    header { border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:14px; font-weight:700; letter-spacing:.08em; }
+    .mark { width:15px; height:15px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .intro { padding:64px 0 38px; }
+    .eyebrow { font-size:11px; letter-spacing:.18em; font-weight:700; color:var(--brown); }
+    h1 { font-size:clamp(32px,4.3vw,56px); line-height:1.45; margin:16px 0 24px; }
+    h1 span { color:var(--brown); }
+    p { margin:0 0 16px; max-width:760px; }
+    .lead { color:var(--muted); }
+    nav { display:flex; flex-wrap:wrap; gap:12px 28px; font-size:13px; padding:0 0 30px; }
+    section { border-top:1px solid var(--line); padding:38px 0 46px; scroll-margin-top:20px; }
+    h2 { font-size:24px; line-height:1.5; margin:0 0 18px; }
+    h2 small { font:13px ui-monospace,monospace; color:var(--brown); margin-right:14px; }
+    h3 { margin:0 0 12px; font-size:17px; }
+    .explain { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:28px; }
+    .note, figcaption { font-size:12px; color:var(--muted); }
+    .note { margin-top:18px; }
+    figure { margin:24px 0 0; }
+    figcaption { margin-top:12px; }
+    .workspace { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:white; }
+    .workspace-top, .tab-strip { padding:12px 20px; display:flex; gap:20px; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--line); font-size:12px; }
+    .workspace-top { justify-content:space-between; color:var(--muted); }
+    .workspace-body { display:grid; grid-template-columns:minmax(0,1fr) 220px; min-height:260px; }
+    .canvas { padding:30px; min-width:0; }
+    .canvas-label { color:var(--green); font-size:11px; letter-spacing:.12em; }
+    .canvas h3 { font-size:26px; margin:8px 0 20px; }
+    .flow { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+    .flow span { padding:16px 24px; background:var(--paper); border:1px solid var(--line); border-radius:7px; }
+    .flow b { color:var(--brown); }
+    .support { background:#f0f2ec; border-left:1px solid var(--line); padding:24px; font-size:12px; }
+    .support p { color:var(--muted); }
+    .tab-strip { background:var(--paper); border-top:1px solid var(--line); border-bottom:0; gap:8px; }
+    .tab-example { padding:7px 18px; border:1px solid var(--line); border-radius:5px; color:var(--muted); }
+    .tab-example.active { background:var(--green); color:white; border-color:var(--green); }
+    .principle { padding-left:20px; border-left:3px solid var(--brown); }
+    .mode-path { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:22px; background:#eaece3; border-radius:8px; margin:24px 0; }
+    kbd { display:inline-block; padding:1px 7px; border:1px solid #bac6b8; border-bottom-width:2px; border-radius:4px; background:white; color:var(--ink); font:12px/1.8 ui-monospace,monospace; white-space:nowrap; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 16px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { font-weight:600; }
+    thead { background:#eaece3; }
+    .references { display:flex; gap:16px 28px; flex-wrap:wrap; font-size:13px; }
+    footer { border-top:1px solid var(--line); color:var(--muted); }
+    @media(max-width:720px) {
+      header,main,footer { width:calc(100% - 36px); }
+      header,footer { align-items:flex-start; flex-direction:column; gap:14px; }
+      .intro { padding-top:38px; }
+      .explain,.workspace-body { grid-template-columns:1fr; gap:0; }
+      .explain { gap:24px; }
+      .support { border-left:0; border-top:1px solid var(--line); }
+      .canvas { padding:22px; }
+      .flow span { padding:10px 14px; }
+      h2 { font-size:21px; }
+      th,td { padding:12px 8px; }
+    }
+    @media print { header,main,footer { width:100%; } nav { display:none; } .workspace,tr,.principle { break-inside:avoid; } }
+  </style>
+<link rel="stylesheet" href="base.css">
+</head>
+<body id="top">
+  <header><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / DESIGN BASES</div><a href="../README.html">資料・ツール一覧へ ↗</a></header>
+  <main>
+    <div class="intro">
+      <p class="eyebrow">LAYOUT &amp; INTERACTION / DESIGN REFERENCE</p>
+      <h1>作業を切り替え、手を動かす。<br><span>いまのタスクに、広い場所を。</span></h1>
+      <p class="lead">puzzlesの編集画面では、タブで作業の文脈を分け、キーボードで項目をたどり、メインの作業領域に幅を割り当てます。このページは、その考え方をまとめたデザイン・レイアウトの基準です。</p>
+    </div>
+    <nav aria-label="ページの目次"><a href="#tabs">01 タブの概念</a><a href="#vim">02 Vim操作</a><a href="#space">03 作業に幅を確保する</a><a href="#references">関連する基準</a></nav>
+
+    <section id="tabs" aria-labelledby="tabs-title">
+      <h2 id="tabs-title"><small>01 /</small>タブは、作業の文脈を切り替える場所。</h2>
+      <p>案件・モデル・図など、ひとまとまりの作業を1つのタブに分けます。別の作業へ移っても、戻ったときに続きを始められるよう、内容や表示状態をタブ単位で扱います。下の図は、請求書の作業を選んでいる画面の見本です。</p>
+      <figure>
+        <div class="workspace" role="img" aria-label="レイアウトの見本。左の広い領域に請求書の作業、右に補助情報、下に受注・請求書・入金確認のタブを配置。請求書を選択中。">
+          <div class="workspace-top"><strong>請求書の業務フロー</strong><span>レイアウトの見本</span></div>
+          <div class="workspace-body">
+            <div class="canvas"><span class="canvas-label">MAIN WORKSPACE</span><h3>いま進めている作業</h3><div class="flow"><span>作成する</span><b aria-hidden="true">→</b><span>確認する</span><b aria-hidden="true">→</b><span>確定する</span></div></div>
+            <div class="support"><h3>補助情報</h3><p>選択項目の詳細や操作を必要なときに参照します。</p><p>主役となる作業の隣に、控えめな幅で配置します。</p></div>
+          </div>
+          <div class="tab-strip"><span class="tab-example">受注</span><span class="tab-example active">請求書 · 選択中</span><span class="tab-example">入金確認</span></div>
+        </div>
+        <figcaption>説明用の静的な見本です。タブはページ内の作業の切り替えを表し、ブラウザのタブとは別のものです。</figcaption>
+      </figure>
+      <div class="explain"><div class="principle"><h3>名前と選択状態を明確にする</h3><p>何の作業か分かる名前を付け、選択中のタブを色と表示で区別します。編集対象は選択中のタブです。</p></div><div class="principle"><h3>切り替えて、続きを始める</h3><p>オブジェクト整理ではモデル・表示・選択状態などをタブごとに保存します。保存する状態や履歴の範囲は、各ツールの説明を確認してください。</p></div></div>
+    </section>
+
+    <section id="vim" aria-labelledby="vim-title">
+      <h2 id="vim-title"><small>02 /</small>Vimキーで、移動と編集をつなぐ。</h2>
+      <p>入力欄から抜けると、短いキー操作で項目の選択や編集を進められます。マウス操作と併用できるようにし、現在の選択位置やキーボードフォーカスを画面上で示します。</p>
+      <div class="mode-path"><span>文字を入力</span><span>→ <kbd>Esc</kbd> →</span><span>項目を選ぶ・移動する</span><span>→ <kbd>e</kbd> →</span><span>名前を編集</span></div>
+      <p class="note">以下は <a href="../object_model.html">オブジェクト整理</a> の操作例です。Vimの全機能を実装したものではなく、キーの意味や対応機能はツールごとに異なります。この説明ページではショートカットは実行されません。</p>
+      <div class="table-wrap"><table><thead><tr><th scope="col">目的</th><th scope="col">キー</th><th scope="col">オブジェクト整理での動作</th></tr></thead><tbody>
+        <tr><th scope="row">項目を移動</th><td><kbd>j</kbd> / <kbd>k</kbd></td><td>次／前の項目を選択</td></tr>
+        <tr><th scope="row">関係をたどる</th><td><kbd>h</kbd> / <kbd>l</kbd></td><td>参照元／参照先へ移動</td></tr>
+        <tr><th scope="row">追加・編集</th><td><kbd>i</kbd> / <kbd>e</kbd></td><td>オブジェクトを追加／選択項目の名前を編集</td></tr>
+        <tr><th scope="row">タブを切り替え</th><td><kbd>t</kbd> / <kbd>Shift</kbd> + <kbd>t</kbd></td><td>次／前のタブへ移動</td></tr>
+        <tr><th scope="row">見える範囲を絞る</th><td><kbd>z</kbd> / <kbd>o</kbd></td><td>選択カードの開閉／選択項目と関係先に集中・解除</td></tr>
+        <tr><th scope="row">広く表示</th><td><kbd>f</kbd></td><td>全画面表示の切り替え</td></tr>
+        <tr><th scope="row">編集を戻す・やり直す</th><td><kbd>u</kbd> / <kbd>Ctrl</kbd> + <kbd>r</kbd></td><td>元に戻す／やり直す</td></tr>
+      </tbody></table></div>
+      <p class="note">文字入力中や日本語変換中は入力を優先します。まずEscで入力欄から抜けて、各ツールの操作ヘルプに沿って使ってください。</p>
+    </section>
+
+    <section id="space" aria-labelledby="space-title">
+      <h2 id="space-title"><small>03 /</small>メインのタスクに、画面の幅を使う。</h2>
+      <p>業務フローやオブジェクトの関係は、横に並べて見ることでつながりを追いやすくなります。編集画面は中央の作業領域を広く取り、ナビゲーション・詳細・補助操作が幅を取りすぎない構成を基準とします。</p>
+      <div class="explain"><div class="principle"><h3>作業領域は、残りの幅へ広がる</h3><p>広い画面では図や表に使える面積を増やします。説明文は読みやすい行長に抑え、作業キャンバスは横幅を活かすなど、内容に合わせて幅を変えます。</p></div><div class="principle"><h3>補助情報は、必要なときに開く</h3><p>補助パネルの開閉やカードの折りたたみで、見る情報を調整します。狭い画面では縦に並べるなど、メインの作業を押しつぶさない配置にします。</p></div><div class="principle"><h3>集中表示は、対象を絞る</h3><p>選択したタスクや関係する項目に表示を絞り、次に考える範囲を明確にします。集中の解除操作を用意し、全体へ戻れるようにします。</p></div><div class="principle"><h3>全画面は、表示面積を増やす</h3><p>全画面表示で作業に使える面積を広げます。集中表示は「何を見るか」、全画面は「どの広さで見るか」を調整する機能です。</p></div></div>
+      <p class="note">上の見本は、広い画面ではメイン領域を可変幅、補助領域を220pxとし、720px以下では縦に並べています。数値は説明用の例で、各ツールでは扱う情報に合わせて調整します。</p>
+    </section>
+
+    <section id="references" aria-labelledby="references-title"><h2 id="references-title">デザイン・レイアウトの基準を、bases/に。</h2><p><code>bases/</code>は、新しい画面を作るときや既存画面を整えるときに参照するディレクトリです。配色、部品、画面構成と操作の考え方をまとめています。</p><p class="note">共通CSSは<code>base.css</code>です。全13ページで読み込み、基本色・フォーカス・選択中タブの表示を共有します。作業画面は横幅を活かし、資料画面は目次を控えめな幅にして本文を広く確保します。ページ固有の図・表・印刷スタイルは各HTMLで定義します。</p><div class="references"><a href="color.html">配色とカラーコード ↗</a><a href="atomic_component.html">文字・余白・UI部品 ↗</a><a href="../object_model.html">操作例：オブジェクト整理 ↗</a><a href="../outline.html">操作例：アウトライン ↗</a></div></section>
+  </main>
+  <footer><span>PUZZLES / Layout &amp; Interaction</span><a href="#top">先頭へ ↑</a></footer>
+</body>
+</html>

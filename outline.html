@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="階層を自由に整理し、必要な項目に集中できるアウトライン編集ツール。">
+<title>アウトライン｜puzzles</title>
+<style>
+:root{color-scheme:light;--tint:#eaf0e8}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:white;border-radius:6px;padding:7px 12px}button:hover{background:var(--tint)}button:disabled{opacity:.35;cursor:default}:focus-visible{outline:3px solid #b07854;outline-offset:2px}a{color:var(--green)}header{padding:14px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px}.header-content{display:flex;align-items:center;flex-wrap:wrap;gap:8px 28px;min-width:0}.brand{font-size:12px;font-weight:700;letter-spacing:.12em;white-space:nowrap}.header-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px}header>a{font-size:12px;white-space:nowrap}.mark{display:inline-block;width:13px;height:13px;background:var(--green);border-radius:2px;box-shadow:4px -4px var(--brown);margin-right:16px}.muted,small{color:var(--muted)}main{width:100%;margin:auto;padding:16px 24px}.commandbar{padding-top:16px;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px 20px}.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--brown);margin:0}h1{font-size:18px;margin:0}p{margin:8px 0}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.primary{background:var(--green);color:white;border-color:var(--green)}.primary:hover{background:#0c5b33}.tabsbar{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line);padding:3px 0;margin:0}.tabs{display:flex;gap:4px;overflow-x:auto;flex:0 1 auto;min-width:0}.tabs button{white-space:nowrap;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;padding:6px 10px;font-size:13px;line-height:1.5;color:var(--muted)}.tabs button:hover{background:var(--tint);color:var(--green)}.tabs button[aria-selected=true]{background:transparent;color:var(--green);border-bottom-color:var(--green);font-weight:600}.tabs button:focus-visible{outline-offset:-3px}.tab-item{display:flex;align-items:center;flex-shrink:0}.tabs .tab-delete{padding:6px 5px;min-width:26px;font-size:16px;line-height:1.22}.tabs .tab-delete:hover{color:var(--brown)}#add-tab{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;padding:0;border:0;background:transparent;font-size:20px;line-height:1}#add-tab:hover{background:var(--tint)}.workspace{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:max(520px,calc(100dvh - 180px));border:1px solid var(--line);background:white;border-radius:12px;overflow:hidden}.workspace.closed{grid-template-columns:1fr}aside{padding:22px 14px;background:#f0f2eb;border-right:1px solid var(--line);min-width:0}aside h2{font-size:12px;color:var(--brown);letter-spacing:.1em;margin:0 0 15px}.nav-item{display:block;width:100%;text-align:left;background:transparent;border:0;font-size:12px;padding:7px 8px;overflow-wrap:anywhere}.nav-item.active{background:#dce6da;font-weight:700}.editor{min-width:0;padding:24px}.doc-head{display:flex;gap:12px;align-items:center;margin-bottom:18px}.doc-title{font-size:23px;font-weight:700;width:100%;min-width:0;border:0;border-bottom:1px solid transparent;background:transparent;padding:5px}.doc-title:focus{border-bottom-color:var(--green);outline:0}.tools{padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:14px}.tools button{padding:5px 9px;font-size:12px}.focus-bar{background:var(--tint);border-radius:6px;padding:10px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}.tree{padding:8px 0 40px;overflow-x:auto}.row{position:relative;display:flex;align-items:center;gap:5px;margin-left:calc(var(--depth)*28px);padding:9px 8px;border:1px solid transparent;border-bottom-color:#edf0e9;min-width:280px;border-radius:5px}.row.selected{background:#f1f5ee;border-color:#cad8c6}.row input{flex:1;min-width:80px;border:0;background:transparent;padding:5px;font-size:15px}.row[data-depth="0"] input{font-weight:700;font-size:18px}.row button{border:0;background:transparent;padding:2px 6px;min-width:26px}.handle{touch-action:none;cursor:grab;color:var(--muted);user-select:none}.row .fold{color:var(--green);width:28px}.row .fold:disabled{opacity:.2}.row[data-drop=before]{border-top:3px solid var(--brown)}.row[data-drop=after]{border-bottom:3px solid var(--brown)}.row[data-drop=inside]{background:#dbe9d5;outline:2px dashed var(--green)}.drop-label{font-size:11px;color:var(--brown);position:absolute;right:10px;top:-14px;background:white;padding:0 4px;pointer-events:none}.empty{padding:40px 16px;text-align:center;color:var(--muted)}.note-editor{border-top:1px solid var(--line);padding-top:18px}.note-editor label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}.note-editor textarea{width:100%;resize:vertical;min-height:110px;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fcfcf9}.help{font-size:12px;color:var(--muted);margin:18px 0 0}.status{font-size:12px;min-height:24px;color:var(--brown);margin-top:14px}footer{font-size:11px;color:var(--muted);padding-top:18px}dialog{border:1px solid var(--line);border-radius:12px;padding:26px;width:min(620px,calc(100% - 32px));color:var(--ink)}dialog::backdrop{background:#203a2c66}dialog h2{margin-top:0;font-size:21px}dialog textarea{width:100%;min-height:230px;border:1px solid var(--line);border-radius:6px;padding:12px;margin:12px 0}.dialog-actions{display:flex;gap:8px;justify-content:flex-end}.dragging{cursor:grabbing!important;user-select:none}
+
+.row .completion{color:var(--green);font-size:19px;line-height:1;flex-shrink:0;width:28px;height:28px}.row.completed input{color:var(--muted)}
+.view-switch{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--paper);flex-shrink:0}.view-switch button{border:0;background:transparent;padding:5px 10px;white-space:nowrap;font-size:12px}.view-switch button[aria-pressed="true"]{background:var(--green);color:white}
+.tree.logic-mode{--logic-card-height:60px;--logic-anchor:30px;max-height:65dvh;min-height:300px;overflow:auto;padding:24px;background-color:#fafbf8;background-image:radial-gradient(#dce2d9 1px,transparent 1px);background-size:16px 16px;border:1px solid var(--line);border-radius:8px;margin-bottom:20px;overscroll-behavior:contain}
+.logic-forest{display:flex;flex-direction:column;align-items:flex-start;gap:24px;width:max-content;min-width:100%}.logic-branch{display:flex;align-items:flex-start;position:relative;flex-shrink:0}.logic-children{display:flex;flex-direction:column;padding-left:48px}.logic-children>.logic-branch{padding:0 0 20px}.logic-children>.logic-branch:last-child{padding-bottom:0}.logic-children>.logic-branch::before{content:"";position:absolute;left:-24px;top:var(--logic-anchor);width:24px;border-top:1px solid #9fb39a}.logic-children>.logic-branch::after{content:"";position:absolute;left:-24px;top:0;bottom:0;border-left:1px solid #9fb39a}.logic-children>.logic-branch:first-child::after{top:var(--logic-anchor)}.logic-children>.logic-branch:last-child::after{bottom:calc(100% - var(--logic-anchor))}.logic-children>.logic-branch:only-child::after{display:none}
+.logic-mode .row{height:var(--logic-card-height);width:380px;min-width:380px;flex-shrink:0;margin:0;background:white;border:1px solid var(--line);border-radius:8px;padding:12px 8px}.logic-mode .row.selected{background:var(--tint);border-color:var(--green);box-shadow:0 0 0 1px var(--green)}.logic-mode .row[data-depth="0"] input{font-size:15px}.logic-branch.has-children>.row::after{content:"";position:absolute;right:-25px;top:calc(var(--logic-anchor) - 1px);width:24px;border-top:1px solid #9fb39a;pointer-events:none}.logic-mode .row[data-drop=inside]{background:#dbe9d5;outline:2px dashed var(--green)}.logic-mode .row[data-drop=before]{border-top:3px solid var(--brown)}.logic-mode .row[data-drop=after]{border-bottom:3px solid var(--brown)}
+.fullscreen-button{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;padding:0;background:transparent;border:0;border-radius:5px}.fullscreen-button:hover{background:var(--tint)}body.editor-fullscreen{overflow:hidden}.editor.is-fullscreen{position:fixed;inset:0;z-index:100;width:100%;height:100dvh;padding:20px 24px;background:white;overflow:auto;overscroll-behavior:contain}.editor.is-fullscreen .tree{min-height:60dvh}.editor.is-fullscreen .tree.logic-mode{max-height:calc(100dvh - 160px)}
+@media(max-width:760px){header{padding:12px 16px;flex-wrap:wrap}.header-content{gap:6px 18px}.header-heading{gap:2px 10px}main{padding:12px 16px}.workspace{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line);max-height:200px;overflow:auto}.editor{padding:14px}.row{margin-left:calc(var(--depth)*18px)}.doc-head{flex-wrap:wrap}.row input{font-size:14px}.row[data-depth="0"] input{font-size:16px}h1{font-size:16px}}
+</style>
+<link rel="stylesheet" href="bases/base.css">
+</head>
+<body data-layout="workspace">
+<header><div class="header-content"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / OUTLINE</div><div class="header-heading"><p class="eyebrow">THINK · ORGANIZE · FOCUS</p><h1>考えを、階層で整理する。</h1></div></div><a href="README.html">資料一覧へ ↗</a></header>
+<main>
+<div id="workspace" class="workspace"><aside id="outline-panel" aria-label="アウトラインパネル"><h2>OUTLINE / 見取り図</h2><nav id="navigation" aria-label="項目へ移動"></nav><p class="help">項目を選ぶと、本文とメモを編集できます。</p></aside>
+<section class="editor" id="editor" role="tabpanel" aria-label="アウトライン編集">
+<div class="doc-head"><input id="tab-title" class="doc-title" aria-label="アウトラインの名前"><div class="view-switch" role="group" aria-label="表示モード"><button id="view-outline" aria-pressed="true" aria-controls="tree">アウトライン</button><button id="view-logic" aria-pressed="false" aria-controls="tree">ロジックツリー</button></div><button id="panel" aria-expanded="true" aria-controls="outline-panel">☰ パネルを閉じる</button><button id="fullscreen" class="fullscreen-button" aria-label="全画面表示" title="全画面表示" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
+<div class="toolbar tools" hidden><button id="add-root" class="primary">＋ 見出し</button><button id="add-sibling">＋ 同じ階層</button><button id="add-child">＋ 子項目</button><button id="up" aria-label="上に移動">↑</button><button id="down" aria-label="下に移動">↓</button><button id="outdent" aria-label="左に移動（階層を上げる）">←</button><button id="indent" aria-label="右に移動（階層を下げる）">→</button><button id="focus">この項目に集中</button><button id="delete-node">項目を削除</button></div>
+<div class="toolbar" hidden><button id="expand-all">すべて展開</button><button id="collapse-all">すべて折りたたむ</button><span id="count" class="muted"></span></div>
+<div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button id="exit-focus">集中を解除</button></div>
+<div id="tree" class="tree" aria-label="階層アウトライン"></div>
+<div id="note-editor" class="note-editor"><label for="node-note" id="note-label">選択項目のメモ</label><textarea id="node-note" placeholder="この項目の詳細やタスクのメモを入力…"></textarea></div>
+<details class="help"><summary>キーボード・ドラッグ操作</summary>
+<p>Esc：入力終了。追加したタスクは空欄のまま入力を終了すると自動削除します。入力欄から抜けた状態で次のキーが使えます。</p>
+<p>h：親へ · j：下へ · k：上へ · l：展開／子へ<br>
+Shift+j：同階層の次のタスクへフォーカス · Shift+k：同階層の前のタスクへフォーカス · Shift+l：階層を1つ下げる<br>
+Tab：階層を1つ下げる · Shift+Tab：階層を1つ上げる<br>
+i：同じ階層に追加 · Shift+i：子階層に追加 · a：末尾から編集 · d：削除 · m：完了／未完了を切り替え<br>
+z：折りたたみ開閉 · f：全画面ON／OFF · o：タスクの集中ON／OFF<br>
+t：次のタブ · Shift+t：前のタブ<br>
+gg：表示中の先頭へ · Shift+g：表示中の末尾へ · u：元に戻す · Ctrl+r：やり直す</p>
+<p>見出しの入力中：Enterで確定して入力終了（日本語変換中は変換の確定）。Tab / Shift+Tabで階層変更、Alt+矢印キーで項目を上下左右に移動。</p>
+<p>タイトル横の全画面アイコンで編集エリアを拡大／解除できます。入力終了後のEscでも解除できます。</p>
+<p>空白部分をダブルクリックすると、最上位にタスクを追加して入力を開始します。</p>
+<p>⠿ をドラッグして移動。行の上端／下端で前後へ、中央で子項目へ。左右に動かすと階層を変更できます。</p>
+</details>
+</section></div>
+<div class="tabsbar"><div id="tabs" class="tabs" role="tablist" aria-label="アウトライン"></div><button id="add-tab" aria-label="タブを追加" title="タブを追加">＋</button></div>
+<div class="commandbar"><div class="toolbar" hidden><button id="undo" disabled>元に戻す</button><button id="redo" disabled>やり直す</button><span id="save-state" class="muted" role="status">ブラウザ内に自動保存</span></div><div class="toolbar"><button id="import">読み込み</button><button id="export-json">全タブをJSON保存</button><button id="export-md">Markdown保存</button></div></div>
+<p id="status" class="status" role="status" aria-live="polite"></p><footer>保存先はこのブラウザです。別の端末へ移す場合はJSONを書き出してください。Markdownは現在のタブの全項目・メモを書き出します。</footer>
+</main>
+<dialog id="import-dialog"><h2>アウトラインを読み込む</h2><p>JSONは全タブ・折りたたみ状態を復元。Markdown / テキストは新しいタブに追加します。</p><p class="muted"># 見出し、インデントした - 項目、またはタブ字下げに対応します。</p><label>ファイルを選ぶ <input id="import-file" type="file" accept=".json,.md,.txt,.markdown,application/json,text/plain,text/markdown"></label><textarea id="import-text" aria-label="読み込むアウトライン" placeholder="アウトラインの内容&#10;&#10;# アウトラインの見出し&#10;  - アウトラインの見出し&#10;    - アウトラインの見出し&#10;# アウトラインの見出し"></textarea><p id="import-error" role="alert"></p><div class="dialog-actions"><button id="cancel-import">キャンセル</button><button id="apply-import" class="primary">読み込む</button></div></dialog>
+<script>
+'use strict';
+const KEY='puzzles.outline.v1', $=id=>document.getElementById(id);
+const uid=()=>globalThis.crypto?.randomUUID?.() || 'n'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+const node=(text='新しい項目',children=[])=>({id:uid(),text,note:'',completed:false,collapsed:false,children});
+const newTab=(name='新しいアウトライン',nodes=[])=>({id:uid(),name,nodes,selected:null,focus:null,viewMode:'outline'});
+let state={version:1,tabs:[newTab('アウトラインの内容',[node('アウトラインの見出し',[node('アウトラインの見出し',[node('アウトラインの見出し')])]),node('アウトラインの見出し'),node('アウトラインの見出し')])],active:null,panelOpen:true};
+state.active=state.tabs[0].id;
+let past=[],future=[],editBefore=null,loadError='',drag=null;
+const draftOrigins=new Map();
+function validate(raw){
+ if(!raw || raw.version!==1 || !Array.isArray(raw.tabs) || !raw.tabs.length || raw.tabs.length>100)throw Error('対応するJSONではありません。');
+ const ids=new Set();let total=0;
+ function id(value){if(typeof value!=='string'||!value||ids.has(value))throw Error('IDが不正または重複しています。');ids.add(value);return value;}
+ function nodes(list,depth=0){if(!Array.isArray(list)||depth>64)throw Error('階層データが不正です（最大64階層）。');return list.map(n=>{if(++total>10000||!n||typeof n.text!=='string'||(n.note!==undefined&&typeof n.note!=='string'))throw Error('項目データが不正です（最大10,000項目）。');return {id:id(n.id),text:n.text,note:n.note||'',completed:n.completed===true,collapsed:!!n.collapsed,...(n.draft?{draft:true}:{}),children:nodes(n.children,depth+1)};});}
+ const tabs=raw.tabs.map(t=>{if(!t||typeof t.name!=='string')throw Error('タブの名前が不正です。');return {id:id(t.id),name:t.name,nodes:nodes(t.nodes),selected:typeof t.selected==='string'?t.selected:null,focus:typeof t.focus==='string'?t.focus:null,viewMode:t.viewMode==='logic'?'logic':'outline'};});
+ return {version:1,tabs,active:tabs.some(t=>t.id===raw.active)?raw.active:tabs[0].id,panelOpen:raw.panelOpen!==false};
+}
+try{const saved=localStorage.getItem(KEY);if(saved)state=validate(JSON.parse(saved));}catch(e){loadError='保存データを読み込めませんでした。JSONを読み込んで復元できます。';}
+const current=()=>state.tabs.find(t=>t.id===state.active);
+function find(id,list=current().nodes,parent=null){for(let i=0;i<list.length;i++){const n=list[i];if(n.id===id)return {n,list,index:i,parent};const hit=find(id,n.children,n);if(hit)return hit;}return null;}
+function contains(n,id){return n.id===id||n.children.some(c=>contains(c,id));}
+function walk(list,fn){list.forEach(n=>{fn(n);walk(n.children,fn);});}
+function snapshot(){return JSON.stringify(state);}
+function save(){try{localStorage.setItem(KEY,snapshot());$('save-state').textContent='ブラウザ内に保存済み';}catch(e){$('save-state').textContent='保存できません。JSONを書き出してください。';}}
+function announce(text){$('status').textContent=text;}
+function remember(before){if(before!==snapshot()){past.push(before);if(past.length>80)past.shift();future=[];}save();}
+function finishEdit(){if(editBefore!==null){remember(editBefore);editBefore=null;}}
+function change(fn,message){finishEdit();const before=snapshot();fn();remember(before);render();if(message)announce(message);}
+function beginEdit(){if(editBefore===null)editBefore=snapshot();}
+function button(text,label,fn){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.title=label;b.onclick=fn;return b;}
+function select(id){finishEdit();current().selected=id;save();render();}
+function visibleRows(){const tab=current(),focus=find(tab.focus),rows=[];function visit(list,depth){for(const n of list){rows.push({n,depth});if(!n.collapsed&&(!focus||depth<1))visit(n.children,depth+1);}}visit(focus?[focus.n]:tab.nodes,0);return rows;}
+function render(){
+ const tab=current();if(tab.focus&&!find(tab.focus))tab.focus=null;
+ const rows=visibleRows();if(!rows.some(r=>r.n.id===tab.selected))tab.selected=rows[0]?.n.id||null;
+ $('tabs').replaceChildren();state.tabs.forEach(t=>{const b=button(t.name||'無題',t.name||'無題',()=>change(()=>{state.active=t.id;}));b.id='tab-'+t.id;b.setAttribute('role','tab');b.setAttribute('aria-selected',String(t.id===tab.id));b.setAttribute('aria-controls','editor');b.tabIndex=t.id===tab.id?0:-1;b.onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const i=state.tabs.indexOf(t),idx=e.key==='Home'?0:e.key==='End'?state.tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+state.tabs.length)%state.tabs.length;change(()=>state.active=state.tabs[idx].id);$('tab-'+state.active).focus();}};const item=document.createElement('div');item.className='tab-item';item.setAttribute('role','presentation');const remove=button('−','タブを削除：'+(t.name||'無題'),()=>removeTab(t.id));remove.className='tab-delete';item.append(b,remove);$('tabs').append(item);});
+ $('editor').setAttribute('aria-labelledby','tab-'+tab.id);$('tab-title').value=tab.name;
+ $('outline-panel').hidden=!state.panelOpen;$('workspace').classList.toggle('closed',!state.panelOpen);$('panel').setAttribute('aria-expanded',String(state.panelOpen));$('panel').textContent=state.panelOpen?'☰ パネルを閉じる':'☰ パネルを開く';
+ $('focus-bar').hidden=!tab.focus;$('focus-label').textContent=tab.focus?'集中：'+find(tab.focus).n.text+'（直下の1階層まで表示）':'';
+ const logic=tab.viewMode==='logic';
+ $('view-outline').setAttribute('aria-pressed',String(!logic));$('view-logic').setAttribute('aria-pressed',String(logic));
+ $('tree').classList.toggle('logic-mode',logic);$('tree').setAttribute('aria-label',logic?'ロジックツリー':'階層アウトライン');
+ const scrollTop=$('tree').scrollTop,scrollLeft=$('tree').scrollLeft;
+ $('tree').replaceChildren();$('navigation').replaceChildren();
+ const branches=[];let forest;
+ if(logic){forest=document.createElement('div');forest.className='logic-forest';$('tree').append(forest);}
+ rows.forEach(({n,depth})=>{
+  const row=document.createElement('div');row.className='row'+(n.id===tab.selected?' selected':'')+(n.completed?' completed':'');row.tabIndex=-1;row.dataset.id=n.id;row.dataset.depth=depth;row.style.setProperty('--depth',depth);
+  const handle=button('⠿','ドラッグして移動',()=>{});handle.className='handle';handle.onpointerdown=e=>startDrag(e,n.id,handle);
+  const depthLimited=!!tab.focus&&depth>=1;
+  const fold=button(depthLimited?'▸':n.collapsed?'▸':'▾',depthLimited?'集中表示では直下の1階層まで表示':n.collapsed?'子項目を展開':'子項目を折りたたむ',()=>change(()=>n.collapsed=!n.collapsed));fold.className='fold';fold.disabled=!n.children.length||depthLimited;fold.setAttribute('aria-expanded',String(!n.collapsed&&!depthLimited));
+  const completion=button(n.completed?'✓':'',n.completed?'完了（クリックで未完了にする）':'未完了（クリックで完了にする）',()=>toggleCompleted(n.id));completion.className='completion';completion.setAttribute('role','checkbox');completion.setAttribute('aria-checked',String(!!n.completed));
+  let composing=false;
+  const input=document.createElement('input');input.value=n.text;input.placeholder='タスク';input.title=n.text;input.setAttribute('aria-label','見出し（階層 '+(depth+1)+'）');input.onfocus=()=>{if(tab.selected!==n.id){finishEdit();tab.selected=n.id;document.querySelectorAll('.row').forEach(r=>r.classList.toggle('selected',r.dataset.id===n.id));renderNote();updateTools();}};input.oninput=()=>{beginEdit();n.text=input.value;input.title=n.text;save();};input.oncompositionstart=()=>{composing=true;};input.oncompositionend=()=>{composing=false;};input.onblur=()=>setTimeout(()=>finishDraft(tab.id,n.id),0);input.onchange=()=>{finishEdit();renderNote();updateTools();const nav=Array.from($('navigation').children).find(b=>b.dataset.id===n.id);if(nav){nav.textContent=n.text||'（無題）';nav.setAttribute('aria-label','項目へ移動：'+(n.text||'無題'));}};input.onkeydown=e=>{
+   if(composing||e.isComposing||e.keyCode===229){return;}
+   if(e.key==='Enter'){
+    e.preventDefault();if(e.repeat)return;
+    if(e.altKey||e.ctrlKey||e.metaKey||e.shiftKey){return;}
+    input.blur();finishEdit();updateTools();announce('入力を確定しました。');
+   }else{
+    
+    if(e.key==='Tab'){e.preventDefault();move(e.shiftKey?'outdent':'indent');focusInput(n.id);}
+    else if(e.altKey&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move({ArrowUp:'up',ArrowDown:'down',ArrowLeft:'outdent',ArrowRight:'indent'}[e.key]);focusInput(n.id);}
+   }
+  };
+
+  row.append(handle,fold,input,completion,
+   button('◎','この項目に集中',()=>focusNode(n.id)),
+   button('＋','この項目の下に同じ階層の項目を追加',()=>add('sibling',n.id)),
+   button('−','この項目を削除',()=>removeNode(n.id)));
+  row.onclick=e=>{if(e.target===row)select(n.id);};
+  if(logic){
+   const branch=document.createElement('div');branch.className='logic-branch';branch.append(row);
+   const children=document.createElement('div');children.className='logic-children';
+   if(depth===0)forest.append(branch);
+   else{const parent=branches[depth-1];if(!parent.hasChildren){parent.branch.className+=' has-children';parent.branch.append(parent.children);parent.hasChildren=true;}parent.children.append(branch);}
+   branches[depth]={branch,children,hasChildren:false};branches.length=depth+1;
+  }else $('tree').append(row);
+  const nav=button(n.text||'（無題）','項目へ移動：'+(n.text||'無題'),()=>{select(n.id);focusInput(n.id);});nav.dataset.id=n.id;nav.className='nav-item'+(n.id===tab.selected?' active':'');nav.style.paddingLeft=(8+depth*12)+'px';$('navigation').append(nav);
+ });
+ if(!rows.length){const p=document.createElement('div');p.className='empty';p.append(button('＋ 見出しを追加','最初の見出しを追加',()=>add('root')));$('tree').append(p);}
+ let total=0;walk(tab.nodes,()=>total++);$('count').textContent=`${total} 項目`;
+ $('tree').scrollTop=scrollTop;$('tree').scrollLeft=scrollLeft;
+ renderNote();updateTools();$('undo').disabled=!past.length;$('redo').disabled=!future.length;
+}
+function renderNote(){const f=find(current().selected);$('note-editor').hidden=!f;$('node-note').value=f?.n.note||'';$('note-label').textContent=f?'メモ / '+(f.n.text||'無題'):'選択項目のメモ';}
+function updateTools(){$('undo').disabled=!past.length;$('redo').disabled=!future.length;const f=find(current().selected);['add-sibling','add-child','focus','delete-node'].forEach(id=>$(id).disabled=!f);$('up').disabled=!f||f.index===0;$('down').disabled=!f||f.index===f.list.length-1;$('indent').disabled=!f||f.index===0;$('outdent').disabled=!f?.parent;}
+function focusInput(id,atEnd=false){const row=Array.from(document.querySelectorAll('.row')).find(r=>r.dataset.id===id),input=row?.querySelector('input');if(input){input.focus();if(atEnd)input.setSelectionRange(input.value.length,input.value.length);}}
+function focusTask(id=current().selected){const row=Array.from(document.querySelectorAll('.row')).find(r=>r.dataset.id===id);if(row){if(current().selected!==id)select(id);const target=Array.from(document.querySelectorAll('.row')).find(r=>r.dataset.id===id);target?.focus({preventScroll:true});target?.scrollIntoView({block:'nearest'});}}
+function focusNode(id=current().selected){if(!find(id))return;change(()=>{const tab=current();tab.selected=id;tab.focus=id;find(id).n.collapsed=false;});}
+function navigateOutline(key){
+ const rows=visibleRows();if(!rows.length)return;
+ const index=rows.findIndex(r=>r.n.id===current().selected);
+ if(index<0){select(rows[0].n.id);return;}
+ const {n,depth}=rows[index];
+ if(key==='g'||key==='G')select(rows[key==='g'?0:rows.length-1].n.id);
+ else if(key==='j'||key==='k')select(rows[Math.max(0,Math.min(rows.length-1,index+(key==='j'?1:-1)))].n.id);
+ else if(key==='h'){
+  const parent=find(n.id)?.parent;if(parent&&rows.some(r=>r.n.id===parent.id))select(parent.id);
+ }else if(key==='l'&&n.children.length&&(!current().focus||depth<1)){
+  if(n.collapsed)change(()=>n.collapsed=false);
+  else select(n.children[0].id);
+ }
+ const row=Array.from(document.querySelectorAll('.row')).find(r=>r.dataset.id===current().selected);
+ row?.scrollIntoView({block:'nearest'});
+}
+function add(kind,referenceId=current().selected){const n=node('');n.draft=true;draftOrigins.set(n.id,referenceId);change(()=>{const t=current(),f=find(referenceId);if(kind==='child'&&f){f.n.children.push(n);f.n.collapsed=false;if(t.focus&&t.focus!==f.n.id)t.focus=f.n.id;}else if(kind==='sibling'&&f){f.list.splice(f.index+1,0,n);if(t.focus===f.n.id)t.focus=null;}else{t.nodes.push(n);t.focus=null;}t.selected=n.id;});focusInput(n.id);}
+function finishDraft(tabId,nodeId){
+ const tab=state.tabs.find(t=>t.id===tabId);if(!tab)return;
+ const f=find(nodeId,tab.nodes);if(!f?.n.draft)return;
+ if(f.n.text.trim()||f.n.note.trim()||f.n.children.length){delete f.n.draft;draftOrigins.delete(nodeId);save();return;}
+ // Wait until the click has finished, then preserve any newly focused task.
+ const active=document.activeElement,activeRow=active?.closest?.('.row');
+ const activeId=activeRow?.dataset.id,start=active?.selectionStart,end=active?.selectionEnd;
+ const wasInput=active?.matches?.('input');
+ const origin=draftOrigins.get(nodeId);
+ const returnId=(origin&&find(origin,tab.nodes)?origin:null)||f.list[f.index-1]?.id||f.list[f.index+1]?.id||f.parent?.id||null;
+ const restoreTask=state.active===tabId&&tab.selected===nodeId&&activeId===nodeId;
+ draftOrigins.delete(nodeId);
+ change(()=>{f.list.splice(f.index,1);if(tab.selected===nodeId)tab.selected=returnId;},'空欄のタスクを削除しました。');
+ if(activeId&&find(activeId)){
+  if(wasInput){
+   focusInput(activeId);
+   const input=document.activeElement;
+   if(input?.setSelectionRange&&start!==null&&start!==undefined)input.setSelectionRange(start,end);
+  }else focusTask(activeId);
+ }else if(restoreTask)focusTask();
+}
+function toggleCompleted(id=current().selected){const f=find(id);if(!f)return;change(()=>{current().selected=id;f.n.completed=!f.n.completed;},f.n.completed?'未完了にしました。':'完了にしました。');focusTask(id);}
+function removeNode(id=current().selected){const f=find(id);if(f)change(()=>{f.list.splice(f.index,1);if(current().selected&&contains(f.n,current().selected))current().selected=null;},'項目を削除しました。元に戻すこともできます。');}
+function move(direction){change(()=>{const f=find(current().selected);if(!f)return;
+ if(direction==='up'&&f.index>0){f.list.splice(f.index,1);f.list.splice(f.index-1,0,f.n);}
+ if(direction==='down'&&f.index<f.list.length-1){f.list.splice(f.index,1);f.list.splice(f.index+1,0,f.n);}
+ if(direction==='indent'&&f.index>0){const prev=f.list[f.index-1];f.list.splice(f.index,1);prev.children.push(f.n);prev.collapsed=false;}
+ if(direction==='outdent'&&f.parent){const p=find(f.parent.id);f.list.splice(f.index,1);p.list.splice(p.index+1,0,f.n);}
+ },'階層と順序を更新しました。');}
+function dropNode(sourceId,targetId,mode){const source=find(sourceId),target=find(targetId);if(!source||!target||contains(source.n,targetId))return false;source.list.splice(source.index,1);const dest=find(targetId);if(mode==='inside'){dest.n.children.push(source.n);dest.n.collapsed=false;}else dest.list.splice(dest.index+(mode==='after'?1:0),0,source.n);current().selected=sourceId;return true;}
+function clearDrop(){document.querySelectorAll('[data-drop]').forEach(r=>{delete r.dataset.drop;r.querySelector('.drop-label')?.remove();});}
+function startDrag(e,id,handle){if(e.button!==0)return;e.preventDefault();finishEdit();handle.setPointerCapture(e.pointerId);drag={id,x:e.clientX,y:e.clientY,target:null,active:false};
+ handle.onpointermove=ev=>{if(!drag)return;if(!drag.active&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)<6)return;drag.active=true;document.body.classList.add('dragging');clearDrop();drag.target=null;let row=document.elementFromPoint(ev.clientX,ev.clientY)?.closest('.row');
+ const treeRect=$('tree').getBoundingClientRect();
+ if(current().viewMode!=='logic'&&!row&&ev.clientX>=treeRect.left-32&&ev.clientX<=treeRect.right)row=Array.from(document.querySelectorAll('.row')).find(r=>{const rect=r.getBoundingClientRect();return ev.clientY>=rect.top&&ev.clientY<=rect.bottom;});
+ if(!row)return;let target=find(row.dataset.id);if(!target)return;let rect=row.getBoundingClientRect(),ratio=(ev.clientY-rect.top)/rect.height,mode=ratio<.27?'before':ratio>.73?'after':'inside';
+ const step=matchMedia('(max-width:760px)').matches?18:28;
+ if(target.n.id===id){
+  const dx=ev.clientX-drag.x;
+  if(dx<=-step&&target.parent){target=find(target.parent.id);mode='after';}
+  else if(dx>=step&&target.index>0){target=find(target.list[target.index-1].id);mode='inside';}
+  else return;
+ }else if(current().viewMode!=='logic'){
+  let levels=Math.max(0,Math.round((rect.left-ev.clientX)/step));while(levels-->0&&target.parent){target=find(target.parent.id);mode='after';}
+ }
+ if(contains(find(id).n,target.n.id))return;
+ row=Array.from(document.querySelectorAll('.row')).find(r=>r.dataset.id===target.n.id);if(!row)return;row.dataset.drop=mode;const label=document.createElement('span');label.className='drop-label';label.textContent=mode==='inside'?'子項目へ移動':mode==='before'?'この項目の前へ':'この項目の後へ';row.append(label);drag.target={id:target.n.id,mode};if(ev.clientY>innerHeight-70)window.scrollBy(0,16);if(ev.clientY<70)window.scrollBy(0,-16);
+ };
+ const end=ev=>{const d=drag;drag=null;handle.onpointermove=null;handle.onpointerup=null;handle.onpointercancel=null;document.body.classList.remove('dragging');clearDrop();if(d?.active&&d.target&&ev.type!=='pointercancel'){change(()=>dropNode(d.id,d.target.id,d.target.mode),'項目を移動しました。');}else if(d&&!d.active)select(d.id);};handle.onpointerup=end;handle.onpointercancel=end;
+}
+function markdown(tab){const lines=[tab.name,''];function visit(list,depth){for(const n of list){lines.push(depth===0?'# '+(n.completed?'[x] ':'[ ] ')+n.text:'  '.repeat(depth)+'- '+(n.completed?'[x] ':'[ ] ')+n.text);if(n.note)for(const line of n.note.split('\n'))lines.push('  '.repeat(depth)+'> '+line);visit(n.children,depth+1);}}visit(tab.nodes,0);return lines.join('\n')+'\n';}
+function parseMarkdown(text,name='読み込んだアウトライン'){
+ const roots=[],stack=[];let title='',previous=null,first=true;
+ for(const raw of text.replace(/^\uFEFF/,'').replace(/\r/g,'').split('\n')){if(!raw.trim())continue;const noteLine=raw.match(/^\s*> ?(.*)$/);if(noteLine&&previous){previous.note+=(previous.note?'\n':'')+noteLine[1];continue;}
+ const heading=raw.match(/^(#{1,6})\s+(.*)$/),bullet=raw.match(/^([\s\u3000]*)[-*+]\s+(.*)$/);let depth=0,value=raw.trim();
+ if(heading){depth=heading[1].length-1;value=heading[2];}
+ else if(bullet){const spaces=bullet[1].replace(/\t/g,'  ').replace(/\u3000/g,'  ').length;depth=Math.max(1,Math.floor(spaces/2));value=bullet[2];}
+ else if(first){title=value;first=false;continue;}
+ else {depth=Math.floor((raw.match(/^\s*/)[0].replace(/\t/g,'  ').replace(/\u3000/g,'  ').length)/2);}
+ first=false;if(depth>64)throw Error('最大64階層まで読み込めます。');depth=Math.min(depth,stack.length);const task=value.match(/^\[([ xX])\]\s+(.*)$/),n=node(task?task[2]:value);n.completed=!!task&&task[1].toLowerCase()==='x';if(depth===0)roots.push(n);else stack[depth-1].children.push(n);stack[depth]=n;stack.length=depth+1;previous=n;
+ }
+ if(!roots.length){if(title)roots.push(node(title));else throw Error('読み込む項目がありません。');}
+ return newTab(title||name,roots);
+}
+function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('ファイルを書き出しました。');}
+$('editor').ondblclick=e=>{
+ if(e.target===$('editor')||e.target===$('tree')||e.target.matches('.logic-forest,.logic-branch,.logic-children,.empty')){
+  e.preventDefault();add('root');
+ }
+};
+$('view-outline').onclick=()=>change(()=>current().viewMode='outline');
+$('view-logic').onclick=()=>change(()=>current().viewMode='logic');
+$('panel').onclick=()=>change(()=>state.panelOpen=!state.panelOpen);
+$('add-tab').onclick=()=>change(()=>{const t=newTab('新しいアウトライン',[node('最初の見出し')]);state.tabs.push(t);state.active=t.id;});
+function removeTab(id){
+ const index=state.tabs.findIndex(t=>t.id===id);if(index<0)return;
+ if(!confirm('このタブとすべての項目を削除しますか？'))return;
+ change(()=>{state.tabs.splice(index,1);if(!state.tabs.length)state.tabs.push(newTab());if(state.active===id)state.active=state.tabs[Math.min(index,state.tabs.length-1)].id;},'タブを削除しました。元に戻すこともできます。');
+}
+$('tab-title').oninput=()=>{beginEdit();current().name=$('tab-title').value;const b=$('tab-'+state.active);b.textContent=current().name||'無題';save();};$('tab-title').onchange=()=>{finishEdit();render();};
+$('node-note').oninput=()=>{const f=find(current().selected);if(f){beginEdit();f.n.note=$('node-note').value;save();}};$('node-note').onchange=()=>{finishEdit();updateTools();$('undo').disabled=!past.length;$('redo').disabled=!future.length;};
+['root','sibling','child'].forEach(k=>$('add-'+k).onclick=()=>add(k));['up','down','indent','outdent'].forEach(k=>$(k).onclick=()=>move(k));
+$('focus').onclick=()=>focusNode();$('exit-focus').onclick=()=>change(()=>current().focus=null);
+$('delete-node').onclick=()=>removeNode();
+$('expand-all').onclick=()=>change(()=>walk(current().nodes,n=>n.collapsed=false));$('collapse-all').onclick=()=>change(()=>walk(current().nodes,n=>n.collapsed=true));
+$('undo').onclick=()=>{finishEdit();if(!past.length)return;future.push(snapshot());state=JSON.parse(past.pop());save();render();announce('操作を元に戻しました。');};$('redo').onclick=()=>{finishEdit();if(!future.length)return;past.push(snapshot());state=JSON.parse(future.pop());save();render();announce('操作をやり直しました。');};
+$('export-json').onclick=()=>{finishEdit();download('outlines.json',JSON.stringify(state,null,2),'application/json');};$('export-md').onclick=()=>download((current().name||'outline')+'.md',markdown(current()),'text/markdown;charset=utf-8');
+$('import').onclick=()=>{$('import-error').textContent='';$('import-dialog').showModal();};$('cancel-import').onclick=()=>$('import-dialog').close();
+let fileName='読み込んだアウトライン',fileReadPending=false;
+$('import-file').onchange=async()=>{const file=$('import-file').files[0];if(!file)return;fileReadPending=true;$('apply-import').disabled=true;try{$('import-text').value=await file.text();fileName=file.name.replace(/\.[^.]+$/,'');$('import-error').textContent='';}catch(e){$('import-error').textContent='ファイルを読み取れませんでした。';}finally{fileReadPending=false;$('apply-import').disabled=false;}};
+$('apply-import').onclick=()=>{if(fileReadPending)return;try{const text=$('import-text').value.trim();if(!text)throw Error('ファイルを選ぶか、テキストを入力してください。');if(text.startsWith('{')||text.startsWith('[')){const restored=validate(JSON.parse(text));if(!confirm('現在の全タブをJSONの内容に置き換えますか？（元に戻せます）'))return;change(()=>state=restored,'JSONから全タブを復元しました。');}else{const t=parseMarkdown(text,fileName);validate({...state,tabs:[...state.tabs,t]});change(()=>{state.tabs.push(t);state.active=t.id;},'新しいタブに読み込みました。');}$('import-dialog').close();$('import-text').value='';$('import-file').value='';}catch(e){$('import-error').textContent='読み込みできません：'+e.message;}};
+let nativeFullscreen=false;
+function setFullscreen(active){
+ $('editor').classList.toggle('is-fullscreen',active);document.body.classList.toggle('editor-fullscreen',active);
+ const label=active?'全画面表示を解除':'全画面表示';$('fullscreen').setAttribute('aria-label',label);$('fullscreen').title=label;$('fullscreen').setAttribute('aria-pressed',String(active));
+ $('fullscreen-icon').setAttribute('d',active?'M3 8h5V3M21 8h-5V3M8 21v-5H3M16 21v-5h5':'M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5');
+}
+async function toggleFullscreen(){
+ const editor=$('editor');
+ if(editor.classList.contains('is-fullscreen')){
+  if(document.fullscreenElement===editor){try{await document.exitFullscreen();}catch(e){announce('全画面を解除できませんでした。Escでも解除できます。');return;}}
+  setFullscreen(false);focusTask();
+ }else{
+  setFullscreen(true);
+  if(editor.requestFullscreen){try{await editor.requestFullscreen();}catch(e){/* Keep the page-filling view when native fullscreen is unavailable. */}}
+ }
+}
+$('fullscreen').onclick=()=>toggleFullscreen();
+document.addEventListener('fullscreenchange',()=>{
+ if(document.fullscreenElement===$('editor'))nativeFullscreen=true;
+ else if(nativeFullscreen){nativeFullscreen=false;setFullscreen(false);focusTask();}
+});
+let pendingG=null;
+document.addEventListener('keydown',e=>{
+ if(e.isComposing||e.keyCode===229){pendingG=null;return;}
+ const field=e.target;
+ const editing=field?.matches('input,textarea,select')||field?.isContentEditable;
+ if(e.key==='Escape'){
+  pendingG=null;
+  if(!editing&&!$('import-dialog').open&&$('editor').classList.contains('is-fullscreen')){e.preventDefault();toggleFullscreen();return;}
+  const taskId=field?.closest?.('.row')?.dataset.id||current().selected;
+  if(editing){e.preventDefault();field.blur();finishEdit();updateTools();}
+  if(!$('import-dialog').open){e.preventDefault();focusTask(taskId);}
+  return;
+ }
+ if(editing||$('import-dialog').open||e.metaKey||e.altKey){pendingG=null;return;}
+ if(e.ctrlKey){
+  pendingG=null;
+  if(e.key==='r'&&!e.shiftKey){e.preventDefault();if(!e.repeat)$('redo').onclick();}
+  return;
+ }
+ const key=e.key;
+ if(key==='Tab'&&current().selected){
+  pendingG=null;e.preventDefault();if(!e.repeat)move(e.shiftKey?'outdent':'indent');return;
+ }
+ if(e.shiftKey&&!['I','G','T','J','K','L'].includes(key)){pendingG=null;return;}
+ if(!['h','j','k','l','i','I','a','d','m','z','f','o','t','T','g','G','u','J','K','L'].includes(key)){pendingG=null;return;}
+ e.preventDefault();
+ if(e.repeat&&!['h','j','k','l','J','K'].includes(key))return;
+ if(key==='g'){
+  const now=Date.now();
+  if(pendingG!==null&&now-pendingG<=900){pendingG=null;navigateOutline('g');}
+  else pendingG=now;
+  return;
+ }
+ pendingG=null;
+ if(['h','j','k','l','G'].includes(key))navigateOutline(key);
+ else if(key==='a')focusInput(current().selected,true);
+ else if(key==='i')add(current().selected?'sibling':'root');
+ else if(key==='I')add(current().selected?'child':'root');
+ else if(key==='J'||key==='K'){
+  const f=find(current().selected),next=f?.list[f.index+(key==='J'?1:-1)];
+  if(next&&visibleRows().some(r=>r.n.id===next.id)){select(next.id);focusTask(next.id);}
+ }else if(key==='L')move('indent');
+ else if(key==='d')removeNode();
+ else if(key==='m')toggleCompleted();
+ else if(key==='f')toggleFullscreen();
+ else if(key==='z'){
+  const row=visibleRows().find(r=>r.n.id===current().selected);
+  if(row?.n.children.length&&(!current().focus||row.depth<1))change(()=>row.n.collapsed=!row.n.collapsed);
+ }else if(key==='o'){
+  if(current().focus)change(()=>current().focus=null);
+  else focusNode();
+ }else if(key==='t'||key==='T'){
+  const index=state.tabs.findIndex(t=>t.id===state.active);
+  change(()=>state.active=state.tabs[(index+(key==='t'?1:-1)+state.tabs.length)%state.tabs.length].id);
+ }else if(key==='u')$('undo').onclick();
+});
+render();if(loadError)announce(loadError);
+</script>
+</body>
+</html>

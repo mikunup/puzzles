@@ -8,12 +8,6 @@
 <style>
     :root {
       color-scheme:light;
-      --green:#044523;
-      --brown:#7e513c;
-      --paper:#f6f5ef;
-      --ink:#203a2c;
-      --muted:#627067;
-      --line:#dce2d9;
       --surface:#ffffff;
     }
     * { box-sizing:border-box; }
@@ -110,7 +104,7 @@
       .panel,.callout,pre,tr { break-inside:avoid; }
       pre { white-space:pre-wrap; overflow-wrap:anywhere; }
     }
-  
+
     .badge { display:inline-block; padding:2px 9px; border:1px solid var(--line); border-radius:5px; color:var(--brown); font-size:11px; }
     .spec-table { min-width:620px; }
     .spec-table caption { text-align:left; font-size:12px; color:var(--muted); padding:12px 18px; }
@@ -184,8 +178,9 @@
     @media(max-width:1050px) { .screen-preview-grid { grid-template-columns:1fr; } }
     @media print { .screen-preview { break-inside:avoid; } .screen-spec-links { display:none; } }
 </style>
+<link rel="stylesheet" href="bases/base.css">
 </head>
-<body id="top">
+<body data-layout="document" id="top">
 <a class="skip-link" href="#main-content">本文へスキップ</a>
 <div class="layout">
 <aside class="sidebar" aria-label="設計書のナビゲーション"><div class="brand"><span class="mark" aria-hidden="true"></span>DOCUMENT NOTE</div><p class="sidebar-description">Web自動販売機<br>画面・機能設計書</p><nav aria-labelledby="toc-title"><p class="toc-label" id="toc-title">CONTENTS / 目次</p><ol class="toc"><li><a href="#overview"><span class="toc-number">01</span>この設計書の使い方・前提</a></li><li><a href="#screens"><span class="toc-number">02</span>画面一覧・画面遷移</a></li><li><a href="#products"><span class="toc-number">03</span>商品選択</a><ol class="toc-sub"><li><a href="#products-guide">画面見本・できること</a></li><li><a href="#products-objects">オブジェクト定義</a></li><li><a href="#products-data-permissions">データ定義・表示状態・権限</a></li><li><a href="#products-elements">画面要素</a></li><li><a href="#products-actions">操作・イベント</a></li><li><a href="#products-results">バリデーション・エラー・成功</a></li></ol></li><li><a href="#purchase"><span class="toc-number">04</span>購入・決済</a><ol class="toc-sub"><li><a href="#purchase-guide">画面見本・できること</a></li><li><a href="#purchase-objects">オブジェクト定義</a></li><li><a href="#purchase-data-permissions">データ定義・表示状態・権限</a></li><li><a href="#purchase-elements">画面要素</a></li><li><a href="#purchase-actions">操作・イベント</a></li><li><a href="#purchase-results">バリデーション・エラー・成功</a></li></ol></li><li><a href="#admin"><span class="toc-number">05</span>商品・在庫管理</a><ol class="toc-sub"><li><a href="#admin-guide">画面見本・できること</a></li><li><a href="#admin-objects">オブジェクト定義</a></li><li><a href="#admin-data-permissions">データ定義・表示状態・権限</a></li><li><a href="#admin-elements">画面要素</a></li><li><a href="#admin-actions">操作・イベント</a></li><li><a href="#admin-results">バリデーション・エラー・成功</a></li></ol></li><li><a href="#checks"><span class="toc-number">06</span>確認項目・共通ルール</a></li></ol></nav><div class="sidebar-note">画面一覧から、各グループの情報・表示・操作・結果を確認できます。<br>本書は架空サービスの設計例です。</div></aside>

@@ -3,13 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="情報項目 × 担当のマトリクスに作業と帳票を置き、矢印でつないで業務シーケンス図（情報の地図）を作る編集ツールの雛形。">
+  <meta name="description" content="情報項目／ステータス × みるもの（担当・外部）のマトリクスに作業と帳票を置き、矢印でつないで業務シーケンス図（情報の地図）を作る編集ツールの雛形。">
   <title>業務シーケンス図</title>
   <style>
     :root {
       color-scheme:light;
-      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
-      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
       --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854; --tint:#fafaf6;
       --grid:#c3cec6; --box:#d7e8dc; --box-line:#2f6b4a; --box-ink:#0d3b22;
     }
@@ -63,11 +61,14 @@
     .scroll { overflow:auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
     .board { position:relative; isolation:isolate; display:grid; min-width:100%; width:max-content; border:1.5px solid #5d7466; background:#fff; user-select:none; -webkit-user-select:none; }
     .board > div { border-right:1px solid var(--grid); border-bottom:1px solid var(--grid); min-width:0; }
-    .c-brand { display:grid; place-items:center; padding:10px; background:var(--green); color:#fff; font-size:18px; font-weight:700; letter-spacing:.12em; }
+    .c-brand { display:flex; flex-direction:column; gap:5px; place-items:center; padding:10px; background:var(--green); color:#fff; font-size:18px; font-weight:700; letter-spacing:.12em; }
+    .c-brand button { padding:2px 10px; border:1px solid #ffffff66; border-radius:4px; color:#fff; background:transparent; font-size:11px; line-height:1.6; cursor:pointer; }
+    .c-brand button:hover { background:#ffffff20; }
     .c-label { display:grid; place-items:center; font-size:14px; font-weight:700; background:var(--tint); }
     .c-title { display:flex; align-items:center; }
     .c-title input { width:100%; padding:12px 18px; border:0; background:transparent; font-size:17px; font-weight:700; }
     .c-head { position:relative; display:flex; align-items:center; justify-content:center; min-height:42px; background:var(--tint); font-size:13px; font-weight:700; }
+    .c-axis-titles { padding:8px 10px; font-size:12px; line-height:1.6; text-align:center; overflow-wrap:anywhere; }
     .c-head input { width:100%; padding:8px 10px; border:0; background:transparent; font-size:14px; font-weight:700; text-align:center; }
     .c-row { position:relative; display:flex; align-items:center; background:var(--tint); }
     .c-row textarea { width:100%; padding:10px 12px; border:0; background:transparent; font-size:14px; text-align:center; resize:none; line-height:1.5; }
@@ -123,65 +124,192 @@
     #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); padding:10px 20px; border-radius:7px; color:#fff; background:var(--green); font-size:13px; }
     #toast:empty { display:none; }
 
+    header,main,footer { width:100%; }
+    header { padding:14px 24px; gap:16px; }
+    .header-content,.header-heading { display:flex; align-items:center; flex-wrap:wrap; gap:6px 24px; }
+    .header-heading { align-items:baseline; gap:4px 14px; }
+    .brand { font-size:12px; white-space:nowrap; }
+    .eyebrow { margin:0; font-size:11px; }
+    h1 { font-size:18px; margin:0; }
+    header a { color:var(--green); white-space:nowrap; font-size:12px; }
+    main { padding:16px 24px; }
+    footer { padding:16px 24px 24px; font-size:11px; }
+    .editor { min-width:0; background:white; border:1px solid var(--line); border-radius:12px; padding:12px; }
+    .workspace-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .workspace-title { display:flex; align-items:center; gap:6px; flex:1; min-width:140px; font-size:14px; font-weight:700; }
+    .workspace-title span { white-space:nowrap; }
+    .workspace-title input { width:100%; min-width:0; padding:5px 6px; border:0; border-bottom:1px solid transparent; background:transparent; font-size:18px; font-weight:700; }
+    .workspace-title input:focus { outline:0; border-bottom-color:var(--green); }
+    .panel-toggle { flex-shrink:0; padding:5px 9px; font-size:12px; }
+    .panel-toggle[aria-expanded="true"] { background:var(--hover); }
+    .canvas-layout.panel-closed { grid-template-columns:minmax(0,1fr); }
+    .print-title { display:none; }
+    .board .c-brand .c-axis-titles { font-weight:500; font-size:10px; padding:0; letter-spacing:0; opacity:.85; }
+    .icon-button { display:grid; place-items:center; flex-shrink:0; width:32px; height:32px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--green); font-size:20px; }
+    .icon-button:hover,.icon-button[aria-pressed="true"] { background:var(--hover); }
+    .scroll { height:calc(100dvh - 190px); min-height:360px; padding:8px; overscroll-behavior:contain; }
+    .canvas-layout { display:grid; grid-template-columns:minmax(0,1fr) 260px; align-items:start; gap:12px; min-width:0; }
+    .canvas-layout .scroll { min-width:0; }
+    .inspector { display:flex; flex-direction:column; align-items:stretch; flex-wrap:nowrap; gap:14px; min-width:0; min-height:0; margin:0; padding:16px; border:1px solid var(--line); border-radius:8px; max-height:calc(100dvh - 190px); overflow:auto; }
+    .inspector .i-field,.inspector .i-field.grow { flex:none; flex-direction:column; align-items:stretch; gap:6px; min-width:0; width:100%; }
+    .inspector input,.inspector select { width:100%; min-width:0; }
+    .inspector .seg { align-self:flex-start; flex-shrink:0; }
+    .inspector .spacer { display:none; }
+    .inspector .i-hint { line-height:1.9; }
+    .cell.cursor { box-shadow:inset 0 0 0 2px var(--box-line); background:#f1f5ee; }
+    .focus-muted { opacity:.18; }
+    .focus-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px; margin-bottom:12px; border-radius:6px; background:var(--hover); font-size:12px; }
+    .help { margin-top:14px; font-size:12px; color:var(--muted); }
+    .help summary { cursor:pointer; }
+    .help p { line-height:1.9; }
+    .settings { padding:12px 0 0; }
+    .file-actions { justify-content:flex-end; padding:16px 0 0; }
+    body.editor-fullscreen { overflow:hidden; }
+    .editor.is-fullscreen { position:fixed; inset:0; z-index:100; width:100%; height:100dvh; display:flex; flex-direction:column; padding:16px; background:white; overflow:auto; border:0; border-radius:0; }
+    .editor.is-fullscreen .workspace-head,.editor.is-fullscreen .focus-bar,.editor.is-fullscreen .inspector { flex-shrink:0; }
+    .editor.is-fullscreen .canvas-layout { flex:1; min-height:0; align-items:stretch; }
+    .editor.is-fullscreen .scroll { min-height:0; height:100%; }
+    .editor.is-fullscreen .inspector { max-height:none; overflow:auto; }
+    @media(max-width:900px) {
+      .canvas-layout { grid-template-columns:minmax(0,1fr); }
+      .inspector { max-height:none; }
+      .editor.is-fullscreen .canvas-layout { display:block; overflow:auto; }
+      .editor.is-fullscreen .scroll { height:60dvh; min-height:220px; }
+      .editor.is-fullscreen .inspector { margin-top:12px; }
+    }
+    .tabsbar { display:flex; align-items:center; gap:4px; margin-top:12px; padding:3px 0; border-top:1px solid var(--line); flex-shrink:0; }
+    .tabs { display:flex; gap:4px; overflow-x:auto; flex:0 1 auto; min-width:0; }
+    .tab-item { display:flex; align-items:center; flex-shrink:0; }
+    .tabs button { white-space:nowrap; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; padding:6px 10px; font-size:13px; line-height:1.5; color:var(--muted); }
+    .tabs button:hover { background:var(--hover); color:var(--green); }
+    .tabs button[aria-selected="true"] { color:var(--green); border-bottom-color:var(--green); font-weight:600; }
+    .tabs button:focus-visible { outline-offset:-3px; }
+    .tabs .tab-delete { padding:6px 5px; min-width:26px; font-size:16px; }
+    .tabs .tab-delete:hover { color:var(--brown); }
+    #add-tab { width:30px; height:30px; flex-shrink:0; padding:0; border:0; border-radius:5px; background:transparent; color:var(--green); font-size:20px; }
+    #add-tab:hover { background:var(--hover); }
+    .inventory-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .inventory-head h2 { font-size:14px; margin:0; }
+    .inventory-head button { font-size:12px; padding:4px 8px; }
+    .inventory-help { font-size:11px; color:var(--muted); margin:0; line-height:1.7; }
+    .inventory-list { overflow:auto; min-height:80px; max-height:42dvh; overscroll-behavior:contain; flex-shrink:0; padding:3px; }
+    .inventory-list h3 { margin:10px 0 7px; font-size:11px; color:var(--brown); }
+    .inventory-list h3:first-child { margin-top:0; }
+    .inventory-item { display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--tint); border-radius:6px; padding:8px; margin-bottom:6px; cursor:grab; touch-action:none; user-select:none; }
+    .inventory-item.selected { border-color:var(--green); background:var(--hover); }
+    .inventory-grip { color:var(--muted); }
+    .inventory-content { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+    .inventory-id { color:var(--muted); font:10px/1.5 ui-monospace,monospace; overflow-wrap:anywhere; user-select:text; }
+    .inventory-name { min-width:0; font-size:13px; overflow-wrap:anywhere; }
+    .inventory-item small { color:var(--muted); font-size:10px; white-space:nowrap; }
+    .inventory-editor { border-top:1px solid var(--line); padding-top:12px; }
+    .inventory-editor summary { font-size:12px; color:var(--muted); cursor:pointer; margin-bottom:12px; }
+    #selection-editor { display:flex; flex-direction:column; align-items:stretch; gap:12px; }
+    .inventory-ghost { position:fixed; z-index:1000; pointer-events:none; max-width:240px; padding:10px 16px; border:1.5px solid var(--box-line); border-radius:7px; background:var(--box); box-shadow:0 6px 18px #203a2c33; color:var(--box-ink); font-size:14px; }
+    .inventory-ghost.doc { background:#eef5f0; border-radius:0; }
+    #items-label { display:block; font-size:13px; font-weight:700; margin-bottom:8px; }
+    #items-names { width:100%; min-height:200px; padding:12px; border:1px solid var(--line); border-radius:6px; resize:vertical; font:inherit; line-height:1.8; background:var(--tint); }
+    #items-error { min-height:20px; font-size:12px; color:#a4472f; }
+    dialog { width:min(540px,calc(100% - 32px)); max-height:calc(100dvh - 40px); overflow:auto; padding:24px; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); }
+    dialog::backdrop { background:#203a2c66; }
+    dialog h2 { margin:0 0 16px; font-size:20px; }
+    .bulk-switch { display:inline-flex; gap:4px; padding:3px; margin-bottom:18px; background:var(--paper); border:1px solid var(--line); border-radius:8px; }
+    .bulk-switch label { display:flex; align-items:center; gap:6px; padding:5px 14px; border-radius:5px; font-size:13px; cursor:pointer; }
+    .bulk-switch label:has(input:checked) { color:#fff; background:var(--green); }
+    .bulk-switch input { accent-color:var(--green); margin:0; }
+    .bulk-title-field { display:flex; align-items:center; gap:8px; margin-bottom:18px; font-size:13px; }
+    #bulk-axis-title { flex:1; min-width:0; padding:7px 10px; border:1px solid var(--line); border-radius:5px; font:inherit; }
+    #bulk-label { display:block; font-size:13px; font-weight:700; margin-bottom:8px; }
+    #bulk-titles { width:100%; min-height:200px; padding:12px; border:1px solid var(--line); border-radius:6px; resize:vertical; font-family:inherit; font-size:14px; line-height:1.8; background:var(--tint); }
+    .bulk-note { font-size:12px; color:var(--muted); margin:8px 0; }
+    #bulk-error { min-height:20px; font-size:12px; color:#a4472f; }
+    .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+    @media(max-width:720px) { header { padding:12px 16px; flex-wrap:wrap; } main { padding:12px 16px; } footer { padding:16px; } .editor { padding:12px; } h1 { font-size:16px; } .workspace-head { gap:6px; flex-wrap:wrap; } .workspace-title { flex:1 1 100%; } }
     @media(max-width:720px) {
-      header,main,footer { width:calc(100% - 32px); }
+
       .scroll { padding:8px; }
     }
     @media print {
       @page { size:landscape; }
       header,main,footer { width:100%; }
-      body { background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
-      .intro,.toolbar,.inspector,.cell-add,.tools,.handle,footer,#toast { display:none !important; }
-      .scroll { border:0; padding:0; overflow:visible; }
+      body { overflow:visible; background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .intro,.toolbar,.inspector,.cell-add,.tools,.handle,footer,#toast,.workspace-head,.focus-bar,.help,dialog,.tabsbar { display:none !important; }
+      .editor,.editor.is-fullscreen { position:static; display:block; width:100%; height:auto; padding:0; border:0; overflow:visible; }
+      main { padding:0; } .focus-muted { opacity:1; }
+      .print-title { display:block; font-size:18px; margin:0 0 12px; }
+      .canvas-layout,.editor.is-fullscreen .canvas-layout { display:block; overflow:visible; }
+      .scroll,.editor.is-fullscreen .scroll { border:0; padding:0; overflow:visible; height:auto; min-height:0; }
       .node.selected { outline:none; }
       .edge.selected .line { stroke:var(--box-line); }
     }
   </style>
+<link rel="stylesheet" href="bases/base.css">
 </head>
-<body>
+<body data-layout="workspace">
   <header>
-    <div class="brand"><span class="mark" aria-hidden="true"></span>BUSINESS SEQUENCE</div>
-    <span class="note">データはこのブラウザに保存されます</span>
+    <div class="header-content"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / BUSINESS SEQUENCE</div><div class="header-heading"><p class="eyebrow">INFORMATION MAP</p><h1>情報の地図をつくる。</h1></div></div>
+    <a href="README.html">資料一覧へ ↗</a>
   </header>
-
   <main>
-    <div class="intro">
-      <p class="eyebrow">INFORMATION MAP</p>
-      <h1>情報の<span>地図</span>をつくる。</h1>
-      <p class="lead">縦に情報項目、横に担当を並べ、誰がどの情報に何をするかを箱で置きます。矢印でつなぐと、業務の流れと情報の受け渡しが一枚で見えるようになります。</p>
-    </div>
-
-    <div class="toolbar">
-      <button class="btn add" id="add-row">＋ 情報項目（行）</button>
-      <button class="btn add" id="add-role">＋ 担当（列）</button>
-      <span class="group-label" style="margin-left:8px">新しい矢印</span>
-      <span class="seg" id="new-style">
-        <button data-v="solid"><span class="ln"></span>実線</button>
-        <button data-v="dashed"><span class="ln dashed"></span>点線</button>
-      </span>
-      <span class="spacer"></span>
-      <button class="btn" id="import-btn">JSON読み込み</button>
-      <button class="btn" id="export-btn">JSON書き出し</button>
-      <button class="btn" id="print-btn">印刷・PDF</button>
-      <button class="btn danger" id="clear-btn">新規作成</button>
-      <input type="file" id="file" accept=".json,application/json" hidden>
-    </div>
-
-    <div class="inspector" id="inspector" aria-live="polite"></div>
-
-    <div class="scroll">
-      <div class="board" id="board"></div>
-    </div>
-
+    <section class="editor" id="editor" aria-label="業務シーケンス図の編集">
+      <div class="workspace-head"><label class="workspace-title" for="title"><span>業務名：</span><input id="title" type="text" placeholder="業務名タイトル" aria-label="業務名"></label><span id="mode-state" class="note" role="status">通常モード</span><button class="btn panel-toggle" id="panel-toggle" aria-expanded="true" aria-controls="inspector" title="オブジェクトを閉じる">☰ オブジェクト</button><button class="icon-button" id="focus-toggle" aria-label="選択作業に集中" title="選択作業に集中（o）" aria-pressed="false">◎</button><button class="icon-button" id="fullscreen" aria-label="全画面表示" title="全画面表示（f）" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
+      <h2 class="print-title" id="print-title"></h2>
+      <div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button class="btn" id="exit-focus">集中を解除</button></div>
+      <div class="canvas-layout">
+        <div class="scroll" id="canvas-scroll">
+          <div class="board" id="board"></div>
+        </div>
+        <aside class="inspector" id="inspector" aria-label="未配置オブジェクト"></aside>
+      </div>
+      <div class="tabsbar"><div id="tabs" class="tabs" role="tablist" aria-label="業務シーケンス図"></div><button type="button" id="add-tab" aria-label="タブを追加" title="タブを追加">＋</button></div>
+      <dialog id="items-dialog" aria-labelledby="items-heading">
+        <form id="items-form"><h2 id="items-heading">オブジェクトを一括追加</h2>
+          <div class="bulk-switch" role="radiogroup" aria-label="追加する種類"><label><input type="radio" name="item-kind" id="items-action" value="action" checked>作業</label><label><input type="radio" name="item-kind" id="items-doc" value="doc">帳票</label></div>
+          <label id="items-label" for="items-names">作業名（1行につき1項目）</label>
+          <textarea id="items-names" placeholder="作成&#10;確認&#10;承認" aria-describedby="items-help items-count"></textarea>
+          <p id="items-help" class="bulk-note">一覧に追加後、項目をマスへドラッグして配置してください。配置すると一覧から移動します。別のマスにも必要な場合は「複製」を使ってください。</p>
+          <p id="items-count" class="bulk-note" role="status">0件</p><p id="items-error" role="alert"></p>
+          <div class="dialog-actions"><button type="button" class="btn" id="items-cancel">キャンセル</button><button type="submit" class="btn primary" id="items-submit">追加</button></div>
+        </form>
+      </dialog>
+      <dialog id="bulk-dialog" aria-labelledby="bulk-heading">
+        <form id="bulk-form">
+          <h2 id="bulk-heading">行／列の編集</h2>
+          <div class="bulk-switch" role="radiogroup" aria-label="編集する方向">
+            <label><input type="radio" name="bulk-axis" id="bulk-row" value="row" checked>行</label>
+            <label><input type="radio" name="bulk-axis" id="bulk-col" value="col">列</label>
+          </div>
+          <label class="bulk-title-field" for="bulk-axis-title">タイトル：<input id="bulk-axis-title" type="text" placeholder="タイトル記入"></label>
+          <label id="bulk-label" for="bulk-titles">行のタイトル</label>
+          <textarea id="bulk-titles" placeholder="受注データ&#10;精算データ" aria-describedby="bulk-help bulk-count"></textarea>
+          <p class="bulk-note" id="bulk-help">現在の内容を1行につき1項目で表示します。編集・追記して保存してください。空行は読み飛ばします。名称が空の項目は「（名称未設定）」と表示します。</p>
+          <p class="bulk-note" id="bulk-count" role="status">0行</p>
+          <p id="bulk-error" role="alert"></p>
+          <div class="dialog-actions"><button type="button" class="btn" id="bulk-cancel">キャンセル</button><button type="submit" class="btn primary" id="bulk-submit">保存</button></div>
+        </form>
+      </dialog>
+    </section>
+    <details class="help"><summary>キーボード・ドラッグ操作</summary>
+      <p>右の「未配置オブジェクト」で一括追加し、項目をマスへドラッグして配置します。配置済みの項目は一覧から消え、「配置を解除」で戻ります。「複製」は別IDを作り、「完全に削除」はオブジェクト自体を消します。作業右の○を別の作業へドラッグして線を引きます。マスまたは作業を選び、Escで入力を終了するとVimキーが使えます。</p>
+      <p>j / k：下／上の情報項目・ステータスへ · l / h：右／左のみるものへ · Shift+j / Shift+k：同じマスの次／前の作業へ<br>i：選択マスに作業を追加 · e / Enter：フォーカス中の作業を編集 · d / Delete：選択した作業・矢印を削除<br>f：全画面ON／OFF · o：選択作業と接続先への集中ON／OFF<br>t / Shift+t：次／前のタブへ · gg / Shift+g：最初／最後のマスへ · u / Ctrl+r：元に戻す／やり直す</p>
+      <p>作業名はEnter・Escで確定。空欄の新規作業は入力終了時に削除します。マスの空白をダブルクリックして作業追加、作業の右の○をドラッグして矢印作成、作業をドラッグしてマス間を移動できます。</p>
+    </details>
+    <details class="help"><summary>行・列と矢印の設定</summary><div class="toolbar settings">
+      <button class="btn" id="add-row">＋ 情報項目／ステータス（行）</button><button class="btn" id="add-role">＋ みるもの（列）</button>
+      <span class="group-label">新しい矢印</span><span class="seg" id="new-style"><button data-v="solid"><span class="ln"></span>実線</button><button data-v="dashed"><span class="ln dashed"></span>点線</button></span>
+      <button class="btn" id="undo-btn">元に戻す</button><button class="btn" id="redo-btn">やり直す</button><button class="btn danger" id="clear-btn">新規作成</button>
+    </div></details>
+    <details class="help"><summary>凡例</summary>
     <div class="legend">
       <span><i class="box"></i>作業（情報に対して行うこと）</span>
       <span><i class="doc"></i>帳票・外部資料</span>
       <span><i class="ln"></i>実線：作業の流れ・情報の受け渡し</span>
       <span><i class="ln dashed"></i>点線：参照・帳票とのやりとり</span>
-    </div>
+    </div></details>
+    <div class="toolbar file-actions"><button class="btn" id="import-btn">JSON読み込み</button><button class="btn" id="export-btn">このタブをJSON保存</button><button class="btn" id="export-all">全タブをJSON保存</button><button class="btn" id="export-md">Markdown保存</button><button class="btn" id="export-html">HTML保存</button><button class="btn" id="print-btn">印刷・PDF</button><input type="file" id="file" accept=".json,application/json" hidden></div>
   </main>
 
-  <footer><span>業務シーケンス図 ／ 情報の地図</span><span>Delete：選択中の項目を削除 ・ Enter：名前を編集 ・ Esc：選択を解除</span></footer>
+  <footer><span>業務シーケンス図 ／ 情報の地図</span><span>ブラウザ内に自動保存されます。別の端末へ移す場合はJSONを保存してください。</span></footer>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <datalist id="label-list"></datalist>
@@ -189,13 +317,16 @@
   <script>
     // ===== 設定 =====
     const STORAGE_KEY = "bizseq.data";
+    const WORKSPACE_KEY="bizseq.workspace.v1",WORKSPACE_FORMAT="puzzles.business-sequence.workspace";
     const STYLE_KEY = "bizseq.newStyle";
     // 作業名の候補
     const LABELS = ["作成", "登録", "閲覧", "確認", "確定", "更新", "振分", "承認", "入力", "照合", "送付", "保管"];
+    const AXIS_TITLES={rows:"情報項目／ステータス",roles:"みるもの（担当・外部）"};
+    const axisTitle=key=>data.axisTitles?.[key]||AXIS_TITLES[key];
     const ROUTES = { auto: "自動", h: "横にまっすぐ", v: "縦にまっすぐ", vh: "縦 → 横", hv: "横 → 縦", below: "下を回る", above: "上を回る" };
     // 初回表示用のサンプル（請求書の発行）
     const SAMPLE = () => ({
-      title: "請求書の発行",
+      schemaVersion:2,title: "請求書の発行",
       roles: [{ id: "c1", name: "営業" }, { id: "c2", name: "営業アシ" }, { id: "c3", name: "経理" }, { id: "c4", name: "" }],
       rows: [
         { id: "r1", name: "受注データ", remark: "" },
@@ -205,23 +336,23 @@
         { id: "r5", name: "未入金一覧", remark: "" },
         { id: "r6", name: "〃", remark: "" },
       ],
-      nodes: [
-        { id: "n1", row: "r1", col: "c1", label: "作成", type: "action", note: "" },
-        { id: "n2", row: "r1", col: "c2", label: "登録", type: "action", note: "" },
-        { id: "n3", row: "r1", col: "c3", label: "閲覧", type: "action", note: "" },
-        { id: "n4", row: "r2", col: "c1", label: "確認", type: "action", note: "" },
-        { id: "n5", row: "r2", col: "c2", label: "作成", type: "action", note: "" },
-        { id: "n6", row: "r2", col: "c3", label: "確定", type: "action", note: "" },
-        { id: "n7", row: "r2", col: "c4", label: "請求書", type: "doc", note: "" },
-        { id: "n8", row: "r3", col: "c3", label: "登録", type: "action", note: "" },
-        { id: "n9", row: "r4", col: "c3", label: "登録", type: "action", note: "" },
-        { id: "n10", row: "r4", col: "c4", label: "銀行明細", type: "doc", note: "" },
-        { id: "n11", row: "r5", col: "c1", label: "確認", type: "action", note: "クライアントに連絡して状況を確認する" },
-        { id: "n12", row: "r5", col: "c2", label: "振分", type: "action", note: "営業担当者別に振り分け作業を行う" },
-        { id: "n13", row: "r5", col: "c3", label: "作成", type: "action", note: "" },
-        { id: "n14", row: "r5", col: "c4", label: "補助元帳", type: "doc", note: "" },
-        { id: "n15", row: "r6", col: "c1", label: "更新", type: "action", note: "" },
-        { id: "n16", row: "r6", col: "c3", label: "閲覧", type: "action", note: "" },
+      objects: [
+        { id: "n1", label: "作成", type: "action", note: "", placement: { row: "r1", col: "c1" } },
+        { id: "n2", label: "登録", type: "action", note: "", placement: { row: "r1", col: "c2" } },
+        { id: "n3", label: "閲覧", type: "action", note: "", placement: { row: "r1", col: "c3" } },
+        { id: "n4", label: "確認", type: "action", note: "", placement: { row: "r2", col: "c1" } },
+        { id: "n5", label: "作成", type: "action", note: "", placement: { row: "r2", col: "c2" } },
+        { id: "n6", label: "確定", type: "action", note: "", placement: { row: "r2", col: "c3" } },
+        { id: "n7", label: "請求書", type: "doc", note: "", placement: { row: "r2", col: "c4" } },
+        { id: "n8", label: "登録", type: "action", note: "", placement: { row: "r3", col: "c3" } },
+        { id: "n9", label: "登録", type: "action", note: "", placement: { row: "r4", col: "c3" } },
+        { id: "n10", label: "銀行明細", type: "doc", note: "", placement: { row: "r4", col: "c4" } },
+        { id: "n11", label: "確認", type: "action", note: "クライアントに連絡して状況を確認する", placement: { row: "r5", col: "c1" } },
+        { id: "n12", label: "振分", type: "action", note: "営業担当者別に振り分け作業を行う", placement: { row: "r5", col: "c2" } },
+        { id: "n13", label: "作成", type: "action", note: "", placement: { row: "r5", col: "c3" } },
+        { id: "n14", label: "補助元帳", type: "doc", note: "", placement: { row: "r5", col: "c4" } },
+        { id: "n15", label: "更新", type: "action", note: "", placement: { row: "r6", col: "c1" } },
+        { id: "n16", label: "閲覧", type: "action", note: "", placement: { row: "r6", col: "c3" } },
       ],
       edges: [
         { id: "e1", from: "n1", to: "n2", style: "solid", route: "auto" },
@@ -239,11 +370,272 @@
         { id: "e13", from: "n15", to: "n16", style: "dashed", route: "auto" },
       ],
     });
+    // Requested invoice workflow: append once without replacing existing tabs.
+    const REQUESTED_INVOICE_TAB="invoice-issue-requested-v1";
+    const REQUESTED_INVOICE_FLOW={
+  "schemaVersion": 2,
+  "title": "請求書の発行",
+  "axisTitles": {
+    "rows": "情報項目／ステータス",
+    "roles": "担当・送付先"
+  },
+  "roles": [
+    {
+      "id": "invoice-role-assistant",
+      "name": "営業アシ"
+    },
+    {
+      "id": "invoice-role-sales",
+      "name": "営業"
+    },
+    {
+      "id": "invoice-role-accounting",
+      "name": "経理"
+    },
+    {
+      "id": "invoice-role-customer",
+      "name": "お客様"
+    }
+  ],
+  "rows": [
+    {
+      "id": "invoice-row-order",
+      "name": "受注データ",
+      "remark": "営業アシが請求データを作成する際の入力情報。"
+    },
+    {
+      "id": "invoice-row-draft",
+      "name": "請求データ（作成済み）",
+      "remark": "営業アシが受注データをもとに請求データを作成する。"
+    },
+    {
+      "id": "invoice-row-checked",
+      "name": "請求データ（確認済み）",
+      "remark": "営業が請求データを確認する。"
+    },
+    {
+      "id": "invoice-row-request",
+      "name": "請求書作成依頼",
+      "remark": "営業が経理へ請求書作成を依頼する。"
+    },
+    {
+      "id": "invoice-row-final",
+      "name": "請求データ（確定済み）",
+      "remark": "経理が請求データを確定する。"
+    },
+    {
+      "id": "invoice-row-issued",
+      "name": "請求書（作成済み）",
+      "remark": "経理が確定した請求データから請求書を作成する。"
+    },
+    {
+      "id": "invoice-row-approved",
+      "name": "請求書（確認済み）",
+      "remark": "営業が経理の作成した請求書を確認する。"
+    },
+    {
+      "id": "invoice-row-sent",
+      "name": "請求書（送付済み）",
+      "remark": "営業がお客様に請求書を送付する。"
+    }
+  ],
+  "objects": [
+    {
+      "id": "invoice-object-order",
+      "label": "受注データ",
+      "type": "doc",
+      "note": "請求データ作成のもとになる情報。",
+      "placement": {
+        "row": "invoice-row-order",
+        "col": "invoice-role-assistant"
+      }
+    },
+    {
+      "id": "invoice-object-draft",
+      "label": "請求データ作成",
+      "type": "action",
+      "note": "受注データをもとに作成する。",
+      "placement": {
+        "row": "invoice-row-draft",
+        "col": "invoice-role-assistant"
+      }
+    },
+    {
+      "id": "invoice-object-check-data",
+      "label": "請求データ確認",
+      "type": "action",
+      "note": "営業が内容を確認する。",
+      "placement": {
+        "row": "invoice-row-checked",
+        "col": "invoice-role-sales"
+      }
+    },
+    {
+      "id": "invoice-object-request",
+      "label": "請求書作成依頼",
+      "type": "action",
+      "note": "経理へ作成を依頼する。",
+      "placement": {
+        "row": "invoice-row-request",
+        "col": "invoice-role-sales"
+      }
+    },
+    {
+      "id": "invoice-object-finalize",
+      "label": "請求データ確定",
+      "type": "action",
+      "note": "確認済みの請求データを確定する。",
+      "placement": {
+        "row": "invoice-row-final",
+        "col": "invoice-role-accounting"
+      }
+    },
+    {
+      "id": "invoice-object-issue",
+      "label": "請求書作成",
+      "type": "action",
+      "note": "確定した請求データから作成する。",
+      "placement": {
+        "row": "invoice-row-issued",
+        "col": "invoice-role-accounting"
+      }
+    },
+    {
+      "id": "invoice-object-invoice",
+      "label": "請求書",
+      "type": "doc",
+      "note": "経理が作成した確認前の請求書。",
+      "placement": {
+        "row": "invoice-row-issued",
+        "col": "invoice-role-accounting"
+      }
+    },
+    {
+      "id": "invoice-object-check-invoice",
+      "label": "請求書確認",
+      "type": "action",
+      "note": "経理が作成した請求書を確認する。",
+      "placement": {
+        "row": "invoice-row-approved",
+        "col": "invoice-role-sales"
+      }
+    },
+    {
+      "id": "invoice-object-send",
+      "label": "請求書送付",
+      "type": "action",
+      "note": "確認した請求書をお客様へ送付する。",
+      "placement": {
+        "row": "invoice-row-sent",
+        "col": "invoice-role-sales"
+      }
+    },
+    {
+      "id": "invoice-object-customer-invoice",
+      "label": "請求書（お客様宛）",
+      "type": "doc",
+      "note": "営業からお客様へ送付した請求書。",
+      "placement": {
+        "row": "invoice-row-sent",
+        "col": "invoice-role-customer"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "invoice-edge-1",
+      "from": "invoice-object-order",
+      "to": "invoice-object-draft",
+      "style": "dashed",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-2",
+      "from": "invoice-object-draft",
+      "to": "invoice-object-check-data",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-3",
+      "from": "invoice-object-check-data",
+      "to": "invoice-object-request",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-4",
+      "from": "invoice-object-request",
+      "to": "invoice-object-finalize",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-5",
+      "from": "invoice-object-finalize",
+      "to": "invoice-object-issue",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-6",
+      "from": "invoice-object-issue",
+      "to": "invoice-object-invoice",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-7",
+      "from": "invoice-object-invoice",
+      "to": "invoice-object-check-invoice",
+      "style": "dashed",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-8",
+      "from": "invoice-object-check-invoice",
+      "to": "invoice-object-send",
+      "style": "solid",
+      "route": "auto"
+    },
+    {
+      "id": "invoice-edge-9",
+      "from": "invoice-object-send",
+      "to": "invoice-object-customer-invoice",
+      "style": "solid",
+      "route": "auto"
+    }
+  ]
+};
+    const REQUESTED_INVOICE_INFORMATION_TAB="invoice-issue-information-v1";
+    function invoiceInformationFlow(){
+      const flow=JSON.parse(JSON.stringify(REQUESTED_INVOICE_FLOW));flow.title="請求書の発行（情報単位）";flow.axisTitles.rows="情報項目";
+      flow.rows=[
+  {
+    "id": "invoice-row-order",
+    "name": "受注データ",
+    "remark": "営業アシが請求データを作成する際の入力情報。"
+  },
+  {
+    "id": "invoice-row-data",
+    "name": "請求データ",
+    "remark": "営業アシが作成し、営業が確認して経理へ請求書作成を依頼する。経理がこの請求データを確定する。"
+  },
+  {
+    "id": "invoice-row-document",
+    "name": "請求書",
+    "remark": "経理が作成し、営業が確認してお客様へ送付する。確認・送付の状態は作業と矢印で表す。"
+  }
+];
+      const dataRows=new Set(["invoice-row-draft","invoice-row-checked","invoice-row-request","invoice-row-final"]);
+      flow.objects.forEach(o=>{const row=o.placement.row;o.placement.row=row==="invoice-row-order"?row:dataRows.has(row)?"invoice-row-data":"invoice-row-document";});
+      return flow;
+    }
     const EMPTY = () => ({
       title: "",
       roles: [{ id: uid(), name: "" }, { id: uid(), name: "" }, { id: uid(), name: "" }],
       rows: [{ id: uid(), name: "", remark: "" }, { id: uid(), name: "", remark: "" }, { id: uid(), name: "", remark: "" }],
-      nodes: [], edges: [],
+      schemaVersion:2,objects:[],edges: [],
     });
     // ================
 
@@ -255,72 +647,173 @@
 
     // 読み込んだデータを正しい形にそろえる
     function normalize(d) {
-      const str = v => String(v ?? "");
-      const out = {
-        title: str(d.title),
-        roles: (Array.isArray(d.roles) ? d.roles : []).map(r => ({ id: str(r.id) || uid(), name: str(r.name) })),
-        rows: (Array.isArray(d.rows) ? d.rows : []).map(r => ({ id: str(r.id) || uid(), name: str(r.name), remark: str(r.remark) })),
-        nodes: (Array.isArray(d.nodes) ? d.nodes : []).map(n => ({ id: str(n.id) || uid(), row: str(n.row), col: str(n.col), label: str(n.label), type: n.type === "doc" ? "doc" : "action", note: str(n.note) })),
-        edges: (Array.isArray(d.edges) ? d.edges : []).map(e => ({ id: str(e.id) || uid(), from: str(e.from), to: str(e.to), style: e.style === "dashed" ? "dashed" : "solid", route: ROUTES[e.route] ? e.route : "auto" })),
-      };
-      if (!out.roles.length) out.roles.push({ id: uid(), name: "" });
-      if (!out.rows.length) out.rows.push({ id: uid(), name: "", remark: "" });
+      if(!d||typeof d!=="object"||Array.isArray(d))throw Error("図のデータが不正です");
+      const str=v=>String(v??"");
+      const out={schemaVersion:2,title:str(d.title),axisTitles:{rows:str(d.axisTitles?.rows).trim()||AXIS_TITLES.rows,roles:str(d.axisTitles?.roles).trim()||AXIS_TITLES.roles},
+        roles:(Array.isArray(d.roles)?d.roles:[]).map(r=>({id:str(r.id)||uid(),name:str(r.name)})),
+        rows:(Array.isArray(d.rows)?d.rows:[]).map(r=>({id:str(r.id)||uid(),name:str(r.name),remark:str(r.remark)})),objects:[],edges:[]};
+      if(!out.roles.length)out.roles.push({id:uid(),name:""});if(!out.rows.length)out.rows.push({id:uid(),name:"",remark:""});
+      const fields=o=>({label:str(o.label),type:o.type==="doc"?"doc":"action",note:str(o.note)}),ids=new Set(),links=new Map();
+      const add=o=>{if(ids.has(o.id))throw Error("オブジェクトIDが重複しています");ids.add(o.id);out.objects.push(o);};
+      if(d.objects!==undefined){
+        if(!Array.isArray(d.objects))throw Error("objectsは配列で指定してください");
+        d.objects.forEach(o=>{if(!o||typeof o!=="object")throw Error("オブジェクトが不正です");const id=str(o.id)||uid();add({id,...fields(o),placement:o.placement?{row:str(o.placement.row),col:str(o.placement.col)}:null});links.set(id,id);});
+      }else{
+        // Migrate template/instance data into one object per placement; keep all arrows.
+        const library=Array.isArray(d.library)?d.library:[],reserved=new Set(),usedTemplates=new Set(),legacyIds=new Set();
+        library.forEach(item=>{if(!item||!item.id||reserved.has(str(item.id)))throw Error("オブジェクトIDが重複または不正です");reserved.add(str(item.id));});
+        (Array.isArray(d.nodes)?d.nodes:[]).forEach(n=>{
+          const oldId=str(n.id)||uid();if(legacyIds.has(oldId))throw Error("配置IDが重複しています");legacyIds.add(oldId);
+          const template=library.find(item=>str(item.id)===str(n.itemId));
+          let id=template&&!usedTemplates.has(str(template.id))?str(template.id):oldId;
+          if(template&&id===str(template.id))usedTemplates.add(id);
+          else if(reserved.has(id)||ids.has(id)){do{id=uid();}while(reserved.has(id)||ids.has(id));}
+          add({id,...fields(n),placement:{row:str(n.row),col:str(n.col)}});links.set(oldId,id);
+        });
+        library.forEach(item=>{if(!usedTemplates.has(str(item.id)))add({id:str(item.id),...fields(item),placement:null});});
+      }
+      const edgeIds=new Set();out.edges=(Array.isArray(d.edges)?d.edges:[]).map(e=>{
+        const id=str(e.id)||uid();if(edgeIds.has(id))throw Error("矢印IDが重複しています");edgeIds.add(id);
+        return {id,from:links.get(str(e.from))||str(e.from),to:links.get(str(e.to))||str(e.to),style:e.style==="dashed"?"dashed":"solid",route:ROUTES[e.route]?e.route:"auto"};
+      });
       return cleanup(out);
     }
-    // 存在しない行・列・作業を参照しているものを取り除く
-    function cleanup(d = data) {
-      const rows = new Set(d.rows.map(r => r.id)), cols = new Set(d.roles.map(r => r.id));
-      d.nodes = d.nodes.filter(n => rows.has(n.row) && cols.has(n.col));
-      const ids = new Set(d.nodes.map(n => n.id));
-      d.edges = d.edges.filter(e => ids.has(e.from) && ids.has(e.to) && e.from !== e.to);
-      return d;
+    const placedObjects=(source=data)=>source.objects.filter(o=>o.placement);
+    function cleanup(d=data){
+      const rows=new Set(d.rows.map(r=>r.id)),cols=new Set(d.roles.map(r=>r.id));
+      d.objects.forEach(o=>{if(o.placement&&(!rows.has(o.placement.row)||!cols.has(o.placement.col)))o.placement=null;});
+      const ids=new Set(placedObjects(d).map(o=>o.id));d.edges=d.edges.filter(e=>ids.has(e.from)&&ids.has(e.to)&&e.from!==e.to);return d;
     }
+    function validateSelection(){if(sel?.type==="object"&&!byId(data.objects,sel.id)||sel?.type==="edge"&&!byId(data.edges,sel.id))sel=null;}
     function load() {
       try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return normalize(JSON.parse(raw)); } catch {}
-      return SAMPLE();
+      return normalize(SAMPLE());
     }
-    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {} }
+    function normalizeWorkspace(raw){
+      if(!raw||raw.format!==WORKSPACE_FORMAT||raw.version!==1||!Array.isArray(raw.tabs)||!raw.tabs.length||raw.tabs.length>100)throw Error("タブデータが不正です");
+      const ids=new Set();
+      const tabs=raw.tabs.map(t=>{if(!t||typeof t.id!=="string"||!t.id||ids.has(t.id)||!t.data||typeof t.data!=="object"||Array.isArray(t.data))throw Error("タブデータが不正です");ids.add(t.id);return {id:t.id,data:normalize(t.data)};});
+      return {format:WORKSPACE_FORMAT,version:1,panelOpen:raw.panelOpen!==false,appliedPresets:Array.isArray(raw.appliedPresets)?[...new Set(raw.appliedPresets.filter(x=>typeof x==="string"))]:[],tabs,active:tabs.some(t=>t.id===raw.active)?raw.active:tabs[0].id};
+    }
+    function loadWorkspace(){
+      try{const raw=localStorage.getItem(WORKSPACE_KEY);if(raw)return normalizeWorkspace(JSON.parse(raw));}catch{}
+      const tab={id:uid(),data:load()};return {format:WORKSPACE_FORMAT,version:1,panelOpen:true,tabs:[tab],active:tab.id};
+    }
+    function ensureFlowTab(target,id,flow){
+      target.appliedPresets??=[];
+      if(target.appliedPresets.includes(id))return false;
+      if(!target.tabs.some(tab=>tab.id===id)){
+        if(target.tabs.length>=100)return false;
+        target.tabs.push({id,data:normalize(flow)});target.active=id;
+      }
+      target.appliedPresets.push(id);return true;
+    }
+    function ensureRequestedInvoiceTab(target){return ensureFlowTab(target,REQUESTED_INVOICE_TAB,REQUESTED_INVOICE_FLOW);}
+    function ensureRequestedInvoiceInformationTab(target){return ensureFlowTab(target,REQUESTED_INVOICE_INFORMATION_TAB,invoiceInformationFlow());}
+    function persistWorkspace(){
+      const tab=workspace.tabs.find(t=>t.id===workspace.active);if(tab)tab.data=data;
+      try{localStorage.setItem(WORKSPACE_KEY,JSON.stringify(workspace));}catch{toast("保存できません。全タブをJSON保存してください。");}
+    }
+    function save() {
+      const next=JSON.stringify(data);
+      if(next!==savedSnapshot){past.push(savedSnapshot);if(past.length>80)past.shift();future=[];savedSnapshot=next;}
+      persistWorkspace();syncHistory();renderTabs();
+    }
+    function syncHistory(){document.getElementById("undo-btn").disabled=!past.length;document.getElementById("redo-btn").disabled=!future.length;}
+    function restoreHistory(redo=false){
+      const source=redo?future:past,target=redo?past:future;if(!source.length)return;
+      target.push(JSON.stringify(data));data=normalize(JSON.parse(source.pop()));savedSnapshot=JSON.stringify(data);
+      validateSelection();
+      persistWorkspace();renderTabs();
+      renderBoard();renderInspector();syncHistory();focusCurrent();
+    }
 
-    let data = load();
-    let sel = null; // { type: "node" | "edge", id }
+    let workspace=loadWorkspace();
+    const requestedInvoiceAdded=ensureRequestedInvoiceTab(workspace);
+    const requestedInvoiceInformationAdded=ensureRequestedInvoiceInformationTab(workspace);
+    let data=workspace.tabs.find(t=>t.id===workspace.active).data;
+    const tabViews=new Map();let tabsSignature="";
+    let savedSnapshot=JSON.stringify(data),past=[],future=[];
+    let cursor={row:data.rows[0].id,col:data.roles[0].id},lastNodeId=null,focusId=null,pendingG=null;
+    let sel = null; // { type: "object" | "edge", id }
     let newStyle = "solid";
     try { newStyle = localStorage.getItem(STYLE_KEY) === "dashed" ? "dashed" : "solid"; } catch {}
 
+    function rememberTabView(){tabViews.set(workspace.active,{sel:sel?{...sel}:null,cursor:{...cursor},lastNodeId,focusId,past:[...past],future:[...future],savedSnapshot,scrollTop:document.getElementById("canvas-scroll").scrollTop,scrollLeft:document.getElementById("canvas-scroll").scrollLeft});}
+    function activateTab(id,saveCurrent=true){
+      if(id===workspace.active)return;
+      const tab=workspace.tabs.find(t=>t.id===id);if(!tab)return;
+      if(saveCurrent){save();rememberTabView();}
+      workspace.active=id;data=tab.data;const view=tabViews.get(id);
+      sel=view?.sel||null;cursor=view?.cursor?{...view.cursor}:{row:data.rows[0].id,col:data.roles[0].id};lastNodeId=view?.lastNodeId||null;focusId=view?.focusId||null;
+      past=view?.past||[];future=view?.future||[];savedSnapshot=JSON.stringify(data);pendingG=null;
+      validateSelection();
+      renderBoard();renderInspector();renderTabs();syncHistory();persistWorkspace();
+      const scroll=document.getElementById("canvas-scroll");scroll.scrollTop=view?.scrollTop||0;scroll.scrollLeft=view?.scrollLeft||0;focusCurrent();
+    }
+    function renderTabs(){
+      const signature=JSON.stringify([workspace.active,workspace.tabs.map(t=>[t.id,t.data.title])]);if(signature===tabsSignature)return;tabsSignature=signature;
+      const tabs=document.getElementById("tabs");tabs.replaceChildren();
+      workspace.tabs.forEach((tab,index)=>{
+        const item=document.createElement("div");item.className="tab-item";item.setAttribute("role","presentation");
+        const b=document.createElement("button");b.type="button";b.id="sequence-tab-"+tab.id;b.textContent=tab.data.title||"無題";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(tab.id===workspace.active));b.setAttribute("aria-controls","editor");b.tabIndex=tab.id===workspace.active?0:-1;
+        b.addEventListener("click",()=>activateTab(tab.id));
+        b.addEventListener("keydown",ev=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(ev.key))return;ev.preventDefault();const i=ev.key==="Home"?0:ev.key==="End"?workspace.tabs.length-1:(index+(ev.key==="ArrowRight"?1:-1)+workspace.tabs.length)%workspace.tabs.length;activateTab(workspace.tabs[i].id);document.getElementById("sequence-tab-"+workspace.active).focus();});
+        const remove=document.createElement("button");remove.type="button";remove.className="tab-delete";remove.textContent="−";remove.setAttribute("aria-label","タブを削除："+(tab.data.title||"無題"));remove.title="タブを削除";remove.addEventListener("click",()=>deleteTab(tab.id));
+        item.append(b,remove);tabs.append(item);
+      });
+      document.getElementById("editor").setAttribute("role","tabpanel");document.getElementById("editor").setAttribute("aria-labelledby","sequence-tab-"+workspace.active);
+    }
+    function addTab(){
+      if(workspace.tabs.length>=100){toast("タブは100件まで作成できます");return;}
+      save();const tab={id:uid(),data:normalize(EMPTY())};tab.data.title="新しい業務";workspace.tabs.push(tab);activateTab(tab.id);document.getElementById("title").focus();document.getElementById("title").select();
+    }
+    function deleteTab(id){
+      const index=workspace.tabs.findIndex(t=>t.id===id);if(index<0||!confirm("このタブと業務シーケンス図を削除しますか？"))return;
+      workspace.tabs.splice(index,1);tabViews.delete(id);
+      if(!workspace.tabs.length)workspace.tabs.push({id:uid(),data:normalize(EMPTY())});
+      if(workspace.active===id)activateTab(workspace.tabs[Math.min(index,workspace.tabs.length-1)].id,false);
+      else{persistWorkspace();renderTabs();}
+    }
+    document.getElementById("add-tab").addEventListener("click",addTab);
+
     // ===== 図の描画 =====
     function nodeHtml(n) {
-      const selected = sel?.type === "node" && sel.id === n.id ? " selected" : "";
+      const selected = sel?.type === "object" && sel.id === n.id ? " selected" : "";
       const shape = n.type === "doc" ? `<svg class="doc-shape" viewBox="0 0 86 68" preserveAspectRatio="none" aria-hidden="true"><path d="M1,1 H85 V52 L69,67 H1 Z"/><path class="fold" d="M85,52 H69 V67 Z"/></svg>` : "";
       return `<div class="node-wrap">${n.note ? `<div class="node-note">${esc(n.note)}</div>` : ""}` +
-        `<div class="node ${n.type}${selected}" data-id="${n.id}" title="ドラッグで移動・ダブルクリックで名前を編集">${shape}<span class="label">${esc(n.label) || "（未入力）"}</span>` +
+        `<div class="node ${n.type}${selected}" data-id="${esc(n.id)}" tabindex="-1" role="button" aria-label="${esc(n.label||"未入力の作業")}" title="ドラッグで移動・ダブルクリックで名前を編集">${shape}<span class="label">${esc(n.label) || "（未入力）"}</span>` +
         `<span class="handle" title="ドラッグして矢印を引く"></span></div></div>`;
     }
 
     function renderBoard() {
+      if(!byId(data.rows,cursor.row))cursor.row=data.rows[0].id;
+      if(!byId(data.roles,cursor.col))cursor.col=data.roles[0].id;
+      if(focusId&&!byId(placedObjects(),focusId))focusId=null;
       const R = data.roles.length, last = data.rows.length - 1;
       board.style.gridTemplateColumns = `190px repeat(${R}, minmax(150px, 1fr)) 160px`;
-      let h = `<div class="c-brand">情報の地図</div><div class="c-label">業務名</div>` +
-        `<div class="c-title" style="grid-column:3 / -1"><input id="title" value="${esc(data.title)}" placeholder="業務名を入力" aria-label="業務名"></div>`;
-      h += `<div class="c-head">情報項目</div>`;
+      document.getElementById("title").value=data.title;document.getElementById("print-title").textContent="業務名："+(data.title||"未設定");syncPanel(false);
+      let h = `<div class="c-brand"><span>情報の地図</span><button type="button" data-act="bulk-open">行／列</button><div class="c-axis-titles" aria-label="行：${esc(axisTitle("rows"))}、列：${esc(axisTitle("roles"))}">${esc(axisTitle("rows"))}/${esc(axisTitle("roles"))}</div></div>`;
       data.roles.forEach((r, i) => {
-        h += `<div class="c-head" data-role="${r.id}"><input class="role-name" value="${esc(r.name)}" placeholder="担当・外部" aria-label="担当名">` +
+        h += `<div class="c-head" data-role="${r.id}"><input class="role-name" value="${esc(r.name)}" placeholder="みるもの（担当・外部）" aria-label="みるものの名前">` +
           `<span class="tools">${i ? `<button data-act="role-left" title="左へ移動">‹</button>` : ""}${i < R - 1 ? `<button data-act="role-right" title="右へ移動">›</button>` : ""}` +
           `${R > 1 ? `<button data-act="role-del" title="この列を削除">×</button>` : ""}</span></div>`;
       });
       h += `<div class="c-head">備考</div>`;
       data.rows.forEach((row, i) => {
-        h += `<div class="c-row" data-row="${row.id}"><textarea class="row-name" rows="2" placeholder="情報項目" aria-label="情報項目">${esc(row.name)}</textarea>` +
+        h += `<div class="c-row" data-row="${row.id}"><textarea class="row-name" rows="2" placeholder="情報項目／ステータス" aria-label="情報項目／ステータス">${esc(row.name)}</textarea>` +
           `<span class="tools">${i ? `<button data-act="row-up" title="上へ移動">↑</button>` : ""}${i < last ? `<button data-act="row-down" title="下へ移動">↓</button>` : ""}` +
           `${last ? `<button data-act="row-del" title="この行を削除">×</button>` : ""}</span></div>`;
-        const hasNote = data.nodes.some(n => n.row === row.id && n.note);
+        const hasNote = placedObjects().some(n => n.placement?.row === row.id && n.note);
         data.roles.forEach(r => {
-          const nodes = data.nodes.filter(n => n.row === row.id && n.col === r.id);
-          h += `<div class="cell${hasNote ? " has-note" : ""}" data-row="${row.id}" data-col="${r.id}">${nodes.map(nodeHtml).join("")}` +
+          const nodes = placedObjects().filter(n => n.placement?.row === row.id && n.placement?.col === r.id);
+          h += `<div class="cell${hasNote ? " has-note" : ""}${cursor.row===row.id&&cursor.col===r.id?" cursor":""}" data-row="${esc(row.id)}" data-col="${esc(r.id)}" tabindex="-1" role="group" aria-label="${esc(row.name||"情報項目／ステータス")} / ${esc(r.name||"みるもの")}">${nodes.map(nodeHtml).join("")}` +
             `<button class="cell-add" data-act="add" title="ここに作業を追加" aria-label="ここに作業を追加">＋</button></div>`;
         });
         h += `<div class="c-remark"><textarea class="remark" data-row="${row.id}" rows="3" aria-label="備考">${esc(row.remark)}</textarea></div>`;
       });
       board.innerHTML = h + `<svg class="edges" id="edges"></svg>`;
-      drawEdges();
+      drawEdges();syncFocus();
     }
 
     // ===== 矢印 =====
@@ -361,7 +854,7 @@
         const a = box(e.from), b = box(e.to);
         if (!a || !b) continue;
         const d = route(a, b, e.route), on = sel?.type === "edge" && sel.id === e.id;
-        h += `<g class="edge ${e.style}${on ? " selected" : ""}" data-edge="${e.id}"><path class="hit" d="${d}"/><path class="line" d="${d}" marker-end="url(#${on ? "ah-sel" : "ah"})"/></g>`;
+        h += `<g class="edge ${e.style}${on ? " selected" : ""}${focusId&&e.from!==focusId&&e.to!==focusId?" focus-muted":""}" data-edge="${e.id}"><path class="hit" d="${d}"/><path class="line" d="${d}" marker-end="url(#${on ? "ah-sel" : "ah"})"/></g>`;
       }
       if (temp) h += `<path class="temp" d="M${temp.x1},${temp.y1} L${temp.x2},${temp.y2}" marker-end="url(#ah-sel)"/>`;
       svg.innerHTML = h;
@@ -369,28 +862,42 @@
     new ResizeObserver(() => drawEdges()).observe(board);
 
     // ===== 選択中の項目の設定 =====
-    function renderInspector() {
-      const el = document.getElementById("inspector");
-      const n = sel?.type === "node" && byId(data.nodes, sel.id);
+    function renderInspector(){
+      const panel=document.getElementById("inspector"),listScroll=panel.querySelector(".inventory-list")?.scrollTop||0;
+      const unplaced=data.objects.filter(o=>!o.placement);
+      const card=o=>`<div class="inventory-item${sel?.type==="object"&&sel.id===o.id?" selected":""}" data-item="${esc(o.id)}" tabindex="-1" role="button" aria-label="${esc(o.label)}を選択・ドラッグして配置" title="ドラッグしてマスへ移動"><span class="inventory-grip" aria-hidden="true">⠿</span><span class="inventory-content"><span class="inventory-name">${esc(o.label)||"未入力"}</span><code class="inventory-id">ID: ${esc(o.id)}</code></span></div>`;
+      const group=(type,title)=>{const list=unplaced.filter(o=>o.type===type);return `<h3>${title}（${list.length}）</h3>`+list.map(card).join("");};
+      panel.innerHTML=`<div class="inventory-head"><h2>未配置オブジェクト</h2><button type="button" class="btn" id="items-open">＋ 一括追加</button></div><p class="inventory-help">ドラッグしてマスへ移動します。配置解除すると、同じIDのままここへ戻ります。</p><div class="inventory-list">${group("action","作業")}${group("doc","帳票")}${unplaced.length?"":'<p class="inventory-help">未配置のオブジェクトはありません。一括追加や複製で用意できます。</p>'}</div><details class="inventory-editor" id="selection-details" open><summary>選択オブジェクト・矢印の編集</summary><div id="selection-editor"></div></details>`;
+      document.getElementById("items-open").addEventListener("click",openItems);
+      panel.querySelectorAll(".inventory-item").forEach(el=>{el.addEventListener("pointerdown",ev=>startInventoryDrag(ev,el));el.addEventListener("pointermove",moveInventoryDrag);el.addEventListener("pointerup",endInventoryDrag);el.addEventListener("pointercancel",endInventoryDrag);});
+      renderSelectionEditor();document.getElementById("selection-details").hidden=!sel;panel.querySelector(".inventory-list").scrollTop=listScroll;
+    }
+    function renderSelectionEditor() {
+      const el = document.getElementById("selection-editor");
+      const n=sel?.type==="object"&&byId(data.objects,sel.id);
+      const isItem=n&&!n.placement;
       const e = sel?.type === "edge" && byId(data.edges, sel.id);
       if (n) {
         el.innerHTML =
-          `<span class="i-kind">${n.type === "doc" ? "帳票" : "作業"}</span>` +
+          `<span class="i-kind">${n.type === "doc" ? "帳票" : "作業"}${isItem?"（未配置）":"（配置済み）"}</span>` +
+          `<code class="inventory-id">ID: ${esc(n.id)}</code>` +
           `<label class="i-field">名前<input id="i-label" list="label-list" value="${esc(n.label)}" size="10"></label>` +
           `<span class="seg" id="i-type"><button data-v="action" class="${n.type === "action" ? "on" : ""}">作業</button><button data-v="doc" class="${n.type === "doc" ? "on" : ""}">帳票</button></span>` +
           `<label class="i-field grow">補足<input id="i-note" value="${esc(n.note)}" placeholder="例：営業担当者別に振り分け作業を行う"></label>` +
-          `<button class="btn danger" id="i-del">削除</button>`;
+          `${n.placement?'<button class="btn" id="i-unplace" title="配置と接続線を外して未配置一覧へ戻す">配置を解除</button>':""}<button class="btn" id="i-duplicate">複製して未配置に追加</button><button class="btn danger" id="i-del">完全に削除</button>`;
         document.getElementById("i-label").addEventListener("input", ev => {
           n.label = ev.target.value; save();
-          const label = board.querySelector(`.node[data-id="${n.id}"] .label`);
+          const label = isItem?document.querySelector(`.inventory-item[data-item="${n.id}"] .inventory-name`):board.querySelector(`.node[data-id="${n.id}"] .label`);
           if (label) label.textContent = n.label || "（未入力）";
           drawEdges();
         });
         document.getElementById("i-note").addEventListener("input", ev => { n.note = ev.target.value; save(); renderBoard(); });
         el.querySelectorAll("#i-type button").forEach(b => b.addEventListener("click", () => { n.type = b.dataset.v; save(); renderBoard(); renderInspector(); }));
+        document.getElementById("i-duplicate").addEventListener("click",duplicateSelected);
+        document.getElementById("i-unplace")?.addEventListener("click",unplaceSelected);
         document.getElementById("i-del").addEventListener("click", deleteSelected);
       } else if (e) {
-        const a = byId(data.nodes, e.from), b = byId(data.nodes, e.to);
+        const a = byId(placedObjects(), e.from), b = byId(placedObjects(), e.to);
         el.innerHTML =
           `<span class="i-kind">矢印</span><span>${esc(a.label)} → ${esc(b.label)}</span>` +
           `<span class="seg" id="i-style"><button data-v="solid" class="${e.style === "solid" ? "on" : ""}"><span class="ln"></span>実線</button><button data-v="dashed" class="${e.style === "dashed" ? "on" : ""}"><span class="ln dashed"></span>点線</button></span>` +
@@ -407,26 +914,26 @@
     }
 
     function updateSelection() {
+      const n=sel?.type==="object"&&byId(data.objects,sel.id);
+      if(n?.placement){cursor={row:n.placement?.row,col:n.placement?.col};lastNodeId=n.id;}
+      board.querySelectorAll(".cell").forEach(c=>c.classList.toggle("cursor",c.dataset.row===cursor.row&&c.dataset.col===cursor.col));
       board.querySelectorAll(".node.selected").forEach(x => x.classList.remove("selected"));
-      if (sel?.type === "node") board.querySelector(`.node[data-id="${sel.id}"]`)?.classList.add("selected");
-      drawEdges(); renderInspector();
+      if (sel?.type === "object") board.querySelector(`.node[data-id="${sel.id}"]`)?.classList.add("selected");
+      drawEdges(); renderInspector();syncFocus();
     }
 
     // ===== 作業の追加・編集・削除 =====
-    function addNode(row, col) {
-      const n = { id: uid(), row, col, label: "", type: "action", note: "" };
-      data.nodes.push(n);
-      sel = { type: "node", id: n.id };
-      renderBoard(); renderInspector();
-      editLabel(n.id, true);
+    function addNode(row,col){
+      const previous=sel?.type==="object"?sel.id:lastNodeId;
+      const o={id:uid(),label:"",type:"action",note:"",placement:{row,col}};data.objects.push(o);cursor={row,col};sel={type:"object",id:o.id};renderBoard();renderInspector();editLabel(o.id,true,previous);
     }
-
-    function editLabel(id, isNew) {
-      const n = byId(data.nodes, id), label = board.querySelector(`.node[data-id="${id}"] .label`);
+    function editLabel(id, isNew,returnId=null) {
+      const n = byId(placedObjects(), id), label = board.querySelector(`.node[data-id="${id}"] .label`);
       if (!n || !label) return;
       const input = document.createElement("input");
       input.className = "label-input"; input.value = n.label; input.setAttribute("list", "label-list");
-      input.placeholder = "作業名";
+      sel={type:"object",id};cursor={row:n.placement?.row,col:n.placement?.col};lastNodeId=id;
+      input.placeholder = "作業";
       label.replaceWith(input);
       input.focus(); input.select();
       let done = false;
@@ -434,39 +941,67 @@
         if (done) return; done = true;
         const v = input.value.trim();
         if (commit && v) n.label = v;
-        if (isNew && !n.label) { data.nodes = data.nodes.filter(x => x !== n); cleanup(); sel = null; }
+        if (isNew && !n.label) { data.objects=data.objects.filter(x=>x!==n); cleanup();sel=byId(data.objects,returnId)?{type:"object",id:returnId}:null; }
+        if(sel?.type==="object"){const selected=byId(data.objects,sel.id);if(selected?.placement){cursor={row:selected.placement?.row,col:selected.placement?.col};lastNodeId=selected.id;}}
         save(); renderBoard(); renderInspector();
       };
       input.addEventListener("pointerdown", ev => ev.stopPropagation());
       input.addEventListener("keydown", ev => {
         if (ev.isComposing || ev.keyCode === 229) return;
-        if (ev.key === "Enter") { ev.preventDefault(); finish(true); }
-        if (ev.key === "Escape") { ev.preventDefault(); finish(false); }
+        if (ev.key === "Enter" || ev.key === "Escape") { ev.preventDefault();ev.stopPropagation();finish(true);focusCurrent(); }
       });
       input.addEventListener("blur", () => finish(true));
     }
 
-    function deleteSelected() {
-      if (!sel) return;
-      if (sel.type === "node") data.nodes = data.nodes.filter(n => n.id !== sel.id);
-      else data.edges = data.edges.filter(e => e.id !== sel.id);
-      cleanup(); sel = null; save();
-      renderBoard(); renderInspector();
+    function deleteSelected(){
+      if(!sel)return;
+      if(sel.type==="object")data.objects=data.objects.filter(o=>o.id!==sel.id);else data.edges=data.edges.filter(e=>e.id!==sel.id);
+      cleanup();sel=null;save();renderBoard();renderInspector();focusCurrent();
+    }
+    function unplaceSelected(){
+      const o=sel?.type==="object"&&byId(data.objects,sel.id);if(!o?.placement)return;
+      const count=data.edges.filter(e=>e.from===o.id||e.to===o.id).length;o.placement=null;cleanup();workspace.panelOpen=true;save();renderBoard();renderInspector();focusCurrent();toast(`同じIDで未配置に戻しました${count?`。接続線${count}本を解除しました`:""}`);
+    }
+    function duplicateSelected(){
+      const source=sel?.type==="object"&&byId(data.objects,sel.id);if(!source)return;
+      const copy={id:uid(),label:source.label,type:source.type,note:source.note,placement:null};data.objects.push(copy);sel={type:"object",id:copy.id};workspace.panelOpen=true;save();renderBoard();renderInspector();focusCurrent();toast("別IDのオブジェクトを未配置に追加しました");
     }
 
     // ===== ドラッグ（作業の移動・矢印を引く） =====
     let drag = null;
     const rel = ev => { const r = board.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
     const inside = (el, x, y) => { const r = el.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
-    const cellAt = (x, y) => [...board.querySelectorAll(".cell")].find(c => inside(c, x, y));
-    const nodeAt = (x, y, except) => [...board.querySelectorAll(".node")].find(n => n.dataset.id !== except && inside(n, x, y));
+    const cellAt = (x, y) => inside(document.getElementById("canvas-scroll"),x,y)?[...board.querySelectorAll(".cell")].find(c => inside(c, x, y)):null;
+    const nodeAt = (x, y, except) => inside(document.getElementById("canvas-scroll"),x,y)?[...board.querySelectorAll(".node")].find(n => n.dataset.id !== except && inside(n, x, y)):null;
+
+    function startInventoryDrag(ev,el){
+      if(ev.button!==0)return;ev.preventDefault();
+      drag={type:"inventory",id:el.dataset.item,x:ev.clientX,y:ev.clientY,moved:false,ghost:null};el.setPointerCapture(ev.pointerId);
+    }
+    function moveInventoryDrag(ev){
+      if(drag?.type!=="inventory")return;
+      if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)<5)return;
+      drag.moved=true;const item=byId(data.objects,drag.id);if(!item||item.placement)return;
+      if(!drag.ghost){drag.ghost=document.createElement("div");drag.ghost.className="inventory-ghost"+(item.type==="doc"?" doc":"");drag.ghost.textContent=item.label;document.getElementById("editor").append(drag.ghost);}
+      drag.ghost.style.left=(ev.clientX+12)+"px";drag.ghost.style.top=(ev.clientY+12)+"px";
+      board.querySelectorAll(".cell.drop").forEach(el=>el.classList.remove("drop"));cellAt(ev.clientX,ev.clientY)?.classList.add("drop");
+      const scroll=document.getElementById("canvas-scroll"),r=scroll.getBoundingClientRect();
+      if(ev.clientY>=r.top&&ev.clientY<=r.bottom&&ev.clientX>=r.left&&ev.clientX<=r.right){if(ev.clientX<r.left+40)scroll.scrollLeft-=16;if(ev.clientX>r.right-40)scroll.scrollLeft+=16;if(ev.clientY<r.top+40)scroll.scrollTop-=16;if(ev.clientY>r.bottom-40)scroll.scrollTop+=16;}
+    }
+    function endInventoryDrag(ev){
+      if(drag?.type!=="inventory")return;const d=drag;drag=null;d.ghost?.remove();board.querySelectorAll(".cell.drop").forEach(el=>el.classList.remove("drop"));
+      if(ev.type==="pointercancel")return;
+      const cell=d.moved&&cellAt(ev.clientX,ev.clientY),item=byId(data.objects,d.id);if(!item)return;
+      if(cell&&!item.placement){item.placement={row:cell.dataset.row,col:cell.dataset.col};cursor={...item.placement};sel={type:"object",id:item.id};lastNodeId=item.id;save();renderBoard();renderInspector();focusCurrent();}
+      else if(!d.moved){sel={type:"object",id:item.id};updateSelection();focusCurrent();}
+    }
 
     board.addEventListener("pointerdown", ev => {
       if (ev.button !== 0 || ev.target.closest("input,textarea,button,select")) return;
       const edge = ev.target.closest("[data-edge]");
       if (edge) { sel = { type: "edge", id: edge.dataset.edge }; updateSelection(); return; }
       const nodeEl = ev.target.closest(".node");
-      if (!nodeEl) { if (sel) { sel = null; updateSelection(); } return; }
+      if (!nodeEl) {const cell=ev.target.closest(".cell");if(cell){cursor={row:cell.dataset.row,col:cell.dataset.col};sel=null;updateSelection();}return; }
       if (ev.target.closest(".handle")) drag = { type: "connect", from: nodeEl.dataset.id };
       else drag = { type: "move", id: nodeEl.dataset.id, el: nodeEl, x: ev.clientX, y: ev.clientY, moved: false };
       board.setPointerCapture(ev.pointerId);
@@ -509,9 +1044,9 @@
       }
       d.el.classList.remove("dragging");
       d.el.style.transform = "";
-      if (!d.moved) { sel = { type: "node", id: d.id }; return updateSelection(); }
-      const cell = !cancel && cellAt(ev.clientX, ev.clientY), n = byId(data.nodes, d.id);
-      if (cell && n) { n.row = cell.dataset.row; n.col = cell.dataset.col; sel = { type: "node", id: n.id }; save(); renderBoard(); renderInspector(); }
+      if (!d.moved) { sel = { type: "object", id: d.id }; updateSelection();focusCurrent();return; }
+      const cell = !cancel && cellAt(ev.clientX, ev.clientY), n = byId(placedObjects(), d.id);
+      if (cell && n) { n.placement={row:cell.dataset.row,col:cell.dataset.col}; sel = { type: "object", id: n.id }; save(); renderBoard(); renderInspector(); }
       else drawEdges();
     }
     board.addEventListener("pointerup", endDrag);
@@ -535,40 +1070,112 @@
       const b = ev.target.closest("[data-act]");
       if (!b) return;
       const act = b.dataset.act;
+      if(act === "bulk-open")return openBulk();
       if (act === "add") { const c = b.closest(".cell"); return addNode(c.dataset.row, c.dataset.col); }
       const roleId = b.closest("[data-role]")?.dataset.role, rowId = b.closest("[data-row]")?.dataset.row;
       if (act === "role-left" || act === "role-right") moveItem(data.roles, roleId, act === "role-left" ? -1 : 1);
       if (act === "row-up" || act === "row-down") moveItem(data.rows, rowId, act === "row-up" ? -1 : 1);
       if (act === "role-del") {
-        const r = byId(data.roles, roleId), count = data.nodes.filter(n => n.col === roleId).length;
-        if (count && !confirm(`「${r.name || "名称未設定"}」の列と、その中の作業 ${count}件を削除しますか？`)) return;
+        const r = byId(data.roles, roleId), count = placedObjects().filter(n => n.placement?.col === roleId).length;
+        if (count && !confirm(`「${r.name || "名称未設定"}」の列と、その中の作業 ${count}件の配置と接続線を解除しますか？`)) return;
         data.roles = data.roles.filter(x => x.id !== roleId);
       }
       if (act === "row-del") {
-        const r = byId(data.rows, rowId), count = data.nodes.filter(n => n.row === rowId).length;
-        if (count && !confirm(`「${r.name || "名称未設定"}」の行と、その中の作業 ${count}件を削除しますか？`)) return;
+        const r = byId(data.rows, rowId), count = placedObjects().filter(n => n.placement?.row === rowId).length;
+        if (count && !confirm(`「${r.name || "名称未設定"}」の行と、その中の作業 ${count}件の配置と接続線を解除しますか？`)) return;
         data.rows = data.rows.filter(x => x.id !== rowId);
       }
       cleanup(); save(); renderBoard(); renderInspector();
     });
 
-    // 業務名・担当名・情報項目・備考の入力
+    // 業務名・みるもの・情報項目／ステータス・備考の入力
     board.addEventListener("input", ev => {
       const t = ev.target;
-      if (t.id === "title") data.title = t.value;
-      else if (t.classList.contains("role-name")) byId(data.roles, t.closest("[data-role]").dataset.role).name = t.value;
+      if (t.classList.contains("role-name")) byId(data.roles, t.closest("[data-role]").dataset.role).name = t.value;
       else if (t.classList.contains("row-name")) byId(data.rows, t.closest("[data-row]").dataset.row).name = t.value;
       else if (t.classList.contains("remark")) byId(data.rows, t.dataset.row).remark = t.value;
       else return;
       save(); drawEdges();
     });
 
-    // ===== キーボード =====
-    document.addEventListener("keydown", ev => {
-      if (ev.target.closest("input,textarea,select") || document.querySelector(".label-input")) return;
-      if ((ev.key === "Delete" || ev.key === "Backspace") && sel) { ev.preventDefault(); deleteSelected(); }
-      else if (ev.key === "Escape" && sel) { sel = null; updateSelection(); }
-      else if (ev.key === "Enter" && sel?.type === "node") { ev.preventDefault(); editLabel(sel.id, false); }
+    // ===== キーボード・表示 =====
+    function syncPanel(redraw=true){
+      const open=workspace.panelOpen!==false;document.getElementById("inspector").hidden=!open;document.querySelector(".canvas-layout").classList.toggle("panel-closed",!open);
+      const b=document.getElementById("panel-toggle");b.setAttribute("aria-expanded",String(open));b.title=open?"オブジェクトを閉じる":"オブジェクトを開く";b.setAttribute("aria-label",b.title);
+      if(redraw)requestAnimationFrame(()=>drawEdges());
+    }
+    document.getElementById("panel-toggle").addEventListener("click",()=>{workspace.panelOpen=workspace.panelOpen===false;syncPanel();persistWorkspace();if(document.activeElement?.closest("#inspector"))focusCurrent();});
+    document.getElementById("title").addEventListener("input",ev=>{data.title=ev.target.value;document.getElementById("print-title").textContent="業務名："+(data.title||"未設定");save();});
+    function focusCurrent(){
+      const o=sel?.type==="object"&&byId(data.objects,sel.id);
+      if(o&&!o.placement&&workspace.panelOpen!==false){const item=document.querySelector(`.inventory-item[data-item="${o.id}"]`);item?.focus({preventScroll:true});item?.scrollIntoView({block:"nearest"});return;}
+      if(o?.placement){cursor={...o.placement};lastNodeId=o.id;}
+      const el=o?.placement?board.querySelector(`.node[data-id="${o.id}"]`):board.querySelector(`.cell[data-row="${cursor.row}"][data-col="${cursor.col}"]`);
+      el?.focus({preventScroll:true});el?.scrollIntoView({block:"nearest",inline:"nearest"});
+    }
+    function selectCell(row,col){
+      cursor={row,col};const n=placedObjects().find(n=>n.placement?.row===row&&n.placement?.col===col);sel=n?{type:"object",id:n.id}:null;updateSelection();focusCurrent();
+    }
+    function navigate(key){
+      let r=data.rows.findIndex(x=>x.id===cursor.row),c=data.roles.findIndex(x=>x.id===cursor.col);
+      if(key==="g"){r=0;c=0;}else if(key==="G"){r=data.rows.length-1;c=data.roles.length-1;}
+      else if(key==="h")c--;else if(key==="l")c++;else if(key==="j")r++;else if(key==="k")r--;
+      selectCell(data.rows[Math.max(0,Math.min(data.rows.length-1,r))].id,data.roles[Math.max(0,Math.min(data.roles.length-1,c))].id);
+    }
+    function focusSet(){const ids=new Set([focusId]);if(focusId)data.edges.forEach(e=>{if(e.from===focusId)ids.add(e.to);if(e.to===focusId)ids.add(e.from);});return ids;}
+    function syncFocus(){
+      if(focusId&&!byId(placedObjects(),focusId))focusId=null;
+      const ids=focusSet();board.querySelectorAll(".node").forEach(el=>el.closest(".node-wrap").classList.toggle("focus-muted",!!focusId&&!ids.has(el.dataset.id)));
+      document.getElementById("focus-bar").hidden=!focusId;
+      document.getElementById("focus-label").textContent=focusId?`集中：${byId(placedObjects(),focusId).label||"未入力"} と接続先`:"";
+      const btn=document.getElementById("focus-toggle");btn.disabled=!focusId&&!(sel?.type==="object"&&byId(data.objects,sel.id)?.placement);btn.setAttribute("aria-pressed",String(!!focusId));
+      btn.setAttribute("aria-label",focusId?"集中を解除":"選択作業に集中");
+    }
+    function toggleFocus(){if(focusId)focusId=null;else if(sel?.type==="object"&&byId(data.objects,sel.id)?.placement)focusId=sel.id;syncFocus();drawEdges();focusCurrent();}
+    let nativeFullscreen=false;
+    function setFullscreen(active){
+      document.getElementById("editor").classList.toggle("is-fullscreen",active);document.body.classList.toggle("editor-fullscreen",active);
+      const b=document.getElementById("fullscreen"),label=active?"全画面表示を解除":"全画面表示";b.title=label+"（f）";b.setAttribute("aria-label",label);b.setAttribute("aria-pressed",String(active));
+      document.getElementById("fullscreen-icon").setAttribute("d",active?"M3 8h5V3M21 8h-5V3M8 21v-5H3M16 21v-5h5":"M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5");requestAnimationFrame(()=>drawEdges());
+    }
+    async function toggleFullscreen(){
+      const editor=document.getElementById("editor");
+      if(editor.classList.contains("is-fullscreen")){
+        if(document.fullscreenElement===editor){try{await document.exitFullscreen();}catch{toast("Escで全画面を解除できます");return;}}setFullscreen(false);focusCurrent();
+      }else{setFullscreen(true);if(editor.requestFullscreen){try{await editor.requestFullscreen();}catch{}}}
+    }
+    document.getElementById("fullscreen").addEventListener("click",toggleFullscreen);
+    document.getElementById("focus-toggle").addEventListener("click",toggleFocus);
+    document.getElementById("exit-focus").addEventListener("click",()=>{focusId=null;syncFocus();drawEdges();focusCurrent();});
+    document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement===document.getElementById("editor"))nativeFullscreen=true;else if(nativeFullscreen){nativeFullscreen=false;setFullscreen(false);focusCurrent();}});
+    document.addEventListener("focusin",ev=>{document.getElementById("mode-state").textContent=ev.target.matches("input,textarea,select")?"入力モード":"通常モード";});
+    document.addEventListener("focusout",()=>{document.getElementById("mode-state").textContent="通常モード";});
+    document.addEventListener("keydown",ev=>{
+      if(ev.isComposing||ev.keyCode===229||document.getElementById("bulk-dialog").open||document.getElementById("items-dialog").open)return;
+      const editing=ev.target.closest("input,textarea,select,[contenteditable=true]");
+      if(ev.key==="Escape"){
+        pendingG=null;ev.preventDefault();
+        if(editing){ev.target.blur();focusCurrent();}
+        else if(document.getElementById("editor").classList.contains("is-fullscreen"))toggleFullscreen();
+        else focusCurrent();return;
+      }
+      if(editing||ev.metaKey||ev.altKey)return;
+      if(ev.ctrlKey){if(ev.key==="r"){ev.preventDefault();if(!ev.repeat)restoreHistory(true);}return;}
+      const key=ev.key;if(ev.shiftKey&&!["J","K","G","T"].includes(key))return;
+      if(!["h","j","k","l","J","K","i","e","d","Delete","Backspace","Enter","f","o","u","g","G","t","T"].includes(key)){pendingG=null;return;}
+      ev.preventDefault();if(ev.repeat&&!["h","j","k","l","J","K"].includes(key))return;
+      if(key==="g"){const now=Date.now();if(pendingG!==null&&now-pendingG<=900){pendingG=null;navigate("g");}else pendingG=now;return;}pendingG=null;
+      if(key==="t"||key==="T"){const index=workspace.tabs.findIndex(t=>t.id===workspace.active);activateTab(workspace.tabs[(index+(key==="t"?1:-1)+workspace.tabs.length)%workspace.tabs.length].id);}
+      else if(["h","j","k","l","G"].includes(key))navigate(key);
+      else if(key==="J"||key==="K"){
+        const list=placedObjects().filter(n=>n.placement?.row===cursor.row&&n.placement?.col===cursor.col),index=list.findIndex(n=>n.id===sel?.id),next=list[index+(key==="J"?1:-1)];
+        if(next){sel={type:"object",id:next.id};updateSelection();focusCurrent();}
+      }else if(key==="i")addNode(cursor.row,cursor.col);
+      else if(key==="e"||key==="Enter"){
+        const o=sel?.type==="object"&&byId(data.objects,sel.id);if(o?.placement)editLabel(o.id,false);else if(o){workspace.panelOpen=true;syncPanel();persistWorkspace();const input=document.getElementById("i-label");input?.focus();input?.select();}
+      }
+      else if(["d","Delete","Backspace"].includes(key)){deleteSelected();focusCurrent();}
+      else if(key==="f")toggleFullscreen();else if(key==="o")toggleFocus();else if(key==="u")restoreHistory();
     });
 
     // ===== ツールバー =====
@@ -593,13 +1200,106 @@
       try { localStorage.setItem(STYLE_KEY, newStyle); } catch {}
     });
 
-    document.getElementById("export-btn").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${data.title || "business-sequence"}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+    const AXIS_DESCRIPTION="行＝情報項目／ステータス、列＝みるもの（担当・外部）";
+    function exportData(source=data){
+      const titleFor=key=>source.axisTitles?.[key]||AXIS_TITLES[key];
+      return {...source,metadata:{
+        format:"puzzles.business-sequence",version:2,description:AXIS_DESCRIPTION,
+        axes:{rows:{key:"rows",title:titleFor("rows"),label:"情報項目／ステータス",direction:"vertical",description:"各行は情報項目またはステータスを表します。"},columns:{key:"roles",title:titleFor("roles"),label:"みるもの（担当・外部）",direction:"horizontal",description:"各列は情報を見る、扱う担当者・部署・外部の主体を表します。"}},
+        objects:"objectsは未配置・配置済みを含むすべてのオブジェクトです。同じIDのオブジェクトを移動します。placementがnullなら未配置、{row,col}なら配置済みです。複製は別IDを作ります。",
+        references:{"objects.placement.row":"rows.id","objects.placement.col":"roles.id","edges.from":"objects.id（接続元）","edges.to":"objects.id（接続先）"},
+        objectTypes:{action:"作業",doc:"帳票・外部資料"},edgeStyles:{solid:"作業の流れ・情報の受け渡し",dashed:"参照・帳票とのやりとり"}
+      }};
+    }
+    function markdownText(value){return esc(value).replace(/[\\`*_\[\]{}()#+!|]/g,c=>"\\"+c).replace(/\r\n?|\n/g,"<br>");}
+    function markdownTable(headers,rows){return [headers,headers.map(()=>"---"),...rows].map(row=>"| "+row.join(" | ")+" |").join("\n");}
+    function exportMarkdown(){
+      const m=markdownText;
+      const matrix=data.rows.map(row=>[m(row.name),...data.roles.map(role=>placedObjects().filter(n=>n.placement?.row===row.id&&n.placement?.col===role.id).map(n=>`${m(n.label)} [${m(n.id)}]`).join("<br>")),m(row.remark)]);
+      return ["# "+m(data.title||"業務シーケンス図"),AXIS_DESCRIPTION,"行のタイトル："+m(axisTitle("rows"))+"、列のタイトル："+m(axisTitle("roles")),
+        "実線＝作業の流れ・情報の受け渡し、点線＝参照・帳票とのやりとり。矢印は接続元 → 接続先です。未配置と配置済みは同じオブジェクトIDで管理します。", "## マトリクス",
+        markdownTable([m(axisTitle("rows")),...data.roles.map(r=>m(r.name)),"備考"],matrix),
+        "## 情報項目／ステータス（行）",markdownTable(["ID","名前","備考"],data.rows.map(r=>[m(r.id),m(r.name),m(r.remark)])),
+        "## みるもの（列）",markdownTable(["ID","名前"],data.roles.map(r=>[m(r.id),m(r.name)])),
+        "## オブジェクト一覧（同じIDで配置・解除）",markdownTable(["ID","名前","種類","補足","配置状態","行ID","列ID"],data.objects.map(o=>[m(o.id),m(o.label),o.type==="doc"?"帳票":"作業",m(o.note),o.placement?"配置済み":"未配置",m(o.placement?.row),m(o.placement?.col)])),
+        "## 接続（矢印）",markdownTable(["ID","接続元ID","接続先ID","線の意味","経路"],data.edges.map(e=>[m(e.id),m(e.from),m(e.to),e.style==="dashed"?"点線：参照・帳票とのやりとり":"実線：作業の流れ・情報の受け渡し",m(ROUTES[e.route])]))
+      ].join("\n\n")+"\n";
+    }
+    function exportHtml(){
+      const text=v=>esc(v).replace(/\r\n?|\n/g,"<br>");
+      const table=(caption,headers,rows)=>`<div class="table-wrap"><table><caption>${esc(caption)}</caption><thead><tr>${headers.map(h=>`<th scope="col">${text(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map((v,i)=>i===0?`<th scope="row">${v}</th>`:`<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      const matrix=data.rows.map(row=>[text(row.name),...data.roles.map(role=>placedObjects().filter(n=>n.placement?.row===row.id&&n.placement?.col===role.id).map(n=>`<div>${text(n.label)} <small>[${text(n.id)}]</small></div>`).join("")),text(row.remark)]);
+      const json=JSON.stringify(exportData(),null,2).replace(/</g,"\\u003c");
+      return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(data.title||"業務シーケンス図")}</title><style>body{margin:0;padding:24px;color:#203a2c;font:14px/1.7 sans-serif}h1{font-size:24px}h2{font-size:18px;margin-top:32px}.table-wrap{overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;text-align:left}caption{text-align:left;font-weight:bold;padding:8px 0}th,td{border:1px solid #dce2d9;padding:10px;vertical-align:top;min-width:100px}thead,tbody th{background:#f1f5ee}small{color:#627067}@media print{body{padding:0}.table-wrap{overflow:visible}tr{break-inside:avoid}}</style></head><body><h1>${text(data.title||"業務シーケンス図")}</h1><p>${esc(AXIS_DESCRIPTION)}</p><p>行のタイトル：${text(axisTitle("rows"))}、列のタイトル：${text(axisTitle("roles"))}</p><p>実線＝作業の流れ・情報の受け渡し、点線＝参照・帳票とのやりとり。矢印は接続元 → 接続先です。未配置と配置済みは同じオブジェクトIDで管理します。</p>`+
+        table("マトリクス",[axisTitle("rows"),...data.roles.map(r=>r.name),"備考"],matrix)+
+        table("情報項目／ステータス（行）",["ID","名前","備考"],data.rows.map(r=>[text(r.id),text(r.name),text(r.remark)]))+
+        table("みるもの（列）",["ID","名前"],data.roles.map(r=>[text(r.id),text(r.name)]))+
+        table("オブジェクト一覧（同じIDで配置・解除）",["ID","名前","種類","補足","配置状態","行ID","列ID"],data.objects.map(o=>[text(o.id),text(o.label),o.type==="doc"?"帳票":"作業",text(o.note),o.placement?"配置済み":"未配置",text(o.placement?.row),text(o.placement?.col)]))+
+        table("接続（矢印）",["ID","接続元ID","接続先ID","線の意味","経路"],data.edges.map(e=>[text(e.id),text(e.from),text(e.to),e.style==="dashed"?"点線：参照・帳票とのやりとり":"実線：作業の流れ・情報の受け渡し",text(ROUTES[e.route])]))+
+        '<script type="application/json" id="sequence-data">'+json+'</scr'+'ipt></body></html>';
+    }
+    function downloadExport(extension,content,mime){
+      const url=URL.createObjectURL(new Blob([content],{type:mime})),a=document.createElement("a");
+      a.href=url;a.download=`${(data.title||"business-sequence").replace(/[\\/:*?"<>|]/g,"_")}.${extension}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      toast("行・列の意味を含めて書き出しました");
+    }
+    document.getElementById("export-btn").addEventListener("click",()=>downloadExport("json",JSON.stringify(exportData(),null,2),"application/json"));
+    function exportWorkspace(){save();return {...workspace,tabs:workspace.tabs.map(tab=>({id:tab.id,data:exportData(tab.data)}))};}
+    document.getElementById("export-all").addEventListener("click",()=>downloadExport("all-tabs.json",JSON.stringify(exportWorkspace(),null,2),"application/json"));
+    document.getElementById("export-md").addEventListener("click",()=>downloadExport("md",exportMarkdown(),"text/markdown;charset=utf-8"));
+    document.getElementById("export-html").addEventListener("click",()=>downloadExport("html",exportHtml(),"text/html;charset=utf-8"));
+
+    const itemsDialog=document.getElementById("items-dialog"),itemsNames=document.getElementById("items-names");
+    const itemNames=()=>itemsNames.value.split(/\r\n?|\n/).map(line=>line.trim()).filter(Boolean);
+    function syncItems(){const doc=document.getElementById("items-doc").checked;document.getElementById("items-label").textContent=`${doc?"帳票":"作業"}名（1行につき1項目）`;itemsNames.placeholder=doc?"請求書\n見積書":"作成\n確認\n承認";document.getElementById("items-count").textContent=`${itemNames().length}件`;document.getElementById("items-error").textContent="";}
+    function openItems(){document.getElementById("items-action").checked=true;document.getElementById("items-doc").checked=false;itemsNames.value="";syncItems();itemsDialog.showModal();itemsNames.focus();}
+    ["items-action","items-doc"].forEach(id=>document.getElementById(id).addEventListener("change",syncItems));itemsNames.addEventListener("input",syncItems);
+    document.getElementById("items-cancel").addEventListener("click",()=>itemsDialog.close());itemsDialog.addEventListener("close",()=>focusCurrent());
+    document.getElementById("items-form").addEventListener("submit",ev=>{
+      ev.preventDefault();const names=itemNames();if(!names.length){document.getElementById("items-error").textContent="名前を1つ以上入力してください。";itemsNames.focus();return;}
+      const type=document.getElementById("items-doc").checked?"doc":"action",items=names.map(label=>({id:uid(),label,type,note:"",placement:null}));data.objects.push(...items);sel={type:"object",id:items[0].id};save();renderBoard();renderInspector();itemsDialog.close();focusCurrent();toast(`${items.length}件を一覧に追加しました。マスへドラッグして配置できます。`);
+    });
+
+    const bulkDialog=document.getElementById("bulk-dialog"),bulkTitles=document.getElementById("bulk-titles"),bulkTitle=document.getElementById("bulk-axis-title");
+    const bulkIsRow=()=>document.getElementById("bulk-row").checked;
+    let bulkDrafts=null,bulkAxis="row";
+    const listText=list=>list.map(item=>item.name||"（名称未設定）").join("\n");
+    function bulkNames(value=bulkTitles.value){return value.split(/\r\n?|\n/).map(line=>line.trim()).filter(Boolean).map(name=>name==="（名称未設定）"?"":name);}
+    function syncBulk(){
+      const row=bulkIsRow(),title=bulkTitle.value.trim()||AXIS_TITLES[row?"rows":"roles"];
+      document.getElementById("bulk-label").textContent=`${row?"行":"列"}のタイトル（${title}）`;
+      bulkTitles.placeholder=row?"受注データ\n精算データ":"営業\n経理";
+      document.getElementById("bulk-count").textContent=`${bulkNames().length}${row?"行":"列"}`;
+      document.getElementById("bulk-error").textContent="";
+    }
+    function stashBulk(){bulkDrafts[bulkAxis]={title:bulkTitle.value,text:bulkTitles.value};}
+    function showBulkAxis(){
+      const draft=bulkDrafts[bulkAxis];bulkTitle.value=draft.title;bulkTitles.value=draft.text;syncBulk();
+    }
+    function openBulk(){
+      bulkDrafts={row:{title:axisTitle("rows"),text:listText(data.rows)},col:{title:axisTitle("roles"),text:listText(data.roles)}};
+      bulkAxis="row";document.getElementById("bulk-row").checked=true;document.getElementById("bulk-col").checked=false;
+      showBulkAxis();bulkDialog.showModal();bulkTitles.focus();
+    }
+    ["bulk-row","bulk-col"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{stashBulk();bulkAxis=bulkIsRow()?"row":"col";showBulkAxis();}));
+    bulkTitles.addEventListener("input",syncBulk);bulkTitle.addEventListener("input",syncBulk);
+    document.getElementById("bulk-cancel").addEventListener("click",()=>bulkDialog.close());
+    bulkDialog.addEventListener("close",()=>focusCurrent());
+    function reconcileAxis(existing,names,isRow){
+      const used=new Set(),result=names.map(name=>{const item=existing.find(item=>!used.has(item.id)&&item.name===name);if(item){used.add(item.id);return {...item};}return null;});
+      return result.map((item,i)=>{if(item)return item;const prior=existing[i]&&!used.has(existing[i].id)?existing[i]:existing.find(item=>!used.has(item.id));if(prior){used.add(prior.id);return {...prior,name:names[i]};}return isRow?{id:uid(),name:names[i],remark:""}:{id:uid(),name:names[i]};});
+    }
+    document.getElementById("bulk-form").addEventListener("submit",ev=>{
+      ev.preventDefault();stashBulk();
+      const rowNames=bulkNames(bulkDrafts.row.text),colNames=bulkNames(bulkDrafts.col.text);
+      if(!rowNames.length||!colNames.length){document.getElementById("bulk-error").textContent="行・列それぞれに1項目以上入力してください。";return;}
+      const rows=reconcileAxis(data.rows,rowNames,true),roles=reconcileAxis(data.roles,colNames,false);
+      const rowIds=new Set(rows.map(x=>x.id)),colIds=new Set(roles.map(x=>x.id));
+      const removed=placedObjects().filter(n=>!rowIds.has(n.placement?.row)||!colIds.has(n.placement?.col));
+      if(removed.length&&!confirm(`行・列の削除によりオブジェクト${removed.length}件を未配置に戻し、接続線を解除します。保存しますか？`))return;
+      data.rows=rows;data.roles=roles;data.axisTitles={rows:bulkDrafts.row.title.trim()||AXIS_TITLES.rows,roles:bulkDrafts.col.title.trim()||AXIS_TITLES.roles};cleanup();
+      validateSelection();
+      save();renderBoard();renderInspector();bulkDialog.close();focusCurrent();toast("行・列を保存しました");
     });
 
     const fileEl = document.getElementById("file");
@@ -610,7 +1310,13 @@
       try {
         const d = JSON.parse(await file.text());
         if (!d || typeof d !== "object" || Array.isArray(d)) throw new Error();
-        if (!confirm("現在の図を読み込んだ内容で置き換えますか？")) return;
+        if(d.format===WORKSPACE_FORMAT){
+          const restored=normalizeWorkspace(d);if(!confirm("現在の全タブを読み込んだ内容で置き換えますか？"))return;
+          workspace=restored;tabViews.clear();data=workspace.tabs.find(t=>t.id===workspace.active).data;
+          cursor={row:data.rows[0].id,col:data.roles[0].id};sel=null;focusId=null;lastNodeId=null;past=[];future=[];savedSnapshot=JSON.stringify(data);tabsSignature="";
+          persistWorkspace();renderBoard();renderInspector();renderTabs();syncHistory();toast("全タブを読み込みました");return;
+        }
+        if (!confirm("現在のタブの図を読み込んだ内容で置き換えますか？")) return;
         data = normalize(d); sel = null; save(); renderBoard(); renderInspector();
         toast("読み込みました");
       } catch { toast("JSONの形式が正しくありません"); }
@@ -623,9 +1329,12 @@
       document.getElementById("title").focus();
     });
 
-    syncStyle();
+    document.getElementById("undo-btn").addEventListener("click",()=>restoreHistory());
+    document.getElementById("redo-btn").addEventListener("click",()=>restoreHistory(true));
+    syncHistory();syncStyle();renderTabs();
     renderBoard();
     renderInspector();
+    if(requestedInvoiceAdded||requestedInvoiceInformationAdded)persistWorkspace();
   </script>
 </body>
 </html>

@@ -8,8 +8,6 @@
   <style>
     :root {
       color-scheme:light;
-      --green:#044523; --brown:#7e513c; --paper:#f6f5ef;
-      --ink:#203a2c; --muted:#627067; --line:#dce2d9;
       --surface:#eaece3; --hover:#eaf0e8; --focus:#b07854;
       --sun:#a4472f; --sat:#2f5f7e; --tint:#fafaf6;
     }
@@ -155,8 +153,9 @@
       .scroll { overflow:visible; }
     }
   </style>
+<link rel="stylesheet" href="bases/base.css">
 </head>
-<body>
+<body data-layout="sheet">
   <header>
     <div class="brand"><span class="mark" aria-hidden="true"></span><span contenteditable="true">PROJECT NAME</span></div>
     <span class="note">予定はこのブラウザに保存されます</span>
@@ -175,12 +174,12 @@
     </div>
 
     <div class="tabs" role="tablist" aria-label="表示切り替え">
-      <button class="tab" role="tab" data-tab="calendar" aria-controls="panel-calendar"><span class="number">01</span>カレンダー</button>
-      <button class="tab" role="tab" data-tab="gantt" aria-controls="panel-gantt"><span class="number">02</span>ガントチャート</button>
-      <button class="tab" role="tab" data-tab="matrix" aria-controls="panel-matrix"><span class="number">03</span>マトリクスシーケンス</button>
+      <button class="tab" role="tab" id="view-tab-calendar" data-tab="calendar" aria-controls="panel-calendar"><span class="number">01</span>カレンダー</button>
+      <button class="tab" role="tab" id="view-tab-gantt" data-tab="gantt" aria-controls="panel-gantt"><span class="number">02</span>ガントチャート</button>
+      <button class="tab" role="tab" id="view-tab-matrix" data-tab="matrix" aria-controls="panel-matrix"><span class="number">03</span>マトリクスシーケンス</button>
     </div>
 
-    <section class="panel" id="panel-calendar" role="tabpanel">
+    <section class="panel" id="panel-calendar" role="tabpanel" aria-labelledby="view-tab-calendar" tabindex="0">
       <div class="card">
         <div class="weekdays"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
         <div class="grid" id="grid"></div>
@@ -188,12 +187,12 @@
       <p class="note hint">日付をクリック／ドラッグで追加 ・ 予定をドラッグで移動 ・ 予定の右端をドラッグで期間を変更</p>
     </section>
 
-    <section class="panel" id="panel-gantt" role="tabpanel" hidden>
+    <section class="panel" id="panel-gantt" role="tabpanel" aria-labelledby="view-tab-gantt" tabindex="0" hidden>
       <div class="card scroll" id="gantt"></div>
       <p class="note hint">レーンごとに工程を日付順で並べています。前工程を設定した工程は矢印でつながります。工程名・バーをクリックで編集。</p>
     </section>
 
-    <section class="panel" id="panel-matrix" role="tabpanel" hidden>
+    <section class="panel" id="panel-matrix" role="tabpanel" aria-labelledby="view-tab-matrix" tabindex="0" hidden>
       <div class="card scroll" id="matrix"></div>
       <p class="note hint">縦軸がレーン（担当・部署）、横軸が開始日ごとのステップです。番号は全体の実行順、矢印は前工程からの流れを表します。</p>
     </section>
@@ -315,13 +314,30 @@
     };
     function setTab(t) {
       tab = HEADINGS[t] ? t : "calendar";
-      document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+      document.querySelectorAll(".tab").forEach(b => {
+        b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+        b.tabIndex = b.dataset.tab === tab ? 0 : -1;
+      });
       document.querySelectorAll(".panel").forEach(p => p.hidden = p.id !== `panel-${tab}`);
       document.querySelectorAll(".cal-only").forEach(el => el.hidden = tab !== "calendar");
       try { localStorage.setItem(TAB_KEY, tab); } catch {}
       refresh();
     }
     document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+
+    document.querySelector('[role="tablist"]').addEventListener("keydown", ev => {
+      if (ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+      const selected = ev.target.closest('[role="tab"]');
+      if (!selected || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(ev.key)) return;
+      const tabs = Array.from(document.querySelectorAll('.tab[role="tab"]'));
+      const index = tabs.indexOf(selected);
+      const next = ev.key === "Home" ? 0 : ev.key === "End" ? tabs.length - 1 :
+        (index + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      ev.preventDefault();
+      ev.stopPropagation();
+      setTab(tabs[next].dataset.tab);
+      tabs[next].focus();
+    });
 
     function refresh() {
       document.getElementById("eyebrow").textContent = HEADINGS[tab][0];
@@ -637,9 +653,11 @@
     document.getElementById("today-btn").addEventListener("click", () => { view = new Date(); view.setDate(1); refresh(); });
     document.getElementById("add-btn").addEventListener("click", () => openEvent(null));
     document.addEventListener("keydown", ev => {
-      if (tab !== "calendar" || document.querySelector("dialog[open]") || ev.target.isContentEditable || drag) return;
-      if (ev.key === "ArrowLeft") shift(-1);
-      if (ev.key === "ArrowRight") shift(1);
+      if (ev.defaultPrevented || ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey ||
+          tab !== "calendar" || document.querySelector("dialog[open]") ||
+          ev.target.closest('input,textarea,select,[contenteditable="true"],[role="tablist"]') || drag) return;
+      if (ev.key === "ArrowLeft") { ev.preventDefault(); shift(-1); }
+      if (ev.key === "ArrowRight") { ev.preventDefault(); shift(1); }
       if (ev.key === "t") document.getElementById("today-btn").click();
     });
 
