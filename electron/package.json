@@ -1,0 +1,13 @@
+{
+  "name": "puzzles-outline",
+  "version": "1.0.0",
+  "description": "outline.html を Electron デスクトップアプリとして起動する",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
