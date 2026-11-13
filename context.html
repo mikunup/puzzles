@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="コンテキスト定義書：1つのサブドメインを解決する領域として、担う責務・用語・モデル・ルール・状態・イベント・連携・機能一覧を記録する雛形。">
+  <!-- ドメイン定義書で分けたサブドメイン1つにつき1ファイル作成します。ファイル名は context-［サブドメイン名］.html のようにすると一覧しやすくなります。 -->
+  <title>コンテキスト定義書 ［サブドメイン名］｜CONTEXT NOTE</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --surface:#ffffff;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; overflow-wrap:anywhere; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .skip-link { position:fixed; top:12px; left:12px; padding:8px 16px; background:var(--surface); transform:translateY(-160%); z-index:10; }
+    .skip-link:focus { transform:translateY(0); }
+    .layout { width:min(1240px,calc(100% - 64px)); margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:64px; align-items:start; }
+    .sidebar { position:sticky; top:0; max-height:100dvh; overflow-y:auto; padding:40px 24px 32px 0; border-right:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.08em; }
+    .mark { flex-shrink:0; width:15px; height:15px; margin-right:5px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .sidebar-description { color:var(--muted); font-size:12px; margin:16px 0 35px; }
+    .toc-label { color:var(--brown); font-size:10px; font-weight:700; letter-spacing:.18em; margin:0 0 12px; }
+    .toc { list-style:none; margin:0; padding:0; }
+    .toc li { margin:5px 0; }
+    .toc a { display:flex; align-items:baseline; gap:12px; padding:9px 12px; text-decoration:none; border-radius:6px; font-size:13px; }
+    .toc a:hover,.toc a:focus-visible { background:#eaf0e8; }
+    .toc-number { font:11px ui-monospace,monospace; color:var(--brown); }
+    .sidebar-note { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:11px; color:var(--muted); }
+    main { min-width:0; padding-top:36px; }
+    .document-header { padding:0 0 38px; }
+    .breadcrumb { font-size:11px; color:var(--muted); margin:0 0 36px; }
+    .eyebrow { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 14px; }
+    h1 { font-size:clamp(30px,3.5vw,44px); line-height:1.5; letter-spacing:.025em; margin:0 0 20px; }
+    .lead { max-width:650px; color:var(--muted); font-size:15px; margin:0 0 24px; }
+    .metadata { display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; font-size:12px; }
+    .metadata div { display:flex; gap:10px; }
+    .metadata dt { color:var(--muted); }
+    .metadata dd { margin:0; }
+    section { border-top:1px solid var(--line); padding:36px 0 40px; scroll-margin-top:24px; }
+    .section-heading { display:flex; align-items:baseline; gap:14px; margin-bottom:20px; }
+    .section-number { font:13px ui-monospace,monospace; color:var(--brown); }
+    h2 { font-size:23px; letter-spacing:.03em; margin:0; }
+    h3 { font-size:16px; margin:24px 0 12px; }
+    p { margin:0 0 16px; font-size:14px; }
+    .muted { color:var(--muted); }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .panel h3 { margin-top:0; }
+    .panel > :last-child { margin-bottom:0; }
+    .two-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .callout { padding:18px 22px; border-left:3px solid var(--brown); border-radius:0 8px 8px 0; background:#eaece3; font-size:13px; margin:20px 0 0; }
+    .callout strong { display:block; margin-bottom:4px; }
+    ul,ol { padding-left:22px; font-size:14px; }
+    li + li { margin-top:8px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+    thead { background:#eaece3; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:500; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.92em; }
+    pre { overflow:auto; margin:16px 0 0; background:#eaece3; border:1px solid var(--line); border-radius:8px; padding:20px; font-size:12px; line-height:1.75; overflow-wrap:normal; }
+    .preview { min-height:140px; border:1px dashed #b8c4b9; border-radius:8px; padding:24px; background:var(--surface); display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .caption { color:var(--muted); font-size:12px; margin-top:10px; }
+    .steps { list-style:none; padding:0; margin:0; counter-reset:step; }
+    .steps li { display:grid; grid-template-columns:30px 1fr; gap:14px; margin:0; padding:16px 0; border-bottom:1px solid var(--line); counter-increment:step; }
+    .steps li::before { content:counter(step,decimal-leading-zero); font:12px/30px ui-monospace,monospace; color:var(--brown); }
+    .steps li:last-child { border:0; }
+    .steps strong { display:block; font-size:14px; }
+    .steps p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .reference-list { list-style:none; padding:0; margin:0; }
+    .reference-list li { border-bottom:1px solid var(--line); padding:14px 0; margin:0; }
+    .reference-list small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:24px 0 36px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    @media(max-width:900px) {
+      .layout { width:calc(100% - 40px); grid-template-columns:190px minmax(0,1fr); gap:32px; }
+      .sidebar { padding-right:16px; }
+      .brand { font-size:11px; }
+      .two-columns { grid-template-columns:1fr; }
+    }
+    @media(max-width:680px) {
+      .layout { width:calc(100% - 36px); grid-template-columns:1fr; gap:0; }
+      .sidebar { position:static; max-height:none; overflow:visible; padding:28px 0 24px; border-right:0; border-bottom:1px solid var(--line); }
+      .sidebar-description { margin:12px 0 20px; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 8px; }
+      .toc li { margin:0; }
+      .toc a { padding:7px 8px; font-size:12px; gap:8px; }
+      .sidebar-note { display:none; }
+      main { padding-top:24px; }
+      .breadcrumb { margin-bottom:24px; }
+      h2 { font-size:20px; }
+      .panel { padding:20px; }
+      section { padding:28px 0 32px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .layout { display:block; width:100%; }
+      .sidebar,.skip-link,.back-to-top { display:none; }
+      main { padding:0; }
+      .panel,.callout,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+    /* この資料固有の部品 */
+    h1 span { color:var(--brown); }
+    .toc-number { flex-shrink:0; white-space:nowrap; }
+    .table-wrap table { min-width:680px; }
+    .table-wrap td { min-width:6em; }
+    tbody th[scope="row"] { min-width:150px; }
+    th code, td code { white-space:nowrap; }
+    .metadata { gap:10px 28px; }
+    .metadata div { align-items:center; }
+    .tag { display:inline-block; padding:1px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.06em; border:1px solid currentColor; white-space:nowrap; }
+    .tag-green { color:#fff; background:var(--green); border-color:var(--green); }
+    .tag-brown { color:var(--brown); background:#f3ebe5; }
+    .tag-muted { color:var(--muted); background:#eceee8; }
+    .tag-red { color:#8a3b2e; background:#f6e8e4; }
+    .legend { display:flex; flex-wrap:wrap; gap:8px 18px; font-size:12px; color:var(--muted); margin:14px 0 0; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .cards.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .spec { margin:0; font-size:13px; }
+    .spec dt { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.1em; margin-top:10px; }
+    .spec dd { margin:2px 0 0; }
+    .highlight { border:2px solid var(--green); border-radius:12px; padding:22px 26px; background:var(--surface); margin-bottom:20px; }
+    .highlight-label { color:var(--green); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 6px; }
+    .highlight-text { font-size:17px; font-weight:700; line-height:1.7; margin:0; }
+    .gwt { display:grid; grid-template-columns:60px 1fr; gap:6px 14px; margin:0; font-size:13px; }
+    .gwt dt { color:var(--brown); font-weight:700; }
+    .gwt dd { margin:0; }
+    .id { font:12px ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--brown); white-space:nowrap; }
+    .table-wrap + h3 { margin-top:28px; }
+    @media(max-width:1100px) { .cards,.cards.two { grid-template-columns:1fr; } }
+    @media print { .tag,.highlight { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+  </style>
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
+</head>
+<body data-layout="document" id="top">
+  <a class="skip-link" href="#main-content">本文へスキップ</a>
+  <div class="layout">
+    <aside class="sidebar" aria-label="コンテキスト定義書のナビゲーション">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>CONTEXT NOTE</div>
+      <p class="sidebar-description">［サブドメイン名］<br>コンテキスト定義書</p>
+      <nav aria-labelledby="toc-title">
+        <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
+        <!-- セクションを追加するときは、hrefと本文のidを揃えてください。 -->
+        <ol class="toc">
+          <li><a href="#scope"><span class="toc-number">01</span>解決する領域</a></li>
+          <li><a href="#glossary"><span class="toc-number">02</span>ユビキタス言語</a></li>
+          <li><a href="#model"><span class="toc-number">03</span>ドメインモデル</a></li>
+          <li><a href="#rules"><span class="toc-number">04</span>ビジネスルール</a></li>
+          <li><a href="#lifecycle"><span class="toc-number">05</span>状態とライフサイクル</a></li>
+          <li><a href="#events"><span class="toc-number">06</span>ドメインイベント</a></li>
+          <li><a href="#interfaces"><span class="toc-number">07</span>連携</a></li>
+          <li><a href="#features"><span class="toc-number">08</span>機能一覧</a></li>
+          <li><a href="#related"><span class="toc-number">09</span>関連資料・変更履歴</a></li>
+        </ol>
+      </nav>
+      <div class="sidebar-note">この雛形の使い方<br><a href="domain.html">ドメイン定義書</a> 03「コンテキストとの対応」の1行につき1ファイル作成します。基本はサブドメイン1つにつき1つです。ファイル名は context-［サブドメイン名］.html のようにすると一覧しやすくなります。</div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="document-header">
+        <p class="breadcrumb"><a href="domain.html">［システム名］</a> / ［ドメイン名］ / ［サブドメイン名］</p>
+        <p class="eyebrow">BOUNDED CONTEXT DEFINITION</p>
+        <h1>コンテキスト定義書：<span>［サブドメイン名］</span></h1>
+        <p class="lead">［このサブドメインが解決することを2〜3文で記載します。例：「受注コンテキストは、顧客からの注文を受け付け、内容を確定するまでを解決する。在庫の引き当てと請求は、それぞれ在庫・請求コンテキストが担う。」］</p>
+        <!-- 種別は tag-green（コア）/ tag-brown（支援）/ tag-muted（汎用）、対応は tag-green（1対1）/ tag-brown（分割・統合）から選びます。ドメイン定義書 04 と揃えます。 -->
+        <dl class="metadata">
+          <div><dt>システム</dt><dd><a href="domain.html">［システム名］</a></dd></div>
+          <div><dt>ドメイン</dt><dd>［販売］</dd></div>
+          <div><dt>解決するサブドメイン</dt><dd>［受注］</dd></div>
+          <div><dt>対応</dt><dd><span class="tag tag-green">1対1</span></dd></div>
+          <div><dt>種別</dt><dd><span class="tag tag-green">コア</span></dd></div>
+          <div><dt>担当チーム</dt><dd>［チーム名］</dd></div>
+          <div><dt>実装の単位</dt><dd>［リポジトリ・サービス名］</dd></div>
+          <div><dt>更新日</dt><dd>［YYYY.MM.DD］</dd></div>
+          <div><dt>版数</dt><dd>［v1.0］</dd></div>
+        </dl>
+      </header>
+
+      <section id="scope" aria-labelledby="scope-title">
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="scope-title">解決する領域</h2></div>
+        <div class="highlight"><p class="highlight-label">SUBDOMAIN</p><p class="highlight-text">［このコンテキストが解決するサブドメインを1文で言い切ります。例：「注文を正しく受け付け、確定する。」ドメイン定義書 04 の「解決すること」と揃えます。］</p></div>
+        <aside class="callout" aria-label="1対1でない場合"><strong>1対1でない場合</strong>［サブドメインを<strong>分割</strong>したコンテキストなら、サブドメインのどの部分を担うかと、同じサブドメインを分け合う相手のコンテキストを書きます。例：「在庫サブドメインのうち、販売の引き当てを担う。倉庫での入出庫は倉庫在庫コンテキストが担う。」複数のサブドメインを<strong>統合</strong>したコンテキストなら、含むサブドメインをすべて書き、コードのモジュールをサブドメインごとに分けているかを書きます。どちらの場合も、理由を記録した ADR へリンクします。1対1のときは、この枠を削除します。］</aside>
+        <h3>担う責務</h3>
+        <p>［ドメイン定義書 03 の責務のうち、このコンテキストが担うものを記載します。ここにない責務は、このコンテキストでは実装しません。］</p>
+        <div class="table-wrap" role="region" aria-label="担う責務" tabindex="0"><table>
+          <thead><tr><th scope="col">責務 ID</th><th scope="col">責務</th><th scope="col">このコンテキストでの実現のしかた</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="id">RESP-001</span></th><td>［顧客からの注文を受け付け、内容を確定する］</td><td>［注文集約を作り、確定時に RULE-001 を検査する。確定したら「注文が確定した」を発行する］</td></tr>
+            <tr><th scope="row"><span class="id">RESP-00x</span></th><td>［責務］</td><td>［実現のしかた］</td></tr>
+          </tbody>
+        </table></div>
+        <div class="two-columns">
+          <article class="panel"><h3>含むもの</h3><ul><li>［このコンテキストで扱う業務・判断・データ］</li><li>［例：注文の入力・変更・確定・取消］</li></ul></article>
+          <article class="panel"><h3>含まないもの</h3><ul><li>［他のコンテキストに任せるもの］</li><li>［例：在庫数の計算は在庫コンテキスト、請求額の計算は請求コンテキスト］</li></ul></article>
+        </div>
+      </section>
+
+      <section id="glossary" aria-labelledby="glossary-title">
+        <div class="section-heading"><span class="section-number">02 /</span><h2 id="glossary-title">ユビキタス言語</h2></div>
+        <p>［このコンテキストの中で、業務担当者と開発者が共通で使う用語を定義します。会話・画面・コード・データベースで同じ言葉を使います。他のコンテキストで意味が変わる用語は、ドメイン定義書 06 にも載せます。］</p>
+        <div class="table-wrap" role="region" aria-label="用語集" tabindex="0"><table>
+          <thead><tr><th scope="col">用語</th><th scope="col">英語名・コード上の名前</th><th scope="col">意味</th><th scope="col">使わない言い方・注意</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［用語 A］</th><td><code>［EnglishName］</code></td><td>［このコンテキストでの意味。1〜2文で言い切ります。］</td><td>［「〜」とは呼ばない。「〜」との違い。］</td></tr>
+            <tr><th scope="row">［用語 B］</th><td><code>［EnglishName］</code></td><td>［意味］</td><td>［注意］</td></tr>
+            <tr><th scope="row">［用語 C］</th><td><code>［EnglishName］</code></td><td>［意味］</td><td>［注意］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="model" aria-labelledby="model-title">
+        <div class="section-heading"><span class="section-number">03 /</span><h2 id="model-title">ドメインモデル</h2></div>
+        <p>［このコンテキストに登場する概念と、その関係を記載します。図を載せる場合は、下の枠をimgやfigureに差し替えてください。オブジェクトの詳細は<a href="object_model.html">オブジェクト整理</a>で設計できます。］</p>
+        <div class="preview">ドメインモデル図（概念とその関係）をここに配置</div>
+        <p class="caption">図1：［図の説明・見てほしいポイント］</p>
+        <h3>概念の一覧</h3>
+        <div class="table-wrap" role="region" aria-label="概念の一覧" tabindex="0"><table>
+          <thead><tr><th scope="col">名前</th><th scope="col">種別</th><th scope="col">識別子</th><th scope="col">主な属性</th><th scope="col">説明</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［注文］</th><td><span class="tag tag-green">集約ルート</span></td><td>［注文番号］</td><td>［注文日・顧客・明細・状態］</td><td>［役割と、含む概念］</td></tr>
+            <tr><th scope="row">［注文明細］</th><td><span class="tag tag-brown">エンティティ</span></td><td>［明細番号］</td><td>［商品・数量・単価］</td><td>［集約の内部でのみ扱う］</td></tr>
+            <tr><th scope="row">［金額］</th><td><span class="tag tag-muted">値オブジェクト</span></td><td>—</td><td>［金額・通貨］</td><td>［値が同じなら同一とみなす。変更せず作り直す］</td></tr>
+          </tbody>
+        </table></div>
+        <p class="legend"><span><span class="tag tag-green">集約ルート</span>外部から操作する入口。整合性を守る単位</span><span><span class="tag tag-brown">エンティティ</span>識別子で区別する</span><span><span class="tag tag-muted">値オブジェクト</span>値そのもので区別する</span></p>
+        <h3>集約と不変条件</h3>
+        <div class="cards two">
+          <article class="panel"><h3>［注文］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［注文・注文明細・配送先］</dd><dt>常に守る条件</dt><dd>［明細は1件以上。確定後は明細を変更できない。］</dd><dt>外部から参照するもの</dt><dd>［顧客・商品は識別子だけを持つ］</dd></dl></article>
+          <article class="panel"><h3>［集約名］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［概念］</dd><dt>常に守る条件</dt><dd>［条件］</dd><dt>外部から参照するもの</dt><dd>［識別子］</dd></dl></article>
+        </div>
+      </section>
+
+      <section id="rules" aria-labelledby="rules-title">
+        <div class="section-heading"><span class="section-number">04 /</span><h2 id="rules-title">ビジネスルール</h2></div>
+        <p>［このコンテキストで守る業務上の決まりごとを、1行に1つずつ記載します。「いつ」「何が」「どうなる」が読み取れる文にし、根拠（法令・社内規程・経営判断）を添えます。］</p>
+        <div class="table-wrap" role="region" aria-label="ビジネスルール" tabindex="0"><table>
+          <thead><tr><th scope="col">ID</th><th scope="col">ルール</th><th scope="col">適用される場面</th><th scope="col">違反したときの扱い</th><th scope="col">根拠</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="id">RULE-001</span></th><td>［例：注文の合計金額が［金額］以上のとき、承認者の承認を必要とする。］</td><td>［注文確定時］</td><td>［確定できない。承認待ちにする。］</td><td>［社内規程 第○条］</td></tr>
+            <tr><th scope="row"><span class="id">RULE-002</span></th><td>［ルール］</td><td>［場面］</td><td>［扱い］</td><td>［根拠］</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="例外"><strong>例外・判断が必要なケース</strong>［ルールで決めきれず、人が判断する場面と、判断する人を記載します。］</aside>
+      </section>
+
+      <section id="lifecycle" aria-labelledby="lifecycle-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="lifecycle-title">状態とライフサイクル</h2></div>
+        <p>［主要な概念がどの状態を経るかを記載します。状態ごとに「次に進める状態」と「進むための条件・操作」を書くと、機能仕様書の前提やテストケースに展開できます。］</p>
+        <div class="table-wrap" role="region" aria-label="状態遷移" tabindex="0"><table>
+          <thead><tr><th scope="col">状態</th><th scope="col">意味</th><th scope="col">遷移先</th><th scope="col">遷移する条件・操作</th><th scope="col">この状態でできること</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［下書き］</th><td>［入力中。まだ業務上の効力がない］</td><td>［確定 / 取消］</td><td>［「確定」操作。RULE-001 を満たすこと］</td><td>［明細の追加・変更・削除］</td></tr>
+            <tr><th scope="row">［確定］</th><td>［意味］</td><td>［出荷済 / 取消］</td><td>［条件・操作］</td><td>［できること］</td></tr>
+            <tr><th scope="row">［取消］</th><td>［意味］</td><td>—</td><td>［条件・操作］</td><td>［参照のみ］</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">状態の流れは<a href="business_sequence.html">業務シーケンス図</a>で、担当・帳票と合わせて整理できます。</p>
+      </section>
+
+      <section id="events" aria-labelledby="events-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="events-title">ドメインイベント</h2></div>
+        <p>［このコンテキストで「起きたこと」を過去形で記載します。他のコンテキストに伝える必要がある出来事を中心に書きます。］</p>
+        <div class="table-wrap" role="region" aria-label="ドメインイベント" tabindex="0"><table>
+          <thead><tr><th scope="col">イベント</th><th scope="col">発生するとき</th><th scope="col">含む情報</th><th scope="col">受け取るコンテキスト・起きること</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［注文が確定した］<br><code>［OrderConfirmed］</code></th><td>［下書き → 確定 に遷移したとき］</td><td>［注文番号・顧客・明細・確定日時］</td><td>［在庫：引き当てを開始する（RESP-002）］</td></tr>
+            <tr><th scope="row">［イベント名］<br><code>［EventName］</code></th><td>［発生条件］</td><td>［情報］</td><td>［受け取る側］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="interfaces" aria-labelledby="interfaces-title">
+        <div class="section-heading"><span class="section-number">07 /</span><h2 id="interfaces-title">連携</h2></div>
+        <p>［このコンテキストが他のコンテキスト・外部システムに提供するもの、利用するものを記載します。関係パターンはドメイン定義書 05 と揃えます。変更するときに誰と調整するかも決めておきます。］</p>
+        <div class="table-wrap" role="region" aria-label="連携" tabindex="0"><table>
+          <thead><tr><th scope="col">方向</th><th scope="col">相手</th><th scope="col">種類</th><th scope="col">名前・内容</th><th scope="col">関係パターン</th><th scope="col">変更時の調整</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td>［在庫・請求］</td><td>［イベント］</td><td>［注文が確定した：注文番号・明細・確定日時］</td><td>［顧客／供給者］</td><td>［項目の削除は利用先の合意を得る］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［在庫］</td><td>［API］</td><td>［GET /stocks/{sku}：在庫数の照会］</td><td>［公開ホストサービス］</td><td>［在庫チームに版の変更予定を確認する］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［認証（外部サービス）］</td><td>［API］</td><td>［トークンの検証］</td><td>［順応者］</td><td>［外部の仕様変更に合わせる］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="features" aria-labelledby="features-title">
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="features-title">機能一覧</h2></div>
+        <p>［このコンテキストで作る機能を一覧にします。機能1つにつき<a href="specs.html">機能仕様書</a>を1つ作り、どの責務を実現する機能かを対応付けます。01 の責務が、どれかの機能で実現されていることを確認します。］</p>
+        <div class="table-wrap" role="region" aria-label="機能一覧" tabindex="0"><table>
+          <thead><tr><th scope="col">仕様書 ID</th><th scope="col">機能名</th><th scope="col">実現する責務</th><th scope="col">使うルール・状態</th><th scope="col">ステータス</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0001</span></a></th><td>［注文明細を変更する］</td><td><span class="id">RESP-001</span></td><td>［RULE-002 ／ 下書き］</td><td><span class="tag tag-brown">下書き</span></td></tr>
+            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0002</span></a></th><td>［注文を確定する］</td><td><span class="id">RESP-001</span></td><td>［RULE-001 ／ 下書き → 確定］</td><td><span class="tag tag-green">確定</span></td></tr>
+            <tr><th scope="row"><span class="id">SPEC-000x</span></th><td>［機能名］</td><td><span class="id">RESP-00x</span></td><td>［ルール・状態］</td><td>［ステータス］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="related" aria-labelledby="related-title">
+        <div class="section-heading"><span class="section-number">09 /</span><h2 id="related-title">関連資料・変更履歴</h2></div>
+        <ul class="reference-list">
+          <li><a href="howtocontext.html">3つの雛形の使い方 ↗</a><small>ドメイン定義書・コンテキスト定義書・機能仕様書の関係と、作る順番。</small></li>
+          <li><a href="domain.html">ドメイン定義書 ↗</a><small>このコンテキストが属するシステムの、ドメイン・サブドメイン・責務の一覧と、コンテキスト間の関係。</small></li>
+          <li><a href="specs.html">機能仕様書 ↗</a><small>このコンテキストの機能ごとの仕様。</small></li>
+          <li><a href="#">［関連する ADR・議事録］</a><small>［どの判断に使ったか］</small></li>
+        </ul>
+        <h3>変更履歴</h3>
+        <div class="table-wrap" role="region" aria-label="変更履歴" tabindex="0"><table>
+          <thead><tr><th scope="col">日付</th><th scope="col">版数</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
+          <tbody><tr><th scope="row">［YYYY.MM.DD］</th><td>［v1.0］</td><td>［初版を作成］</td><td>［氏名］</td></tr></tbody>
+        </table></div>
+      </section>
+      <footer><span>CONTEXT NOTE / ［サブドメイン名・作成者］</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>

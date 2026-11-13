@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ドメイン定義書・コンテキスト定義書・機能仕様書の3つの雛形が、責務でどうつながり、どの順番で書くかを説明する資料。">
+    <title>3つの雛形の使い方｜HOW TO</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --surface:#ffffff;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; overflow-wrap:anywhere; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .skip-link { position:fixed; top:12px; left:12px; padding:8px 16px; background:var(--surface); transform:translateY(-160%); z-index:10; }
+    .skip-link:focus { transform:translateY(0); }
+    .layout { width:min(1240px,calc(100% - 64px)); margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:64px; align-items:start; }
+    .sidebar { position:sticky; top:0; max-height:100dvh; overflow-y:auto; padding:40px 24px 32px 0; border-right:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.08em; }
+    .mark { flex-shrink:0; width:15px; height:15px; margin-right:5px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .sidebar-description { color:var(--muted); font-size:12px; margin:16px 0 35px; }
+    .toc-label { color:var(--brown); font-size:10px; font-weight:700; letter-spacing:.18em; margin:0 0 12px; }
+    .toc { list-style:none; margin:0; padding:0; }
+    .toc li { margin:5px 0; }
+    .toc a { display:flex; align-items:baseline; gap:12px; padding:9px 12px; text-decoration:none; border-radius:6px; font-size:13px; }
+    .toc a:hover,.toc a:focus-visible { background:#eaf0e8; }
+    .toc-number { font:11px ui-monospace,monospace; color:var(--brown); }
+    .sidebar-note { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:11px; color:var(--muted); }
+    main { min-width:0; padding-top:36px; }
+    .document-header { padding:0 0 38px; }
+    .breadcrumb { font-size:11px; color:var(--muted); margin:0 0 36px; }
+    .eyebrow { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 14px; }
+    h1 { font-size:clamp(30px,3.5vw,44px); line-height:1.5; letter-spacing:.025em; margin:0 0 20px; }
+    .lead { max-width:650px; color:var(--muted); font-size:15px; margin:0 0 24px; }
+    .metadata { display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; font-size:12px; }
+    .metadata div { display:flex; gap:10px; }
+    .metadata dt { color:var(--muted); }
+    .metadata dd { margin:0; }
+    section { border-top:1px solid var(--line); padding:36px 0 40px; scroll-margin-top:24px; }
+    .section-heading { display:flex; align-items:baseline; gap:14px; margin-bottom:20px; }
+    .section-number { font:13px ui-monospace,monospace; color:var(--brown); }
+    h2 { font-size:23px; letter-spacing:.03em; margin:0; }
+    h3 { font-size:16px; margin:24px 0 12px; }
+    p { margin:0 0 16px; font-size:14px; }
+    .muted { color:var(--muted); }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .panel h3 { margin-top:0; }
+    .panel > :last-child { margin-bottom:0; }
+    .two-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .callout { padding:18px 22px; border-left:3px solid var(--brown); border-radius:0 8px 8px 0; background:#eaece3; font-size:13px; margin:20px 0 0; }
+    .callout strong { display:block; margin-bottom:4px; }
+    ul,ol { padding-left:22px; font-size:14px; }
+    li + li { margin-top:8px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+    thead { background:#eaece3; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:500; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.92em; }
+    pre { overflow:auto; margin:16px 0 0; background:#eaece3; border:1px solid var(--line); border-radius:8px; padding:20px; font-size:12px; line-height:1.75; overflow-wrap:normal; }
+    .preview { min-height:140px; border:1px dashed #b8c4b9; border-radius:8px; padding:24px; background:var(--surface); display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .caption { color:var(--muted); font-size:12px; margin-top:10px; }
+    .steps { list-style:none; padding:0; margin:0; counter-reset:step; }
+    .steps li { display:grid; grid-template-columns:30px 1fr; gap:14px; margin:0; padding:16px 0; border-bottom:1px solid var(--line); counter-increment:step; }
+    .steps li::before { content:counter(step,decimal-leading-zero); font:12px/30px ui-monospace,monospace; color:var(--brown); }
+    .steps li:last-child { border:0; }
+    .steps strong { display:block; font-size:14px; }
+    .steps p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .reference-list { list-style:none; padding:0; margin:0; }
+    .reference-list li { border-bottom:1px solid var(--line); padding:14px 0; margin:0; }
+    .reference-list small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:24px 0 36px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    @media(max-width:900px) {
+      .layout { width:calc(100% - 40px); grid-template-columns:190px minmax(0,1fr); gap:32px; }
+      .sidebar { padding-right:16px; }
+      .brand { font-size:11px; }
+      .two-columns { grid-template-columns:1fr; }
+    }
+    @media(max-width:680px) {
+      .layout { width:calc(100% - 36px); grid-template-columns:1fr; gap:0; }
+      .sidebar { position:static; max-height:none; overflow:visible; padding:28px 0 24px; border-right:0; border-bottom:1px solid var(--line); }
+      .sidebar-description { margin:12px 0 20px; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 8px; }
+      .toc li { margin:0; }
+      .toc a { padding:7px 8px; font-size:12px; gap:8px; }
+      .sidebar-note { display:none; }
+      main { padding-top:24px; }
+      .breadcrumb { margin-bottom:24px; }
+      h2 { font-size:20px; }
+      .panel { padding:20px; }
+      section { padding:28px 0 32px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .layout { display:block; width:100%; }
+      .sidebar,.skip-link,.back-to-top { display:none; }
+      main { padding:0; }
+      .panel,.callout,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+    /* この資料固有の部品 */
+    h1 span { color:var(--brown); }
+    .toc-number { flex-shrink:0; white-space:nowrap; }
+    .table-wrap table { min-width:680px; }
+    .table-wrap td { min-width:6em; }
+    tbody th[scope="row"] { min-width:150px; }
+    th code, td code { white-space:nowrap; }
+    .metadata { gap:10px 28px; }
+    .metadata div { align-items:center; }
+    .tag { display:inline-block; padding:1px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.06em; border:1px solid currentColor; white-space:nowrap; }
+    .tag-green { color:#fff; background:var(--green); border-color:var(--green); }
+    .tag-brown { color:var(--brown); background:#f3ebe5; }
+    .tag-muted { color:var(--muted); background:#eceee8; }
+    .tag-red { color:#8a3b2e; background:#f6e8e4; }
+    .legend { display:flex; flex-wrap:wrap; gap:8px 18px; font-size:12px; color:var(--muted); margin:14px 0 0; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .cards.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .spec { margin:0; font-size:13px; }
+    .spec dt { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.1em; margin-top:10px; }
+    .spec dd { margin:2px 0 0; }
+    .highlight { border:2px solid var(--green); border-radius:12px; padding:22px 26px; background:var(--surface); margin-bottom:20px; }
+    .highlight-label { color:var(--green); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 6px; }
+    .highlight-text { font-size:17px; font-weight:700; line-height:1.7; margin:0; }
+    .gwt { display:grid; grid-template-columns:60px 1fr; gap:6px 14px; margin:0; font-size:13px; }
+    .gwt dt { color:var(--brown); font-weight:700; }
+    .gwt dd { margin:0; }
+    .id { font:12px ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--brown); white-space:nowrap; }
+    .table-wrap + h3 { margin-top:28px; }
+    @media(max-width:1100px) { .cards,.cards.two { grid-template-columns:1fr; } }
+    @media print { .tag,.highlight { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+    /* 関係図 */
+    .diagram { margin:0 0 24px; }
+    .diagram svg { display:block; width:100%; height:auto; max-width:760px; margin:auto; font-family:inherit; }
+    .diagram .lane { font-size:11px; font-weight:700; letter-spacing:.12em; fill:var(--brown); }
+    .diagram .box { stroke-width:1.5; }
+    .diagram .box-green { fill:var(--green); stroke:var(--green); }
+    .diagram .box-brown { fill:#f3ebe5; stroke:var(--brown); }
+    .diagram .box-paper { fill:var(--surface); stroke:var(--line); }
+    .diagram .box-dashed { fill:var(--surface); stroke:var(--muted); stroke-dasharray:4 3; }
+    .diagram .box-title { font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; }
+    .diagram .box-title-small { font-size:12px; }
+    .diagram .box-title-light { fill:#fff; }
+    .diagram .box-sub { font-size:10px; fill:var(--muted); text-anchor:middle; }
+    .diagram .box-sub-light { fill:#d9e3d6; }
+    .diagram .edge { fill:none; stroke:var(--green); stroke-width:1.5; }
+    .diagram .edge-dim { stroke:#b8c4b9; stroke-dasharray:3 3; }
+    .diagram .arrow-head { fill:var(--green); }
+    .diagram .edge-label { font-size:10px; fill:var(--muted); }
+    .cards { margin-top:20px; }
+  </style>
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
+</head>
+<body data-layout="document" id="top">
+  <a class="skip-link" href="#main-content">本文へスキップ</a>
+  <div class="layout">
+    <aside class="sidebar" aria-label="この資料のナビゲーション">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>HOW TO</div>
+      <p class="sidebar-description">ドメイン定義書・コンテキスト定義書・機能仕様書<br>3つの雛形の使い方</p>
+      <nav aria-labelledby="toc-title">
+        <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
+        <ol class="toc">
+          <li><a href="#roles"><span class="toc-number">01</span>3つの資料の役割</a></li>
+          <li><a href="#map"><span class="toc-number">02</span>関係の全体図</a></li>
+          <li><a href="#trace"><span class="toc-number">03</span>責務でつなぐ</a></li>
+          <li><a href="#split"><span class="toc-number">04</span>コンテキストの分け方</a></li>
+          <li><a href="#where"><span class="toc-number">05</span>どこに何を書くか</a></li>
+          <li><a href="#order"><span class="toc-number">06</span>作る順番</a></li>
+          <li><a href="#terms"><span class="toc-number">07</span>用語を揃える流れ</a></li>
+          <li><a href="#update"><span class="toc-number">08</span>更新のルール</a></li>
+          <li><a href="#related"><span class="toc-number">09</span>関連資料</a></li>
+        </ol>
+      </nav>
+      <div class="sidebar-note">雛形はこちら<br><a href="domain.html">domain.html</a> · <a href="context.html">context.html</a> · <a href="specs.html">specs.html</a></div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="document-header">
+        <p class="breadcrumb">使い方 / 設計資料</p>
+        <p class="eyebrow">HOW TO USE THE TEMPLATES</p>
+        <h1>ドメイン定義書・コンテキスト定義書・機能仕様書の<span>関係と使い方</span></h1>
+        <p class="lead">3つの雛形は、システム全体（複数のドメインとサブドメイン）→ コンテキスト → 1つの機能、と粒度を下げながら「システムが何をするか」を記録するための組み合わせです。ドメイン定義書でシステムがまたがるドメイン・サブドメインと責務を洗い出し、コンテキスト定義書で責務をサブドメインごとに分けて解決し、機能仕様書でその責務を実現する機能を1つずつ定義します。</p>
+        <dl class="metadata"><div><dt>対象</dt><dd>設計資料を書く人・読む人</dd></div><div><dt>関係する雛形</dt><dd>domain.html / context.html / specs.html</dd></div></dl>
+      </header>
+
+      <section id="roles" aria-labelledby="roles-title">
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="roles-title">3つの資料の役割</h2></div>
+        <p>それぞれの資料は、扱う範囲（単位）と答える問いが違います。1つの資料に全部を書かず、粒度ごとに分けるのが基本です。</p>
+        <div class="table-wrap" role="region" aria-label="3つの資料の役割" tabindex="0"><table>
+          <thead><tr><th scope="col">資料</th><th scope="col">1ファイルの単位</th><th scope="col">答える問い</th><th scope="col">主な読者</th><th scope="col">作るタイミング</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="domain.html">ドメイン定義書</a><br><code>domain.html</code></th><td><span class="tag tag-green">システムで1つ</span></td><td>このシステムは、どのドメイン・サブドメインにまたがり、どんな責務を担うか。責務をどのコンテキストで解決し、コンテキスト同士はどう関係するか</td><td>事業・業務の責任者、全チームのリーダー、アーキテクト</td><td>最初に1回。責務や分け方が変わったら更新</td></tr>
+            <tr><th scope="row"><a href="context.html">コンテキスト定義書</a><br><code>context.html</code></th><td><span class="tag tag-brown">サブドメインごとに1つ</span></td><td>このサブドメインを解決する領域では、どの責務を、どんな言葉・モデル・ルール・状態で実現するか。どの機能を作るか</td><td>そのサブドメインの業務担当者と開発チーム</td><td>サブドメインが決まったら。用語・ルール・機能が増えたら更新</td></tr>
+            <tr><th scope="row"><a href="specs.html">機能仕様書</a><br><code>specs.html</code></th><td><span class="tag tag-muted">機能ごとに1つ</span></td><td>この機能で、誰が、何をできるようになるか。どう振る舞えば責務を果たしたと言えるか</td><td>その機能を作る開発者・テスト担当・業務担当</td><td>機能を作る前。確定後は変更履歴に残す</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="問題と解決"><strong>ドメインは「問題」、コンテキストは「解決」</strong>ドメイン定義書はシステムで1つ作り、システムがまたがるドメインと、その中で解く問題（サブドメイン・責務）を書く資料です。含む順は システム ⊃ ドメイン ⊃ サブドメイン で、1つのシステムが複数のドメインにまたがることもあります。コンテキスト定義書は、1つのサブドメインをシステムでどう解決するか（用語・モデル・ルール）を書く資料です。基本は「1つのサブドメイン ＝ 1つのコンテキスト」で対応させます。分割・統合してよい場合は「<a href="#split">04 コンテキストの分け方</a>」を参照してください。</aside>
+      </section>
+
+      <section id="map" aria-labelledby="map-title">
+        <div class="section-heading"><span class="section-number">02 /</span><h2 id="map-title">関係の全体図</h2></div>
+        <p>上から下へ、1対多で枝分かれします。ドメイン定義書はシステムで1つで、その中でシステムがまたがるドメインを、さらにサブドメインに分けます。サブドメイン1つに、基本はコンテキスト定義書が1つ対応し（分割・統合する場合は 04 を参照）、そのコンテキストの中で作る機能ごとに仕様書ができます。</p>
+        <figure class="diagram">
+          <svg viewBox="0 0 760 400" role="img" aria-labelledby="diagram-title diagram-desc">
+            <title id="diagram-title">3つの資料の関係図</title>
+            <desc id="diagram-desc">最上段にドメイン定義書が1つ。その下にサブドメインごとのコンテキスト定義書が3つ。最下段に機能ごとの仕様書が複数。各段は1対多の矢印でつながる。右側にADRが横から関係している。</desc>
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow-head"/></marker></defs>
+            <text x="10" y="44" class="lane">システム全体</text>
+            <text x="10" y="184" class="lane">サブドメイン</text>
+            <text x="10" y="324" class="lane">1つの機能</text>
+            <rect x="230" y="20" width="300" height="56" rx="10" class="box box-green"/>
+            <text x="380" y="43" class="box-title box-title-light">ドメイン定義書</text>
+            <text x="380" y="63" class="box-sub box-sub-light">domain.html ／ システムで1つ（ドメイン・サブドメイン・責務）</text>
+            <path d="M380 76 V110 H200 V150" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 76 V150" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 76 V110 H560 V150" class="edge" marker-end="url(#arrow)"/>
+            <text x="392" y="104" class="edge-label">基本は 1サブドメイン＝1コンテキスト</text>
+            <rect x="115" y="152" width="170" height="56" rx="10" class="box box-brown"/>
+            <text x="200" y="175" class="box-title">コンテキスト定義書</text>
+            <text x="200" y="195" class="box-sub">context.html ／ 受注</text>
+            <rect x="295" y="152" width="170" height="56" rx="10" class="box box-brown"/>
+            <text x="380" y="175" class="box-title">コンテキスト定義書</text>
+            <text x="380" y="195" class="box-sub">context.html ／ 在庫</text>
+            <rect x="475" y="152" width="170" height="56" rx="10" class="box box-brown"/>
+            <text x="560" y="175" class="box-title">コンテキスト定義書</text>
+            <text x="560" y="195" class="box-sub">context.html ／ 請求</text>
+            <path d="M200 208 V245 H130 V290" class="edge" marker-end="url(#arrow)"/>
+            <path d="M200 208 V290" class="edge" marker-end="url(#arrow)"/>
+            <path d="M200 208 V245 H270 V290" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 208 V245" class="edge edge-dim"/>
+            <path d="M560 208 V245" class="edge edge-dim"/>
+            <text x="283" y="240" class="edge-label">1つの機能＝1つの仕様書</text>
+            <rect x="95" y="292" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="130" y="315" class="box-title box-title-small">仕様書</text>
+            <text x="130" y="335" class="box-sub">SPEC-0001</text>
+            <rect x="165" y="292" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="200" y="315" class="box-title box-title-small">仕様書</text>
+            <text x="200" y="335" class="box-sub">SPEC-0002</text>
+            <rect x="235" y="292" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="270" y="315" class="box-title box-title-small">仕様書</text>
+            <text x="270" y="335" class="box-sub">SPEC-0003</text>
+            <text x="200" y="376" class="box-sub">specs.html ／ 機能ごとに1つ</text>
+            <text x="380" y="315" class="box-sub">…</text>
+            <text x="560" y="315" class="box-sub">…</text>
+            <rect x="660" y="130" width="90" height="100" rx="10" class="box box-dashed"/>
+            <text x="705" y="165" class="box-title box-title-small">ADR</text>
+            <text x="705" y="185" class="box-sub">adr.html</text>
+            <text x="705" y="203" class="box-sub">決めた理由</text>
+            <path d="M660 180 H645" class="edge edge-dim"/>
+            <path d="M705 130 V48 H530" class="edge edge-dim"/>
+          </svg>
+          <figcaption class="caption">図1：ドメイン定義書（1）→ コンテキスト定義書（サブドメインごと）→ 機能仕様書（機能ごと）。ADR は、責務の分け方や連携方式など「なぜそう決めたか」をどの段からも参照する。</figcaption>
+        </figure>
+        <div class="cards">
+          <article class="panel"><h3>上から下へ：責務を分ける</h3><p class="muted">ドメイン定義書で、システムがまたがるドメイン・サブドメインと「システムが担う責務」を洗い出して割り当て、コンテキスト定義書でそのサブドメインの解決のしかたを決め、仕様書で責務を実現する機能を1つずつ定義します。</p></article>
+          <article class="panel"><h3>下から上へ：ずれを戻す</h3><p class="muted">仕様書を書いていて「この責務はどのコンテキストにもない」「この用語はコンテキスト定義書にない」と気づいたら、上の資料を直します。下の資料だけで辻褄を合わせないのが大切です。</p></article>
+          <article class="panel"><h3>横から：ADR で理由を残す</h3><p class="muted">責務をどのサブドメインに入れたか、連携を API にしたかイベントにしたか、といった判断は <a href="adr.html">ADR</a> に記録します。3つの資料には結果だけを書き、理由は ADR へのリンクにします。</p></article>
+        </div>
+      </section>
+
+      <section id="trace" aria-labelledby="trace-title">
+        <div class="section-heading"><span class="section-number">03 /</span><h2 id="trace-title">責務でつなぐ</h2></div>
+        <p>3つの資料は、責務の ID（RESP-xxx）でつながります。1つの責務が、どの資料のどこに現れるかを例で示します。仕様書は「コンテキストの中で、責務を実現する機能」として定義します。</p>
+        <ol class="steps">
+          <li><div><strong>ドメイン定義書 03 システムの責務：責務を定義する</strong><p><span class="id">RESP-001</span>「顧客からの注文を受け付け、内容を確定する」。きっかけは「顧客が注文を送信する」、結果は「確定した注文」。</p></div></li>
+          <li><div><strong>ドメイン定義書 04 サブドメインとコンテキスト：担うサブドメインと、解決するコンテキストを決める</strong><p><span class="id">RESP-001</span> は「販売」ドメインの「受注」サブドメインが担い、1対1で「受注」コンテキストが解決する。受注のコンテキスト定義書は <code>context-order.html</code>。</p></div></li>
+          <li><div><strong>コンテキスト定義書（受注）01 解決する領域：責務を引き受ける</strong><p>「担う責務」の表に <span class="id">RESP-001</span> を載せ、このコンテキストでの実現のしかた（注文集約を作り、確定時に RULE-001 を検査する）を書く。</p></div></li>
+          <li><div><strong>コンテキスト定義書（受注）08 機能一覧：機能に分ける</strong><p><span class="id">RESP-001</span> を実現する機能として、<span class="id">SPEC-0001</span>「注文明細を変更する」と <span class="id">SPEC-0002</span>「注文を確定する」を載せる。</p></div></li>
+          <li><div><strong>機能仕様書（SPEC-0001）：機能を定義する</strong><p>見出しの「コンテキスト」に受注、「実現する責務」に <span class="id">RESP-001</span> を書く。要件の根拠には、受注コンテキストのルール（RULE-002）を挙げる。</p></div></li>
+        </ol>
+        <aside class="callout" aria-label="抜け漏れの確認"><strong>抜け漏れの確認</strong>ドメイン定義書のすべての RESP が、どれか1つのコンテキストの「担う責務」に載っていること。コンテキストのすべての RESP が、「機能一覧」のどれかの仕様書で実現されていること。この2つを確認すると、作り忘れと、担当のはっきりしない機能を防げます。</aside>
+      </section>
+
+      <section id="split" aria-labelledby="split-title">
+        <div class="section-heading"><span class="section-number">04 /</span><h2 id="split-title">コンテキストの分け方</h2></div>
+        <p>基本は「1つのサブドメイン ＝ 1つのコンテキスト」です。サブドメインは事業として解く「問題」の分け方で、こちらで選べるものではありません。コンテキストは「解決」の分け方で、言葉・チーム・技術・整合性の都合で設計するものです。1対1から外れてよいのは、解決の側にはっきりした理由があるときだけです。</p>
+
+        <h3>パターン1：1つのサブドメインを、複数のコンテキストに分割する</h3>
+        <div class="table-wrap" role="region" aria-label="分割するサイン" tabindex="0"><table>
+          <thead><tr><th scope="col">分割するサイン</th><th scope="col">例</th><th scope="col">分け方</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">同じサブドメインの中で、言葉の意味が変わる<br><span class="tag tag-green">最も強い理由</span></th><td>在庫サブドメインで、倉庫の「在庫」はロット・棚番を持つ物理的なもの、販売の「在庫」は引き当て可能な数</td><td>倉庫在庫と販売可能在庫のコンテキストに分ける</td></tr>
+            <tr><th scope="row">1チームで持てない大きさ</th><td>受注が大きくなり、1チームで用語・ルールを把握しきれない</td><td>チーム単位で分ける。1コンテキスト＝1チームが目安</td></tr>
+            <tr><th scope="row">変更頻度・リリースの周期が大きく違う</th><td>料金計算は週に何度も変わるが、注文の確定処理はほとんど変わらない</td><td>頻繁に変わる部分を切り出す</td></tr>
+            <tr><th scope="row">非機能要件が大きく違う</th><td>決済のカード情報だけに PCI DSS の厳しい管理が要る。セール時に商品の閲覧だけが高負荷になる</td><td>規制・性能の対象の部分を隔離する</td></tr>
+            <tr><th scope="row">整合性の要求が違う</th><td>在庫の引き当ては即時に正しい必要があるが、売上の集計は数分遅れてもよい</td><td>強い整合性が要る部分と、結果整合でよい部分を分ける</td></tr>
+            <tr><th scope="row">一部を既製品・レガシーが担う</th><td>請求のうち、請求書の発行だけを外部サービスに任せる</td><td>外部の部分を別のコンテキストとして扱い、腐敗防止層をはさむ</td></tr>
+            <tr><th scope="row">書き込みと読み取りで、モデルが大きく違う</th><td>業務の処理と、経営向けのレポート・検索</td><td>参照専用のコンテキストを作る</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>パターン2：複数のサブドメインを、1つのコンテキストに統合する</h3>
+        <div class="table-wrap" role="region" aria-label="統合するサイン" tabindex="0"><table>
+          <thead><tr><th scope="col">統合するサイン</th><th scope="col">例</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">初期で小規模、チームが1つ</th><td>立ち上げ期で、受注と在庫を1チームが作っている。境界がまだ確かでないなら、早すぎる分割は避ける</td></tr>
+            <tr><th scope="row">いつも一緒に変わる</th><td>機能を足すたびに、2つのサブドメインを必ず同時に直している</td></tr>
+            <tr><th scope="row">同じトランザクションで強い整合性が要る</th><td>請求と入金の消し込みを、必ず同時に成功・失敗させる必要がある</td></tr>
+            <tr><th scope="row">汎用サブドメインを1つの製品でまかなう</th><td>会計と経費精算を、1つの SaaS がまとめて担う</td></tr>
+            <tr><th scope="row">実は言葉の意味が同じ</th><td>分けてみたら用語がほぼ共通で、変換のコストばかり増える</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="統合するときの注意"><strong>統合するときの注意</strong>統合は、同じドメインのサブドメイン同士に限るのが原則です。違うドメインのサブドメインをまとめると、用語・ルールを決める業務の責任者が2人になり、変更のたびに調整が必要になります。また、コンテキストを1つにまとめても、コードのモジュール・パッケージはサブドメインごとに分けておきます。チームが増えたときや、変更の周期がずれてきたときに、切り出しやすくなります。</aside>
+
+        <h3>やってはいけない分け方</h3>
+        <div class="cards two">
+          <article class="panel"><h3>エンティティ（CRUD）単位</h3><p class="muted">「顧客サービス」「商品サービス」のような分け方。ルールが散らばり、どの操作も複数のサービスを呼ぶことになります。</p></article>
+          <article class="panel"><h3>技術のレイヤー単位</h3><p class="muted">画面・API・データベースで分けても、言葉の境界にはなりません。</p></article>
+          <article class="panel"><h3>画面単位</h3><p class="muted">画面は機能仕様書の単位であり、コンテキストの単位ではありません。</p></article>
+          <article class="panel"><h3>組織図だけ</h3><p class="muted">言葉もモデルも同じなのに、部署が違うという理由だけで分けることです。</p></article>
+        </div>
+
+        <h3>分け方が間違っているサイン</h3>
+        <div class="table-wrap" role="region" aria-label="分け方が間違っているサイン" tabindex="0"><table>
+          <thead><tr><th scope="col">分けすぎのサイン</th><th scope="col">まとめすぎのサイン</th></tr></thead>
+          <tbody>
+            <tr><td>1つの機能追加で、いつも2つのコンテキストを同時に直す</td><td>用語の定義に「〜の場合は」という条件が増える</td></tr>
+            <tr><td>同期 API の呼び出しが、鎖のように連なる</td><td>同じ概念に、場面ごとの分岐やフラグが増え続ける</td></tr>
+            <tr><td>分散トランザクションや、データベースの共有が必要になる</td><td>複数のチームが、同じコードで頻繁にぶつかる</td></tr>
+            <tr><td>連携のための変換コードが、業務ロジックより多い</td><td>1つの集約・モデルが巨大になり、誰も全体を説明できない</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>判断の順番</h3>
+        <ol class="steps">
+          <li><div><strong>まず1対1で置く</strong><p>ドメイン定義書 04 の「コンテキストとの対応」に、サブドメインと同じ名前のコンテキストを1つずつ置きます。</p></div></li>
+          <li><div><strong>言葉の意味が割れていないかを見る</strong><p>1つのサブドメインの中で、同じ言葉が場面によって違う意味になっていれば分割します。これが最も強い理由です。</p></div></li>
+          <li><div><strong>チーム・変更頻度・非機能要件・整合性を見る</strong><p>1つのサブドメインの中で、これらが大きく違えば分割を検討します。</p></div></li>
+          <li><div><strong>まとめるべきものを見る</strong><p>いつも一緒に変わる、または強い整合性が要るサブドメイン同士は、統合を検討します。</p></div></li>
+          <li><div><strong>1対1でないものは ADR に残す</strong><p>理由を <a href="adr.html">ADR</a> に書き、ドメイン定義書 04 の「1対1にしない理由」「ADR」列を埋めます。チーム構成や規模などの前提が変わったら見直します。</p></div></li>
+        </ol>
+      </section>
+
+      <section id="where" aria-labelledby="where-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="where-title">どこに何を書くか</h2></div>
+        <p>同じ情報を複数の資料に書くと、更新のたびにずれます。書く場所を1つに決め、他の資料からは ID やリンクで参照します。</p>
+        <div class="table-wrap" role="region" aria-label="情報の書き場所" tabindex="0"><table>
+          <thead><tr><th scope="col">書きたいこと</th><th scope="col">書く場所</th><th scope="col">他の資料ではどうするか</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">システムがまたがるドメインと、業務の責任者</th><td><span class="tag tag-green">ドメイン定義書</span> 02 ドメイン一覧</td><td>コンテキスト定義書の見出しに、属するドメイン名を書く</td></tr>
+            <tr><th scope="row">システムが担う責務</th><td><span class="tag tag-green">ドメイン定義書</span> 03 システムの責務</td><td>コンテキスト定義書 01 と仕様書の見出しには RESP 番号だけを書く</td></tr>
+            <tr><th scope="row">サブドメインの分け方と種別、コンテキストとの対応（1対1・分割・統合）、担当チーム</th><td><span class="tag tag-green">ドメイン定義書</span> 04 サブドメインとコンテキスト</td><td>コンテキスト定義書の見出しに、解決するサブドメイン・対応・種別・担当チームを揃えて書く。1対1でない理由は ADR</td></tr>
+            <tr><th scope="row">サブドメイン同士の関係パターン</th><td><span class="tag tag-green">ドメイン定義書</span> 05 コンテキスト間の関係</td><td>コンテキスト定義書 07 連携の「関係パターン」列を揃える</td></tr>
+            <tr><th scope="row">同じ言葉が別の意味になる用語</th><td><span class="tag tag-green">ドメイン定義書</span> 06 境界をまたぐ用語</td><td>各コンテキスト定義書の用語集には、自分のコンテキストでの意味だけを書く</td></tr>
+            <tr><th scope="row">用語の定義、使わない言い方</th><td><span class="tag tag-brown">コンテキスト定義書</span> 02 ユビキタス言語</td><td>仕様書 02 用語・前提は、定義を書き写さず参照する</td></tr>
+            <tr><th scope="row">概念（集約・エンティティ・値オブジェクト）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 03 ドメインモデル</td><td>項目の詳細は <a href="object_model.html">オブジェクト整理</a>。仕様書のデータ項目は同じ名前を使う</td></tr>
+            <tr><th scope="row">業務上の決まりごと（RULE-xxx）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 04 ビジネスルール</td><td>仕様書の要件の「根拠」列に RULE 番号を書く</td></tr>
+            <tr><th scope="row">状態と遷移</th><td><span class="tag tag-brown">コンテキスト定義書</span> 05 状態とライフサイクル</td><td>仕様書の「前提」で状態名を使う。例：状態が「下書き」のとき</td></tr>
+            <tr><th scope="row">他のコンテキストとの API・イベント</th><td><span class="tag tag-brown">コンテキスト定義書</span> 06 イベント・07 連携</td><td>仕様書 06 データ・インターフェースは、07 に載っているものを使う</td></tr>
+            <tr><th scope="row">どの機能を作るか</th><td><span class="tag tag-brown">コンテキスト定義書</span> 08 機能一覧</td><td>機能ごとに仕様書を1つ作り、一覧から仕様書へリンクする</td></tr>
+            <tr><th scope="row">1つの機能の要件・画面の流れ・振る舞い</th><td><span class="tag tag-muted">機能仕様書</span> 03〜05</td><td>コンテキスト定義書には書かない。画面の詳細は <a href="screen_design_template.html">画面・機能設計書</a></td></tr>
+            <tr><th scope="row">完成の条件</th><td><span class="tag tag-muted">機能仕様書</span> 07 受け入れ基準</td><td>テストは <a href="screen_unit_test.html">画面単体テストケース</a> に展開する</td></tr>
+            <tr><th scope="row">なぜそう決めたか（選択肢と理由）</th><td><a href="adr.html">ADR</a></td><td>3つの資料には結果だけを書き、ADR へリンクする</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="迷ったとき"><strong>迷ったとき</strong>「この情報が変わったら、誰が困るか」で決めます。システム全体（複数のドメイン・チーム）が困るならドメイン定義書、そのサブドメインの担当者が困るならコンテキスト定義書、その機能を作る人だけが困るなら機能仕様書です。</aside>
+      </section>
+
+      <section id="order" aria-labelledby="order-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="order-title">作る順番</h2></div>
+        <p>新しいシステムなら上から順に、既存システムに機能を足すなら仕様書から始めて、必要なところだけ上を直します。</p>
+        <h3>新しいシステムを設計するとき</h3>
+        <ol class="steps">
+          <li><div><strong>ドメイン定義書でドメインと責務を洗い出す</strong><p>システムにつき <a href="domain.html">domain.html</a> を1つ作り、01 概要、02 ドメイン一覧、03 システムの責務を書きます。先に、システムがまたがるドメインと業務の責任者を確認します。責務は、人が行う業務と分けて書きます。</p></div></li>
+          <li><div><strong>ドメインをサブドメインに分け、コンテキストを決める</strong><p>04 で、各ドメインをサブドメインに分けて責務を割り当て、まず1対1でコンテキストを置きます。そのうえで「<a href="#split">04 コンテキストの分け方</a>」のルールで、分割・統合が必要かを確認します。ドメイン定義書 05 で関係を粗く描きます。</p></div></li>
+          <li><div><strong>サブドメインごとにコンテキスト定義書を作る</strong><p><a href="context.html">context.html</a> を、サブドメイン1つにつき1ファイル複製します。01 で担う責務を引き受け、業務担当者と一緒に 02 用語・03 モデル・04 ルール・05 状態を書きます。</p></div></li>
+          <li><div><strong>分け方や連携の判断を ADR に残す</strong><p>「なぜこの責務をこのサブドメインに入れたか」「なぜイベント連携にしたか」を <a href="adr.html">adr.html</a> に記録し、該当箇所からリンクします。</p></div></li>
+          <li><div><strong>機能一覧を作り、機能ごとに仕様書を書く</strong><p>コンテキスト定義書の 08 機能一覧に機能を並べ、<a href="specs.html">specs.html</a> を機能につき1ファイル複製します。見出しにコンテキストと実現する責務を書きます。</p></div></li>
+          <li><div><strong>画面設計とテストへ展開する</strong><p>仕様書の 04 操作の流れを<a href="screen_design_template.html">画面・機能設計書</a>に、05 振る舞いと 07 受け入れ基準を<a href="screen_unit_test.html">画面単体テストケース</a>に展開します。</p></div></li>
+        </ol>
+        <h3>既存のシステムに機能を足すとき</h3>
+        <ol class="steps">
+          <li><div><strong>どのコンテキストのどの責務か決める</strong><p>足したい機能が、どのコンテキストのどの RESP を実現するかを決めます。当てはまる責務がなければ、ドメイン定義書 03 に責務を追加し、04 で担うサブドメインと解決するコンテキストを決めます。</p></div></li>
+          <li><div><strong>仕様書を書き、機能一覧に載せる</strong><p>specs.html を書き、コンテキスト定義書の 08 機能一覧に追加します。新しい用語・ルール・状態が出てきたら、コンテキスト定義書の該当箇所に追記します。</p></div></li>
+        </ol>
+      </section>
+
+      <section id="terms" aria-labelledby="terms-title">
+        <div class="section-heading"><span class="section-number">07 /</span><h2 id="terms-title">用語を揃える流れ</h2></div>
+        <p>責務と並んで、3つの資料をつなぐのが用語です。「商品」という言葉を例に、どの資料にどう現れるかを示します。</p>
+        <div class="table-wrap" role="region" aria-label="用語の流れの例" tabindex="0"><table>
+          <thead><tr><th scope="col">資料</th><th scope="col">書き方の例</th><th scope="col">役割</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="tag tag-green">ドメイン定義書</span><br>05 境界をまたぐ用語</th><td>受注：「商品」＝販売単位（SKU）<br>在庫：「商品」＝保管単位（ロット）</td><td>同じ言葉がサブドメインをまたぐと意味が変わることを示す。連携時に変換が必要な根拠になる</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">コンテキスト定義書（受注）</span><br>02 ユビキタス言語</th><td>商品 ／ <code>Product</code> ／ 顧客が注文できる販売単位。SKU で識別する ／ 「品目」とは呼ばない</td><td>そのコンテキストでの定義を1か所に置く。コード・画面・会話で同じ名前を使う</td></tr>
+            <tr><th scope="row"><span class="tag tag-muted">機能仕様書（明細の変更）</span><br>02 用語・前提</th><td>商品 ／ 注文できる販売単位 ／ 参照：コンテキスト定義書（受注）02</td><td>定義を書き写さず参照する。入力項目・API の名前は <code>Product</code>・<code>sku</code> に揃える</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="名前の付け方"><strong>ID で結びつける</strong>ドメイン定義書の責務は <span class="id">RESP-001</span>・課題は <span class="id">SYS-001</span>、コンテキスト定義書のルールは <span class="id">RULE-001</span>、仕様書は <span class="id">SPEC-0001</span>・要件は <span class="id">REQ-001</span>・受け入れ基準は <span class="id">AC-001</span> のように番号を付けると、資料をまたいで「どれの話か」を指せます。</aside>
+      </section>
+
+      <section id="update" aria-labelledby="update-title">
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="update-title">更新のルール</h2></div>
+        <p>1つの資料を変えたら、つながっている資料のどこを見直すかを決めておきます。</p>
+        <div class="table-wrap" role="region" aria-label="更新時の確認" tabindex="0"><table>
+          <thead><tr><th scope="col">変えたこと</th><th scope="col">見直す資料</th><th scope="col">記録する場所</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">ドメインを追加した（システムの範囲が広がった）</th><td>ドメイン定義書 02 にドメインを、04 にサブドメインとコンテキストを追加する。05 でドメインをまたぐ連携を確認する</td><td>ドメイン定義書の変更履歴。範囲の判断は ADR</td></tr>
+            <tr><th scope="row">責務を追加・削除した</th><td>担うコンテキスト定義書の 01 担う責務と 08 機能一覧。削除なら、その責務を実現していた仕様書</td><td>ドメイン定義書の変更履歴</td></tr>
+            <tr><th scope="row">責務を別のサブドメインに移した</th><td>移す前と後のコンテキスト定義書の 01・08。関係する仕様書の「コンテキスト」と 02 用語・06 データの参照先</td><td>ADR に決定を残し、ドメイン定義書の版数を上げる</td></tr>
+            <tr><th scope="row">コンテキストを分割・統合した</th><td>ドメイン定義書 04 の対応表。コンテキスト定義書を分割・統合し、01 担う責務・08 機能一覧を振り分ける。関係する仕様書の「コンテキスト」を直す</td><td>ADR、ドメイン定義書の変更履歴</td></tr>
+            <tr><th scope="row">チーム構成・規模が変わった</th><td>1対1でない対応の ADR を読み直し、分割・統合の理由がまだ成り立つかを確認する</td><td>見直した結果を ADR に追記する。変える場合は新しい ADR</td></tr>
+            <tr><th scope="row">連携方式を変えた（API → イベントなど）</th><td>ドメイン定義書 05、両側のコンテキスト定義書 07、利用側の仕様書 06</td><td>ADR</td></tr>
+            <tr><th scope="row">用語の定義・ルールを変えた</th><td>その用語・ルールを使う仕様書の 02 用語、要件・振る舞い・受け入れ基準</td><td>コンテキスト定義書の変更履歴</td></tr>
+            <tr><th scope="row">機能の要件を変えた</th><td>その仕様書の受け入れ基準と、展開したテストケース。上の資料は通常そのまま</td><td>仕様書の変更履歴（確定後はステータスを戻さず、履歴に残す）</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="related" aria-labelledby="related-title">
+        <div class="section-heading"><span class="section-number">09 /</span><h2 id="related-title">関連資料</h2></div>
+        <ul class="reference-list">
+          <li><a href="domain.html">ドメイン定義書の雛形 ↗</a><small>システムで1つ。ドメイン・サブドメインの一覧、システムの責務、コンテキストとの対応と関係。</small></li>
+          <li><a href="context.html">コンテキスト定義書の雛形 ↗</a><small>サブドメインごとに1つ。担う責務・用語・モデル・ルール・状態・連携・機能一覧。</small></li>
+          <li><a href="specs.html">機能仕様書の雛形 ↗</a><small>機能ごとに1つ。実現する責務、要件・振る舞い・受け入れ基準。</small></li>
+          <li><a href="adr.html">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><small>判断の理由を残す。3つの資料から参照する。</small></li>
+          <li><a href="object_model.html">オブジェクト整理 ↗</a><small>ドメインモデルの項目・操作を設計する。</small></li>
+          <li><a href="business_sequence.html">業務シーケンス図 ↗</a><small>業務の流れと状態を、担当・帳票と合わせて整理する。</small></li>
+          <li><a href="screen_design_template.html">画面・機能設計書 ↗</a> · <a href="screen_unit_test.html">画面単体テストケース ↗</a><small>仕様書の下流。画面とテストに展開する。</small></li>
+        </ul>
+      </section>
+      <footer><span>HOW TO / 3つの雛形の使い方</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="機能仕様書：目的・要件・操作の流れ・振る舞い・データ・受け入れ基準を1つの機能ごとに記録する雛形。">
+  <!-- 1つの機能につき1ファイル作成します。ファイル名は spec-0001-［機能名］.html のように番号を付けると一覧しやすくなります。 -->
+  <title>SPEC-0001 ［機能名］｜SPEC NOTE</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --surface:#ffffff;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; overflow-wrap:anywhere; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .skip-link { position:fixed; top:12px; left:12px; padding:8px 16px; background:var(--surface); transform:translateY(-160%); z-index:10; }
+    .skip-link:focus { transform:translateY(0); }
+    .layout { width:min(1240px,calc(100% - 64px)); margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:64px; align-items:start; }
+    .sidebar { position:sticky; top:0; max-height:100dvh; overflow-y:auto; padding:40px 24px 32px 0; border-right:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.08em; }
+    .mark { flex-shrink:0; width:15px; height:15px; margin-right:5px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .sidebar-description { color:var(--muted); font-size:12px; margin:16px 0 35px; }
+    .toc-label { color:var(--brown); font-size:10px; font-weight:700; letter-spacing:.18em; margin:0 0 12px; }
+    .toc { list-style:none; margin:0; padding:0; }
+    .toc li { margin:5px 0; }
+    .toc a { display:flex; align-items:baseline; gap:12px; padding:9px 12px; text-decoration:none; border-radius:6px; font-size:13px; }
+    .toc a:hover,.toc a:focus-visible { background:#eaf0e8; }
+    .toc-number { font:11px ui-monospace,monospace; color:var(--brown); }
+    .sidebar-note { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:11px; color:var(--muted); }
+    main { min-width:0; padding-top:36px; }
+    .document-header { padding:0 0 38px; }
+    .breadcrumb { font-size:11px; color:var(--muted); margin:0 0 36px; }
+    .eyebrow { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 14px; }
+    h1 { font-size:clamp(30px,3.5vw,44px); line-height:1.5; letter-spacing:.025em; margin:0 0 20px; }
+    .lead { max-width:650px; color:var(--muted); font-size:15px; margin:0 0 24px; }
+    .metadata { display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; font-size:12px; }
+    .metadata div { display:flex; gap:10px; }
+    .metadata dt { color:var(--muted); }
+    .metadata dd { margin:0; }
+    section { border-top:1px solid var(--line); padding:36px 0 40px; scroll-margin-top:24px; }
+    .section-heading { display:flex; align-items:baseline; gap:14px; margin-bottom:20px; }
+    .section-number { font:13px ui-monospace,monospace; color:var(--brown); }
+    h2 { font-size:23px; letter-spacing:.03em; margin:0; }
+    h3 { font-size:16px; margin:24px 0 12px; }
+    p { margin:0 0 16px; font-size:14px; }
+    .muted { color:var(--muted); }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .panel h3 { margin-top:0; }
+    .panel > :last-child { margin-bottom:0; }
+    .two-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .callout { padding:18px 22px; border-left:3px solid var(--brown); border-radius:0 8px 8px 0; background:#eaece3; font-size:13px; margin:20px 0 0; }
+    .callout strong { display:block; margin-bottom:4px; }
+    ul,ol { padding-left:22px; font-size:14px; }
+    li + li { margin-top:8px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+    thead { background:#eaece3; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:500; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.92em; }
+    pre { overflow:auto; margin:16px 0 0; background:#eaece3; border:1px solid var(--line); border-radius:8px; padding:20px; font-size:12px; line-height:1.75; overflow-wrap:normal; }
+    .preview { min-height:140px; border:1px dashed #b8c4b9; border-radius:8px; padding:24px; background:var(--surface); display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .caption { color:var(--muted); font-size:12px; margin-top:10px; }
+    .steps { list-style:none; padding:0; margin:0; counter-reset:step; }
+    .steps li { display:grid; grid-template-columns:30px 1fr; gap:14px; margin:0; padding:16px 0; border-bottom:1px solid var(--line); counter-increment:step; }
+    .steps li::before { content:counter(step,decimal-leading-zero); font:12px/30px ui-monospace,monospace; color:var(--brown); }
+    .steps li:last-child { border:0; }
+    .steps strong { display:block; font-size:14px; }
+    .steps p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .reference-list { list-style:none; padding:0; margin:0; }
+    .reference-list li { border-bottom:1px solid var(--line); padding:14px 0; margin:0; }
+    .reference-list small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:24px 0 36px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    @media(max-width:900px) {
+      .layout { width:calc(100% - 40px); grid-template-columns:190px minmax(0,1fr); gap:32px; }
+      .sidebar { padding-right:16px; }
+      .brand { font-size:11px; }
+      .two-columns { grid-template-columns:1fr; }
+    }
+    @media(max-width:680px) {
+      .layout { width:calc(100% - 36px); grid-template-columns:1fr; gap:0; }
+      .sidebar { position:static; max-height:none; overflow:visible; padding:28px 0 24px; border-right:0; border-bottom:1px solid var(--line); }
+      .sidebar-description { margin:12px 0 20px; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 8px; }
+      .toc li { margin:0; }
+      .toc a { padding:7px 8px; font-size:12px; gap:8px; }
+      .sidebar-note { display:none; }
+      main { padding-top:24px; }
+      .breadcrumb { margin-bottom:24px; }
+      h2 { font-size:20px; }
+      .panel { padding:20px; }
+      section { padding:28px 0 32px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .layout { display:block; width:100%; }
+      .sidebar,.skip-link,.back-to-top { display:none; }
+      main { padding:0; }
+      .panel,.callout,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+    /* この資料固有の部品 */
+    h1 span { color:var(--brown); }
+    .toc-number { flex-shrink:0; white-space:nowrap; }
+    .table-wrap table { min-width:680px; }
+    .table-wrap td { min-width:6em; }
+    tbody th[scope="row"] { min-width:150px; }
+    th code, td code { white-space:nowrap; }
+    .metadata { gap:10px 28px; }
+    .metadata div { align-items:center; }
+    .tag { display:inline-block; padding:1px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.06em; border:1px solid currentColor; white-space:nowrap; }
+    .tag-green { color:#fff; background:var(--green); border-color:var(--green); }
+    .tag-brown { color:var(--brown); background:#f3ebe5; }
+    .tag-muted { color:var(--muted); background:#eceee8; }
+    .tag-red { color:#8a3b2e; background:#f6e8e4; }
+    .legend { display:flex; flex-wrap:wrap; gap:8px 18px; font-size:12px; color:var(--muted); margin:14px 0 0; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .cards.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .spec { margin:0; font-size:13px; }
+    .spec dt { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.1em; margin-top:10px; }
+    .spec dd { margin:2px 0 0; }
+    .highlight { border:2px solid var(--green); border-radius:12px; padding:22px 26px; background:var(--surface); margin-bottom:20px; }
+    .highlight-label { color:var(--green); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 6px; }
+    .highlight-text { font-size:17px; font-weight:700; line-height:1.7; margin:0; }
+    .gwt { display:grid; grid-template-columns:60px 1fr; gap:6px 14px; margin:0; font-size:13px; }
+    .gwt dt { color:var(--brown); font-weight:700; }
+    .gwt dd { margin:0; }
+    .id { font:12px ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--brown); white-space:nowrap; }
+    .table-wrap + h3 { margin-top:28px; }
+    @media(max-width:1100px) { .cards,.cards.two { grid-template-columns:1fr; } }
+    @media print { .tag,.highlight { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+  </style>
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
+</head>
+<body data-layout="document" id="top">
+  <a class="skip-link" href="#main-content">本文へスキップ</a>
+  <div class="layout">
+    <aside class="sidebar" aria-label="仕様書のナビゲーション">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>SPEC NOTE</div>
+      <p class="sidebar-description">SPEC-0001<br>機能仕様書</p>
+      <nav aria-labelledby="toc-title">
+        <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
+        <!-- セクションを追加するときは、hrefと本文のidを揃えてください。 -->
+        <ol class="toc">
+          <li><a href="#overview"><span class="toc-number">01</span>概要</a></li>
+          <li><a href="#terms"><span class="toc-number">02</span>用語・前提</a></li>
+          <li><a href="#requirements"><span class="toc-number">03</span>要件</a></li>
+          <li><a href="#flow"><span class="toc-number">04</span>操作の流れ</a></li>
+          <li><a href="#behavior"><span class="toc-number">05</span>振る舞いの仕様</a></li>
+          <li><a href="#data"><span class="toc-number">06</span>データ・インターフェース</a></li>
+          <li><a href="#acceptance"><span class="toc-number">07</span>受け入れ基準</a></li>
+          <li><a href="#open"><span class="toc-number">08</span>未決事項・変更履歴</a></li>
+        </ol>
+      </nav>
+      <div class="sidebar-note">この雛形の使い方<br>1つの機能につき1ファイル作成します。機能は1つの<a href="context.html">コンテキスト</a>に属し、そのコンテキストが担う責務（RESP）を実現します。「何を作るか」を書き、「どう作るか」は設計書・ADR に分けます。</div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="document-header">
+        <p class="breadcrumb"><a href="domain.html">［システム名］</a> / ［ドメイン名］ / <a href="context.html">［コンテキスト名］</a> / 仕様書</p>
+        <p class="eyebrow">FUNCTIONAL SPECIFICATION</p>
+        <h1>SPEC-0001：<span>［機能名］</span></h1>
+        <p class="lead">［この機能で、誰が、何をできるようになるかを1〜2文で記載します。例：「受注担当者が、確定前の注文の明細を変更できるようにする。」］</p>
+        <!-- ステータスは tag-brown（下書き）/ tag-muted（レビュー中）/ tag-green（確定）/ tag-red（取り下げ）から選びます。 -->
+        <dl class="metadata">
+          <div><dt>ステータス</dt><dd><span class="tag tag-brown">下書き</span></dd></div>
+          <div><dt>コンテキスト</dt><dd><a href="context.html">［コンテキスト名］</a></dd></div>
+          <div><dt>実現する責務</dt><dd><span class="id">［RESP-001］</span></dd></div>
+          <div><dt>対象リリース</dt><dd>［v1.2 / YYYY.MM］</dd></div>
+          <div><dt>作成者</dt><dd>［氏名・役割］</dd></div>
+          <div><dt>レビュー</dt><dd>［業務担当・開発・テスト］</dd></div>
+          <div><dt>更新日</dt><dd>［YYYY.MM.DD］</dd></div>
+        </dl>
+        <p class="legend"><span><span class="tag tag-brown">下書き</span>作成中</span><span><span class="tag tag-muted">レビュー中</span>確認を依頼した</span><span><span class="tag tag-green">確定</span>この内容で作る</span><span><span class="tag tag-red">取り下げ</span>作らないことにした</span></p>
+      </header>
+
+      <section id="overview" aria-labelledby="overview-title">
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="overview-title">概要</h2></div>
+        <div class="highlight"><p class="highlight-label">GOAL</p><p class="highlight-text">［この機能で実現することを1文で言い切ります。例：「確定前の注文なら、受注担当者が画面上で明細の数量・商品を変更できる。」］</p></div>
+        <div class="two-columns">
+          <article class="panel"><h3>背景・解決したい課題</h3><ul><li>［現状の困りごと・数値］</li><li>［要望の出どころ。例：受注チームからの依頼、問い合わせ件数］</li></ul></article>
+          <article class="panel"><h3>範囲</h3><dl class="spec"><dt>含むもの</dt><dd>［この仕様で作る画面・操作・データ］</dd><dt>含まないもの</dt><dd>［今回は作らないこと。例：確定後の変更、一括変更］</dd></dl></article>
+        </div>
+        <aside class="callout" aria-label="位置づけ"><strong>この機能の位置づけ</strong>［<a href="domain.html">ドメイン定義書</a>の責務 RESP-001「顧客からの注文を受け付け、内容を確定する」を、<a href="context.html">受注コンテキスト</a>の中で実現する機能の1つです。コンテキスト定義書の「08 機能一覧」にこの仕様書を載せます。］</aside>
+        <aside class="callout" aria-label="利用者"><strong>利用者と利用場面</strong>［誰が、いつ、どこで使うかを記載します。例：受注担当者が、顧客からの電話を受けながら、業務システムの注文画面で使う。］</aside>
+      </section>
+
+      <section id="terms" aria-labelledby="terms-title">
+        <div class="section-heading"><span class="section-number">02 /</span><h2 id="terms-title">用語・前提</h2></div>
+        <p>［この仕様で使う用語と、成り立つための前提を記載します。用語は、この機能が属する<a href="context.html">コンテキスト定義書</a>の「02 ユビキタス言語」と揃え、定義を書き写さずに参照します。］</p>
+        <div class="table-wrap" role="region" aria-label="用語" tabindex="0"><table>
+          <thead><tr><th scope="col">用語</th><th scope="col">意味</th><th scope="col">参照</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［用語 A］</th><td>［意味］</td><td>［コンテキスト定義書 02 の用語名］</td></tr>
+            <tr><th scope="row">［用語 B］</th><td>［意味］</td><td>［参照］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>前提・制約</h3>
+        <ul><li>［前提。例：利用者はログイン済みで、注文の編集権限を持つ。］</li><li>［制約。例：既存の注文 API の互換性を保つ。］</li><li>［依存する他の機能・外部システム］</li></ul>
+      </section>
+
+      <section id="requirements" aria-labelledby="requirements-title">
+        <div class="section-heading"><span class="section-number">03 /</span><h2 id="requirements-title">要件</h2></div>
+        <p>［機能として満たすことを、1行に1つずつ記載します。優先度は「なければ出せない」「あるべき」「あれば良い」の3段階で付けます。］</p>
+        <div class="table-wrap" role="region" aria-label="機能要件" tabindex="0"><table>
+          <thead><tr><th scope="col">ID</th><th scope="col">要件</th><th scope="col">優先度</th><th scope="col">根拠・出典</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="id">REQ-001</span></th><td>［例：状態が「下書き」の注文は、明細の数量を変更できる。］</td><td><span class="tag tag-green">必須</span></td><td>［受注チームの依頼 / RULE-002］</td></tr>
+            <tr><th scope="row"><span class="id">REQ-002</span></th><td>［要件］</td><td><span class="tag tag-brown">推奨</span></td><td>［根拠］</td></tr>
+            <tr><th scope="row"><span class="id">REQ-003</span></th><td>［要件］</td><td><span class="tag tag-muted">任意</span></td><td>［根拠］</td></tr>
+          </tbody>
+        </table></div>
+        <p class="legend"><span><span class="tag tag-green">必須</span>なければリリースしない</span><span><span class="tag tag-brown">推奨</span>原則入れる。遅れる場合は相談</span><span><span class="tag tag-muted">任意</span>余裕があれば入れる</span></p>
+        <h3>非機能要件</h3>
+        <div class="table-wrap" role="region" aria-label="非機能要件" tabindex="0"><table>
+          <thead><tr><th scope="col">項目</th><th scope="col">要求</th><th scope="col">測り方</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［性能］</th><td>［例：保存の応答は 2 秒以内］</td><td>［例：本番相当のデータで 95 パーセンタイルを計測］</td></tr>
+            <tr><th scope="row">［セキュリティ・権限］</th><td>［例：編集権限のない利用者には変更ボタンを表示しない］</td><td>［権限別のテストケース］</td></tr>
+            <tr><th scope="row">［記録・監査］</th><td>［例：変更前後の値と操作者を記録する］</td><td>［変更履歴の確認］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="flow" aria-labelledby="flow-title">
+        <div class="section-heading"><span class="section-number">04 /</span><h2 id="flow-title">操作の流れ</h2></div>
+        <p>［利用者の操作を順番に記載します。画面の詳細は<a href="screen_design_template.html">画面・機能設計書</a>に書き、ここでは流れと確認ポイントに絞ります。］</p>
+        <ol class="steps">
+          <li><div><strong>［注文を開く］</strong><p>［注文一覧から対象の注文を選ぶ。状態が「下書き」のときだけ「明細を変更」ボタンが表示される。］</p></div></li>
+          <li><div><strong>［明細を変更する］</strong><p>［数量・商品を変更する。入力のたびに合計金額を再計算して表示する。］</p></div></li>
+          <li><div><strong>［保存する］</strong><p>［バリデーションを通れば保存し、変更内容を履歴に記録する。保存後は注文画面に戻る。］</p></div></li>
+        </ol>
+        <div class="preview">画面の流れ・ワイヤーフレームをここに配置</div>
+        <p class="caption">図1：［図の説明・見てほしいポイント］</p>
+      </section>
+
+      <section id="behavior" aria-labelledby="behavior-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="behavior-title">振る舞いの仕様</h2></div>
+        <p>［「前提 → 操作 → 結果」の形で、システムの振る舞いを記載します。正常な場合だけでなく、入力の誤り・権限なし・競合などの場合も書きます。この形はテストケースにそのまま展開できます。］</p>
+        <div class="cards">
+          <article class="panel"><h3><span class="id">SPEC-001-01</span> 正常に変更できる</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「下書き」の注文を開いている］</dd><dt>操作</dt><dd>［数量を 1 から 3 に変更して保存する］</dd><dt>結果</dt><dd>［数量 3 で保存され、合計金額が更新される。履歴に変更前後の値が残る］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-001-02</span> 確定後は変更できない</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「確定」の注文を開いている］</dd><dt>操作</dt><dd>［明細を変更しようとする］</dd><dt>結果</dt><dd>［変更ボタンが表示されない。直接 API を呼んでも拒否される］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-001-03</span> ［ケース名］</h3><dl class="gwt"><dt>前提</dt><dd>［前提］</dd><dt>操作</dt><dd>［操作］</dd><dt>結果</dt><dd>［結果］</dd></dl></article>
+        </div>
+        <h3>入力項目とバリデーション</h3>
+        <div class="table-wrap" role="region" aria-label="入力項目" tabindex="0"><table>
+          <thead><tr><th scope="col">項目</th><th scope="col">型・形式</th><th scope="col">必須</th><th scope="col">制約</th><th scope="col">エラー時の表示</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［数量］</th><td>［整数］</td><td>必須</td><td>［1 以上 999 以下］</td><td>［「数量は 1〜999 で入力してください」］</td></tr>
+            <tr><th scope="row">［商品］</th><td>［選択］</td><td>必須</td><td>［販売中の商品のみ］</td><td>［「この商品は選択できません」］</td></tr>
+            <tr><th scope="row">［項目］</th><td>［型］</td><td>［必須 / 任意］</td><td>［制約］</td><td>［表示］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>異常系・例外</h3>
+        <div class="table-wrap" role="region" aria-label="異常系" tabindex="0"><table>
+          <thead><tr><th scope="col">状況</th><th scope="col">システムの振る舞い</th><th scope="col">利用者への表示</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［他の利用者が先に変更していた］</th><td>［保存を拒否し、最新の内容を再表示する］</td><td>［「他の利用者が変更しました。内容を確認してください」］</td></tr>
+            <tr><th scope="row">［保存中に通信が切れた］</th><td>［保存は行わない。入力内容は画面に残す］</td><td>［「保存できませんでした。もう一度お試しください」］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="data" aria-labelledby="data-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="data-title">データ・インターフェース</h2></div>
+        <p>［この機能で読み書きするデータと、呼び出す・提供する API を記載します。項目の意味はコンテキスト定義書の「03 ドメインモデル」と<a href="object_model.html">オブジェクト整理</a>に揃え、他のコンテキストとの連携はコンテキスト定義書の「07 連携」に載っているものを使います。］</p>
+        <div class="table-wrap" role="region" aria-label="データ項目" tabindex="0"><table>
+          <thead><tr><th scope="col">項目</th><th scope="col">型</th><th scope="col">説明</th><th scope="col">保存先・取得元</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>［orderId］</code></th><td>［文字列］</td><td>［注文番号］</td><td>［注文テーブル］</td></tr>
+            <tr><th scope="row"><code>［quantity］</code></th><td>［整数］</td><td>［数量］</td><td>［注文明細テーブル］</td></tr>
+            <tr><th scope="row"><code>［changedBy］</code></th><td>［文字列］</td><td>［変更した利用者］</td><td>［変更履歴テーブル］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>API・連携</h3>
+        <div class="table-wrap" role="region" aria-label="API" tabindex="0"><table>
+          <thead><tr><th scope="col">種類</th><th scope="col">名前</th><th scope="col">入力</th><th scope="col">出力・結果</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td><code>［PUT /orders/{id}/lines］</code></td><td>［明細の配列］</td><td>［更新後の注文。確定済みなら 409］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td><code>［GET /products/{sku}］</code></td><td>［SKU］</td><td>［商品情報。販売中かどうか］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="acceptance" aria-labelledby="acceptance-title">
+        <div class="section-heading"><span class="section-number">07 /</span><h2 id="acceptance-title">受け入れ基準</h2></div>
+        <p>［「これが確認できたら完成」と言える条件を記載します。業務担当者が確認できる言葉で書き、結果は<a href="screen_unit_test.html">画面単体テストケース</a>にも記録します。］</p>
+        <div class="table-wrap" role="region" aria-label="受け入れ基準" tabindex="0"><table>
+          <thead><tr><th scope="col">ID</th><th scope="col">条件</th><th scope="col">確認方法</th><th scope="col">対応する要件</th><th scope="col">結果</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="id">AC-001</span></th><td>［下書きの注文で数量を変更して保存すると、一覧の合計金額が更新されている］</td><td>［画面操作で確認］</td><td><span class="id">REQ-001</span></td><td>［未確認］</td></tr>
+            <tr><th scope="row"><span class="id">AC-002</span></th><td>［確定済みの注文には変更ボタンが表示されない］</td><td>［画面操作で確認］</td><td><span class="id">REQ-001</span></td><td>［未確認］</td></tr>
+            <tr><th scope="row"><span class="id">AC-003</span></th><td>［条件］</td><td>［確認方法］</td><td><span class="id">REQ-00x</span></td><td>［未確認］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="open" aria-labelledby="open-title">
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="open-title">未決事項・変更履歴</h2></div>
+        <div class="table-wrap" role="region" aria-label="未決事項" tabindex="0"><table>
+          <thead><tr><th scope="col">ID</th><th scope="col">決めること</th><th scope="col">選択肢・論点</th><th scope="col">決める人</th><th scope="col">期限</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="id">Q-001</span></th><td>［例：変更の上限回数を設けるか］</td><td>［設けない / 3 回まで］</td><td>［受注チームリーダー］</td><td>［YYYY.MM.DD］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>変更履歴</h3>
+        <div class="table-wrap" role="region" aria-label="変更履歴" tabindex="0"><table>
+          <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［YYYY.MM.DD］</th><td><span class="tag tag-brown">下書き</span></td><td>［初版を作成］</td><td>［氏名］</td></tr>
+            <tr><th scope="row">［YYYY.MM.DD］</th><td><span class="tag tag-green">確定</span></td><td>［レビューで合意］</td><td>［氏名］</td></tr>
+          </tbody>
+        </table></div>
+        <ul class="reference-list">
+          <li><a href="howtocontext.html">3つの雛形の使い方 ↗</a><small>ドメイン定義書・コンテキスト定義書・機能仕様書の関係と、作る順番。</small></li>
+          <li><a href="context.html">コンテキスト定義書 ↗</a><small>この機能が属するコンテキストの用語・ルール・状態・連携。</small></li>
+          <li><a href="adr.html">ADR（アーキテクチャ決定レコード） ↗</a><small>この仕様に影響する技術判断の記録。</small></li>
+          <li><a href="#">［関連する設計書・議事録］</a><small>［関係］</small></li>
+        </ul>
+      </section>
+      <footer><span>SPEC NOTE / SPEC-0001 ［作成者］</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>
