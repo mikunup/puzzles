@@ -258,7 +258,7 @@ button:disabled { cursor: default; }
           <li><a href="#options"><span class="toc-number">03</span>検討した選択肢</a></li>
           <li><a href="#decision"><span class="toc-number">04</span>決定</a></li>
           <li><a href="#consequences"><span class="toc-number">05</span>結果・影響</a></li>
-          <li><a href="#follow-up"><span class="toc-number">06</span>実施と見直し</a></li>
+          <li><a href="#follow-up"><span class="toc-number">06</span>確認と見直し</a></li>
           <li><a href="#related"><span class="toc-number">07</span>関連ADR・参考資料</a></li>
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
@@ -355,15 +355,8 @@ button:disabled { cursor: default; }
       </section>
 
       <section id="follow-up" aria-labelledby="follow-up-title">
-        <div class="section-heading"><span class="section-number">06 /</span><h2 id="follow-up-title">実施と見直し</h2></div>
-        <p>［決定を実行するための作業と、決定が正しかったかを確認する方法を記載します。］</p>
-        <div class="table-wrap" role="region" aria-label="実施する作業" tabindex="0"><table>
-          <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">［作業 1］</th><td>［担当］</td><td>［YYYY.MM.DD］</td><td>［未着手］</td></tr>
-            <tr><th scope="row">［作業 2］</th><td>［担当］</td><td>［YYYY.MM.DD］</td><td>［未着手］</td></tr>
-          </tbody>
-        </table></div>
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="follow-up-title">確認と見直し</h2></div>
+        <p>［決定が正しかったかを確かめる指標と、見直す条件を記載します。実施する作業はIssueとPRで管理し、ここには書きません。］</p>
         <div class="two-columns review">
           <article class="panel"><h3>確認する指標</h3><p class="muted">［決定の効果を測る指標と目標値。例：「応答時間の95パーセンタイルが300ms以下」］</p></article>
           <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">［再検討する時期や条件。例：「［YYYY.MM］に見直す」「利用者が［人数］を超えたら再検討する」］</p></article>
