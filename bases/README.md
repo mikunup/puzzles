@@ -104,6 +104,17 @@
 
 ## このファイルの更新
 
-1. 基準（色・部品・ルールなど）を変えるときは、まずこのファイルを書き換える。
-2. 同じ作業の中で、このファイルに合わせて `bases/` のHTMLと `base.css` を直す。`base.css` を変えたら `node bases/sync_styles.mjs` を実行する。
-3. HTMLだけ、`base.css` だけを先に変えない。
+基準（色・部品・ルールなど）は、次の順に直す。同じ作業の中で最後まで進め、途中の段から始めない。
+
+```text
+bases/README.md            1. 基準を書き換える（ここが正）
+  ↓
+bases/base.css             2. 共通CSSに関わる場合だけ直し、node bases/sync_styles.mjs を実行
+  ↓
+bases/*.html（影響あるもの） 3. 説明・見本・ページ固有のCSSを直す
+  ↓
+*.html（影響あるもの）      4. リポジトリ直下のページ固有のCSS・部品・操作を直す
+```
+
+- 2の同期で、すべてのHTMLの共通CSSの範囲は自動で更新される。3・4では、範囲外のページ固有のCSS・HTML・JavaScriptを直す。
+- 影響がない段は飛ばしてよい。最後に `node bases/sync_styles.mjs --check` を実行する。

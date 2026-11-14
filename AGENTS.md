@@ -33,5 +33,11 @@ AIエージェント向けのルールです。Codexはこのファイルを直�
 
 `bases/` のデザイン・レイアウトの基準は、`bases/README.md`（Markdown）を元にします。基準を読むときはこのファイルを読み、`bases/` のHTMLは見本の見た目や操作を確かめる必要があるときだけ読みます（ADR-0008）。
 
-- **Markdownから変える**：基準（色・部品・ルールなど）を変えるときは、まず `bases/README.md` を書き換え、同じ作業の中でそれに合わせて `bases/` のHTMLと `base.css` を直します。HTMLや `base.css` だけを先に変えません。
+- **Markdownから変える**：基準（色・部品・ルールなど）を変えるときは、同じ作業の中で次の順に直します。影響がない段は飛ばしますが、途中の段から始めません。
+
+  ```text
+  bases/README.md → bases/base.css → bases/*.html（影響あるもの） → *.html（影響あるもの）
+  ```
+
+  `base.css` を直したら `node bases/sync_styles.mjs` を実行します。共通CSSの範囲は自動で更新されるので、各HTMLでは範囲外のページ固有のCSS・HTML・JavaScriptを直します。手順の詳細は `bases/README.md` の「このファイルの更新」にあります。
 - **食い違いはMarkdownを正とする**：`bases/README.md` とHTMLの内容が食い違うときは、Markdownに合わせてHTMLを直します。
