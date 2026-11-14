@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <!-- このファイルは adr/adr-0001-share-agent-rules-with-agents-md.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
+  <!-- このファイルは adr/adr-0003-use-nodejs-for-scripts.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む">
-  <title>ADR-0001 AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む｜DECISION RECORD</title>
+  <meta name="description" content="ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない">
+  <title>ADR-0003 リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない｜DECISION RECORD</title>
   <style>
     :root {
       color-scheme:light;
@@ -248,7 +248,7 @@ button:disabled { cursor: default; }
   <div class="layout">
     <aside class="sidebar" aria-label="ADRのナビゲーション">
       <div class="brand"><span class="mark" aria-hidden="true"></span>DECISION RECORD</div>
-      <p class="sidebar-description">ADR-0001<br>アーキテクチャ決定レコード</p>
+      <p class="sidebar-description">ADR-0003<br>アーキテクチャ決定レコード</p>
       <nav aria-labelledby="toc-title">
         <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
         <ol class="toc">
@@ -262,21 +262,21 @@ button:disabled { cursor: default; }
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="adr-0001-share-agent-rules-with-agents-md.md">adr-0001-share-agent-rules-with-agents-md.md</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="../adr-0003-use-nodejs-for-scripts.md">adr-0003-use-nodejs-for-scripts.md</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
       <header class="document-header">
-        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・AIエージェント向けルール</p>
+        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・開発環境</p>
         <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
-        <h1>ADR-0001：<span>AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む</span></h1>
-        <p class="lead">Claude CodeとCodexに同じルールを読ませるため、ルールの本体をリポジトリ直下の <code>AGENTS.md</code> に置き、<code>CLAUDE.md</code> は <code>@AGENTS.md</code> の1行で取り込む。</p>
+        <h1>ADR-0003：<span>リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</span></h1>
+        <p class="lead">リポジトリで使うスクリプトはNode.jsで書き、Pythonのスクリプト（<code>bases/sync_styles.py</code>・<code>adr/build_index.py</code>）は同じ動きのNode.js版に置き換えて削除する。</p>
         <dl class="metadata">
           <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
-          <div><dt>関係者</dt><dd>Claude Code（調査・作成）</dd></div>
-          <div><dt>対象範囲</dt><dd>リポジトリ直下の <code>AGENTS.md</code>・<code>CLAUDE.md</code></dd></div>
+          <div><dt>関係者</dt><dd>Claude Code（調査・移植）</dd></div>
+          <div><dt>対象範囲</dt><dd><code>bases/sync_styles.mjs</code>・<code>adr/build_index.mjs</code>・リポジトリのスクリプト全般</dd></div>
         </dl>
       </header>
 
@@ -293,40 +293,39 @@ button:disabled { cursor: default; }
 
       <section id="context" aria-labelledby="context-title">
         <div class="section-heading"><span class="section-number">01 /</span><h2 id="context-title">背景・課題</h2></div>
-        <p>変更のたびに <code>adr/</code> 配下へMarkdownとHTMLのADRを作るルールを、<code>CLAUDE.md</code> に定めた。このリポジトリではClaude Codeに加えてCodexも使う予定だが、Codexが自動で読むのは <code>AGENTS.md</code> で、<code>CLAUDE.md</code> は読まない。このままでは、Codexで作業したときにADRのルールが適用されない。</p>
+        <p>リポジトリ管理者は、Node.jsが使えればよい環境で作業している。一方、共通CSSを各HTMLへ反映する <code>bases/sync_styles.py</code> と、ADR-0002で作ったADR一覧を生成する <code>adr/build_index.py</code> はPythonで書かれており、Node.jsとは別にPython 3の実行環境が必要だった。</p>
         <div class="two-columns">
-          <article class="panel"><h3>現状</h3><ul><li>ルールは <code>CLAUDE.md</code> にだけ書かれている。</li><li>Claude Codeは <code>CLAUDE.md</code> を読むが、Codexは読まない。</li></ul></article>
-          <article class="panel"><h3>制約・前提</h3><ul><li>リポジトリをクローンした別の環境でも、追加の設定なしでルールが効くこと。</li><li>ルールを書く場所は1か所にし、ツールごとに内容がずれないようにすること。</li><li>主にmacOSで使うが、Windowsでも壊れない構成にすること。</li></ul></article>
+          <article class="panel"><h3>現状</h3><ul><li>Pythonのスクリプトが2つある（<code>bases/sync_styles.py</code>・<code>adr/build_index.py</code>）。</li><li><code>electron/</code> はすでにNode.js（npm）を使っている。</li></ul></article>
+          <article class="panel"><h3>制約・前提</h3><ul><li>利用者の環境はNode.jsがあればよく、Pythonを前提にしない。</li><li>既存コマンドの動き（<code>--check</code>・<code>--watch</code>、終了コード、表示するメッセージ、書き換える内容）を変えない。</li><li>外部パッケージを使わず、<code>npm install</code> なしで動くこと。</li></ul></article>
         </div>
-        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>Claude CodeとCodexの両方に同じルールを読ませるには、ルールをどのファイルに置き、どうつなげるか。</aside>
+        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>リポジトリのスクリプトを、どの実行環境で動かすか。</aside>
       </section>
 
       <section id="drivers" aria-labelledby="drivers-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="drivers-title">判断基準</h2></div>
         <ol class="steps">
-          <li><div><strong>両方のツールで同じルールが読まれること</strong><p>ツールによってADRが作られたり作られなかったりすると、変更の記録が欠けるため。</p></div></li>
-          <li><div><strong>ルールを書く場所が1か所であること</strong><p>2つのファイルを手で揃える運用では、片方だけ更新されて内容がずれるため。</p></div></li>
-          <li><div><strong>利用する環境に依存しないこと</strong><p>PCごとの設定やOSの違いで、ルールが読まれなくなるのを避けるため。</p></div></li>
+          <li><div><strong>利用者が用意する実行環境が1つで済むこと</strong><p>利用者はNode.jsだけが使えればよく、別の言語の環境を用意する手間をなくすため。</p></div></li>
+          <li><div><strong>既存の動きを変えないこと</strong><p>共通CSSの反映やADR一覧の生成の結果が変わると、HTMLが意図せず書き換わるため。</p></div></li>
+          <li><div><strong>追加のインストールが不要であること</strong><p>クローンしてすぐにスクリプトを実行できるようにするため。</p></div></li>
         </ol>
       </section>
 
       <section id="options" aria-labelledby="options-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
         <div class="table-wrap" role="region" aria-label="検討した選択肢" tabindex="0"><table>
-          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：AGENTS.mdに本体、CLAUDE.mdから取り込む<span class="chosen">採用</span></th><th scope="col">選択肢 B：シンボリックリンク</th><th scope="col">選択肢 C：Codexの設定でCLAUDE.mdを読ませる</th><th scope="col">選択肢 D：現状維持</th></tr></thead>
+          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：Node.jsに統一<span class="chosen">採用</span></th><th scope="col">選択肢 B：Pythonのまま</th><th scope="col">選択肢 C：新しいものだけNode.js</th></tr></thead>
           <tbody>
-            <tr><th scope="row">両ツールで読まれる</th><td><span class="score good">◎</span>どちらも標準の仕組みで読む</td><td><span class="score good">◎</span>同じ内容が2つの名前で見える</td><td><span class="score fair">○</span>設定したPCでだけ読まれる</td><td><span class="score poor">×</span>Codexでは読まれない</td></tr>
-            <tr><th scope="row">書く場所が1か所</th><td><span class="score good">◎</span>本体は <code>AGENTS.md</code> だけ</td><td><span class="score good">◎</span>実体は1ファイル</td><td><span class="score good">◎</span><code>CLAUDE.md</code> だけ</td><td><span class="score good">◎</span><code>CLAUDE.md</code> だけ</td></tr>
-            <tr><th scope="row">環境に依存しない</th><td><span class="score good">◎</span>リポジトリ内で完結する</td><td><span class="score poor">△</span>Windowsではリンクが通常のファイルになることがある</td><td><span class="score poor">×</span>PCごとに <code>~/.codex/config.toml</code> の設定が必要</td><td><span class="score good">◎</span>追加の設定は不要</td></tr>
+            <tr><th scope="row">実行環境が1つで済む</th><td><span class="score good">◎</span>Node.jsだけで、<code>electron/</code> も含めて動く</td><td><span class="score poor">△</span>Python 3が必要（<code>electron/</code> にはNode.jsも必要）</td><td><span class="score poor">×</span>PythonとNode.jsの両方が必要</td></tr>
+            <tr><th scope="row">既存の動きを変えない</th><td><span class="score fair">○</span>移植が必要だが、同じ出力になることを確認した</td><td><span class="score good">◎</span>変更なし</td><td><span class="score good">◎</span>既存のスクリプトはそのまま</td></tr>
+            <tr><th scope="row">追加のインストールが不要</th><td><span class="score good">◎</span>Node.jsの標準モジュールだけを使う</td><td><span class="score good">◎</span>標準ライブラリだけを使う</td><td><span class="score good">◎</span>どちらも標準の機能だけを使う</td></tr>
           </tbody>
         </table></div>
         <p class="caption">◎：基準を十分に満たす　○：満たす　△：課題がある　×：満たさない</p>
         <h3>選択肢ごとの詳細</h3>
         <div class="options">
-          <article class="panel"><h3>選択肢 A：AGENTS.mdに本体、CLAUDE.mdから取り込む</h3><p class="muted">ルールを <code>AGENTS.md</code> に書き、<code>CLAUDE.md</code> は <code>@AGENTS.md</code> の1行だけにする。Claude Codeは <code>@</code> で指定したファイルを取り込む。</p><dl class="pros-cons"><dt>良い点</dt><dd>両ツールが標準の仕組みで同じ内容を読む。リポジトリ内で完結する。</dd><dt>懸念点</dt><dd><code>CLAUDE.md</code> に直接ルールを書き足すと、Codexには伝わらない。</dd></dl></article>
-          <article class="panel"><h3>選択肢 B：シンボリックリンク</h3><p class="muted">ルールを <code>CLAUDE.md</code> に書き、<code>AGENTS.md</code> をそのシンボリックリンクにする。</p><dl class="pros-cons"><dt>良い点</dt><dd>実体が1つなので、内容が必ず一致する。</dd><dt>懸念点</dt><dd>Windowsやgitの設定によっては、リンクがパスを書いた通常のファイルとして取り出される。</dd></dl></article>
-          <article class="panel"><h3>選択肢 C：Codexの設定でCLAUDE.mdを読ませる</h3><p class="muted"><code>~/.codex/config.toml</code> の <code>project_doc_fallback_filenames</code> に <code>CLAUDE.md</code> を加える。</p><dl class="pros-cons"><dt>良い点</dt><dd>リポジトリのファイルを変えずに済む。</dd><dt>懸念点</dt><dd>設定はPCごとで、クローンした他の環境には効かない。設定項目はCodexのバージョンで変わる可能性がある。</dd></dl></article>
-          <article class="panel"><h3>選択肢 D：現状維持</h3><p class="muted"><code>CLAUDE.md</code> だけにルールを書いたままにする。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd>Codexで作業したときにADRのルールが適用されない。</dd></dl></article>
+          <article class="panel"><h3>選択肢 A：Node.jsに統一</h3><p class="muted">2つのPythonスクリプトを、同じ動きのNode.js版（<code>.mjs</code>、標準モジュールのみ）に置き換え、Python版を削除する。今後のスクリプトもNode.jsで書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>利用者はNode.jsだけを用意すればよい。スクリプトの言語が1つになり、保守しやすい。</dd><dt>懸念点</dt><dd>移植の手間がかかる。実行コマンドが <code>python3</code> から <code>node</code> に変わる。</dd></dl></article>
+          <article class="panel"><h3>選択肢 B：Pythonのまま</h3><p class="muted">スクリプトはPythonで書き続ける。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd>Node.jsだけの環境ではスクリプトを実行できない。</dd></dl></article>
+          <article class="panel"><h3>選択肢 C：新しいものだけNode.js</h3><p class="muted">既存の <code>bases/sync_styles.py</code> は残し、これから作るスクリプトだけをNode.jsで書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>既存のスクリプトに手を入れずに済む。</dd><dt>懸念点</dt><dd>PythonとNode.jsの両方が必要になり、利用者の手間が最も大きい。</dd></dl></article>
         </div>
       </section>
 
@@ -334,19 +333,21 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="decision-title">決定</h2></div>
         <div class="decision">
           <p class="decision-label">DECISION</p>
-          <p class="decision-text">AIエージェント向けのルールの本体をリポジトリ直下の <code>AGENTS.md</code> に置き、<code>CLAUDE.md</code> は <code>@AGENTS.md</code> の1行で取り込む（選択肢 A）。</p>
+          <p class="decision-text">リポジトリで使うスクリプトはNode.js（標準モジュールのみ、拡張子 <code>.mjs</code>）で書く。既存のPythonスクリプトは同じ動きのNode.js版に置き換えて削除する（選択肢 A）。</p>
         </div>
         <h3>決定の理由</h3>
-        <p>判断基準の3つすべてを満たすのは選択肢 Aだけだった。</p>
-        <ul><li>基準 1：Claude CodeとCodexの両方が、それぞれ標準の仕組みで同じルールを読む。</li><li>基準 2・3：ルールの本体は <code>AGENTS.md</code> の1か所で、リポジトリ内で完結する。</li><li>選択肢 Bは、Windowsでリンクが壊れる可能性があるため選ばなかった。</li><li>選択肢 Cは、PCごとの設定が必要でクローンした環境に効かないため選ばなかった。</li><li>選択肢 Dは、Codexでルールが適用されないため選ばなかった。</li></ul>
+        <p>利用者が「Node.jsが使えればよい」としているため、基準 1を最も重視した。</p>
+        <ul><li>基準 1：Node.jsだけで、すべてのスクリプトと <code>electron/</code> が動く。</li><li>基準 2：移植後の出力がPython版と一致することを確認した（下記「確認した内容」）。</li><li>基準 3：Node.jsの標準モジュールだけを使い、<code>npm install</code> は不要。</li><li>選択肢 Bは、Node.jsだけの環境で動かないため選ばなかった。</li><li>選択肢 Cは、PythonとNode.jsの両方が必要になるため選ばなかった。</li></ul>
+        <h3>確認した内容（Node.js v26.2.0）</h3>
+        <ul><li><code>bases/sync_styles.mjs</code>：リポジトリのコピーで <code>base.css</code> を変更して両方を実行し、19ページの書き換え結果が完全に一致した。<code>--check</code> はどちらも同じ2ページを未反映として報告した。<code>--watch</code> は保存後に各ページを更新した。</li><li><code>adr/build_index.mjs</code>：153件のADR（記号やリンクを含むものを含む）で、表示と <code>README.md</code>・<code>index.html</code> の生成結果が完全に一致した。</li></ul>
       </section>
 
       <section id="consequences" aria-labelledby="consequences-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="consequences-title">結果・影響</h2></div>
         <div class="consequences">
-          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>Claude CodeとCodexで、同じルールに沿って作業できる。</li><li>ルールの追加・変更は <code>AGENTS.md</code> だけを編集すればよい。</li></ul></article>
-          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li><code>CLAUDE.md</code> に直接ルールを書いてもCodexには伝わらない。ルールは必ず <code>AGENTS.md</code> に書く必要がある（<code>AGENTS.md</code> の冒頭に明記した）。</li><li>Claude Codeの <code>@</code> による取り込み機能に依存する。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> を読む他のAIツールにも、同じルールが伝わる。</li><li>これまで <code>CLAUDE.md</code> にあったルールは、<code>AGENTS.md</code> に移した。</li></ul></article>
+          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>利用者はNode.jsだけを用意すれば、共通CSSの反映・ADR一覧の生成・<code>electron/</code> のすべてを使える。</li><li>スクリプトの言語がNode.jsに揃い、読む・直すときに迷わない。</li></ul></article>
+          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>Pythonだけがある環境では、スクリプトを実行できない。</li><li>実行コマンドが変わる（<code>python3 bases/sync_styles.py</code> → <code>node bases/sync_styles.mjs</code>、<code>python3 adr/build_index.py</code> → <code>node adr/build_index.mjs</code>）。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li><code>README.md</code>・<code>README.html</code>・<code>bases/display.html</code>・<code>AGENTS.md</code> のコマンドを書き換えた。<code>AGENTS.md</code> に「スクリプトはNode.jsで書く」ルールを追加した。</li><li><code>base.css</code> 冒頭のコメント（<code>sync_styles.py</code> → <code>sync_styles.mjs</code>）は、各HTMLの埋め込みCSSを文字列置換で直した。共通CSSの同期は実行していない。</li></ul></article>
         </div>
       </section>
 
@@ -355,25 +356,25 @@ button:disabled { cursor: default; }
         <div class="table-wrap" role="region" aria-label="実施と見直し" tabindex="0"><table>
           <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><code>CLAUDE.md</code> のルールを <code>AGENTS.md</code> に移す</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row"><code>CLAUDE.md</code> を <code>@AGENTS.md</code> の1行にする</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>bases/sync_styles.mjs</code> を作成し、<code>bases/sync_styles.py</code> を削除する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>adr/build_index.mjs</code> を作成し、<code>adr/build_index.py</code> を削除する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row">README・<code>bases/display.html</code>・<code>AGENTS.md</code> のコマンドを書き換える</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
             <tr><th scope="row">このADRをMarkdownとHTMLで作成する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row">Codexでルールが読まれることを確認する</th><td>mikunup</td><td>［YYYY.MM.DD］</td><td>未着手</td></tr>
           </tbody>
         </table></div>
         <div class="two-columns review">
-          <article class="panel"><h3>確認する指標</h3><p class="muted">Claude CodeとCodexのどちらで変更しても、<code>adr/</code> 配下にMarkdownとHTMLのADRが1組作られること。</p></article>
-          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">Claude Codeが <code>AGENTS.md</code> を直接読むようになった場合や、Codexが <code>CLAUDE.md</code> を読むようになった場合に、<code>CLAUDE.md</code> の扱いを見直す。</p></article>
+          <article class="panel"><h3>確認する指標</h3><p class="muted">リポジトリに <code>.py</code> ファイルがなく、<code>node bases/sync_styles.mjs --check</code> と <code>node adr/build_index.mjs --check</code> がNode.jsだけで実行できること。</p></article>
+          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">Node.jsの標準モジュールでは実現しにくい処理が必要になった場合に、外部パッケージの利用や他の言語を含めて見直す。</p></article>
         </div>
       </section>
 
       <section id="related" aria-labelledby="related-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
-          <li>関連ADR：なし（最初のADR）</li>
-          <li><a href="../AGENTS.md">AGENTS.md</a><small>ルールの本体</small></li>
-          <li><a href="../CLAUDE.md">CLAUDE.md</a><small>Claude Code用の取り込み</small></li>
-          <li><a href="../adr.md">adr.md</a>・<a href="../adr.html">adr.html</a><small>このADRの元にした雛形</small></li>
+          <li><a href="adr-0002-generate-adr-index.html">ADR-0002：ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する</a><small>関連する（一覧を生成するスクリプトをNode.jsで作る）</small></li>
+          <li><a href="../../bases/sync_styles.mjs">bases/sync_styles.mjs</a><small>共通CSSを各HTMLへ反映するスクリプト</small></li>
+          <li><a href="../build_index.mjs">build_index.mjs</a><small>ADR一覧を生成するスクリプト</small></li>
+          <li><a href="../../AGENTS.md">AGENTS.md</a><small>「スクリプトはNode.jsで書く」ルール</small></li>
         </ul>
       </section>
 
@@ -383,11 +384,11 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成</td><td>Claude Code</td></tr>
-            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td><code>adr/</code> 配下にドキュメントを作って進めるよう指示があり、合意</td><td>mikunup</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者が「Node.jsが使えればよい」として、ADRへの記録とPythonの削除を指示</td><td>mikunup</td></tr>
           </tbody>
         </table></div>
       </section>
-      <footer><span>DECISION RECORD / ADR-0001 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+      <footer><span>DECISION RECORD / ADR-0003 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
     </main>
   </div>
 </body>

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Rebuild the ADR pages (adr-NNNN-*.html) and the ADR list in adr/README.md and adr/index.html
+// Rebuild the ADR pages (adr/html/adr-NNNN-*.html) and the ADR list in adr/README.md and adr/html/index.html
 // from adr/adr-NNNN-*.md. The Markdown files are the only source; the HTML files are generated.
 
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { STATUSES, escapeHtml, renderAdr } from "./render_adr.mjs";
@@ -69,7 +69,8 @@ function readRecords(adrDir = ADR_DIR) {
       text,
     });
   }
-  const orphans = readdirSync(adrDir).filter((name) => /^adr-.*\.html$/.test(name) && !files.includes(name.replace(/\.html$/, ".md")));
+  const htmlDir = join(adrDir, "html");
+  const orphans = (existsSync(htmlDir) ? readdirSync(htmlDir) : []).filter((name) => /^adr-.*\.html$/.test(name) && !files.includes(name.replace(/\.html$/, ".md")));
   if (orphans.length) {
     throw new Error(`${orphans.join("・")}: 元になる .md がありません。生成されたHTMLなので、不要なら削除してください。`);
   }
@@ -97,7 +98,7 @@ function markdownBlock(records) {
       r.status,
       r.date,
       plain(r.scope),
-      `[開く](${r.html})`,
+      `[開く](html/${r.html})`,
     ];
     lines.push("| " + cells.map((cell) => cell.replaceAll("|", "\\|")).join(" | ") + " |");
   }
@@ -117,7 +118,7 @@ function htmlBlock(records) {
       `<td><span class="status status-${STATUSES[r.status]}">${escapeHtml(r.status)}</span></td>` +
       `<td>${escapeHtml(r.date)}</td>` +
       `<td>${inlineHtml(r.scope)}</td>` +
-      `<td><a href="${escapeHtml(r.md)}">MD</a></td></tr>`
+      `<td><a href="../${escapeHtml(r.md)}">MD</a></td></tr>`
     );
   }
   rows.push(`            ${END}`);
@@ -130,15 +131,16 @@ function build(adrDir = ADR_DIR, check = false) {
   // ADR pages take the head (styles) of the template adr.html, so they follow its design.
   const template = readFileSync(join(adrDir, "../adr.html"), "utf8");
   const head = template.slice(0, template.indexOf("<body"));
+  mkdirSync(join(adrDir, "html"), { recursive: true });
   for (const r of records) {
-    const page = join(adrDir, r.html);
+    const page = join(adrDir, "html", r.html);
     const original = existsSync(page) ? readFileSync(page, "utf8") : "";
     const updated = renderAdr(r.text, { head, source: r.md });
     if (original !== updated) {
-      updates.push([page, r.html, updated]);
+      updates.push([page, "html/" + r.html, updated]);
     }
   }
-  const targets = { "README.md": markdownBlock(records), "index.html": htmlBlock(records) };
+  const targets = { "README.md": markdownBlock(records), "html/index.html": htmlBlock(records) };
   for (const [name, block] of Object.entries(targets)) {
     const page = join(adrDir, name);
     const original = readFileSync(page, "utf8");

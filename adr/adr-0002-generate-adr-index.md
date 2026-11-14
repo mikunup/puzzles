@@ -160,7 +160,7 @@ ADRが100件程度を超えて一覧が見づらくなった場合は、年や�
 
 - [ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む](adr-0001-share-agent-rules-with-agents-md.md) — 関連する（ADRを作るルールの置き場所）
 - [ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない](adr-0003-use-nodejs-for-scripts.md) — 関連する（一覧を生成するスクリプトをNode.jsで書く理由）
-- [ADR一覧（README.md）](README.md)・[ADR一覧（index.html）](index.html) — この決定で作成した一覧
+- [ADR一覧（README.md）](README.md)・[ADR一覧（index.html）](html/index.html) — この決定で作成した一覧
 - [build_index.mjs](build_index.mjs) — 一覧を生成するスクリプト
 - [bases/sync_styles.mjs](../bases/sync_styles.mjs) — マーカーの間を書き換える方式と `--check` の参考にしたスクリプト
 

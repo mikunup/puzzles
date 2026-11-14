@@ -31,9 +31,10 @@ export function escapeHtml(text) {
   return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[char]);
 }
 
-// ADR同士のリンクは、生成するHTML同士のリンクに置き換える。
+// 生成するHTMLは adr/html/ に置く。ADR同士のリンクは同じ階層のHTMLへ、それ以外の相対リンクは1つ上の階層へ向ける。
 function href(url) {
-  return /^adr-\d{4}-[a-z0-9-]+\.md$/.test(url) ? url.replace(/\.md$/, ".html") : url;
+  if (/^adr-\d{4}-[a-z0-9-]+\.md$/.test(url)) return url.replace(/\.md$/, ".html");
+  return /^([a-z]+:|#|\/)/.test(url) ? url : "../" + url;
 }
 
 export function inline(text) {
@@ -265,7 +266,7 @@ export function renderAdr(markdown, { head, source }) {
 ${toc.join("\n")}
         </ol>
       </nav>
-      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="${escapeHtml(source)}">${escapeHtml(source)}</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="../${escapeHtml(source)}">${escapeHtml(source)}</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
