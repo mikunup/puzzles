@@ -271,7 +271,7 @@ button:disabled { cursor: default; }
         <h1>ADR-0009：<span>ADRは今後の開発を継続して制約し、後から理由が必要になる決定だけに使う</span></h1>
         <p class="lead">ADRを作るのは、「今後の開発を継続して制約する」と「後から理由が必要になる」の両方を満たす決定だけにする。ADR-0007の4つの場面は当てはまりやすい例として残し、作業はIssueとPRで管理し、承認済みのADRは書き換えない決まりも引き継ぐ。</p>
         <dl class="metadata">
-          <div><dt>ステータス</dt><dd><span class="status status-proposed">提案中</span></dd></div>
+          <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
           <div><dt>関係者</dt><dd>Claude Code（調査・提案）</dd></div>
@@ -362,7 +362,7 @@ button:disabled { cursor: default; }
         <div class="consequences">
           <article class="panel consequence-good"><h3>良い影響</h3><ul><li>ADRには、以後の開発を縛り、理由を残す価値がある決定だけが並ぶ。</li><li>4つの場面に当たっても小さな決定は、ADRを作らずに済む。</li></ul></article>
           <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>ADRにしなかった決定の理由は、PRとコミットを探す必要がある。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> の「ADRを作る場面」と、<code>adr/README.md</code> の「ADRを追加する」の説明を書き直した。</li><li>このADRの承認と同時に、ADR-0007のステータスを「置換」にする。ADR-0001〜0008の決定の内容は書き換えない。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> の「ADRを作る場面」と、<code>adr/README.md</code> の「ADRを追加する」の説明を書き直した。</li><li>ADR-0007のステータスを「置換」にした。ADR-0001〜0008の決定の内容は書き換えない。</li></ul></article>
         </div>
       </section>
 
@@ -389,6 +389,7 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者が選択肢 A を採用</td><td>Claude Code</td></tr>
           </tbody>
         </table></div>
       </section>
