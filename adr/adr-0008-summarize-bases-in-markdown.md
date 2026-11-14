@@ -133,7 +133,8 @@ AIは毎回 `bases/` のHTMLを読む。
 
 - `AGENTS.md` に「デザインの基準は bases/README.md を正とする」ルールを追加した。
 - `bases/` のHTMLの見た目と、`sync_styles.mjs` の動きは変わらない。
-- 選択中のタブの見た目は、Markdownでは `outline.html` 型（塗りなし・下辺線）を基準とした。`base.css` の既定との食い違いは、ページ固有のCSSで上書きしている現状を書いた。
+- 選択中のタブの見た目は、Markdownで `outline.html` 型（塗りなし・深緑・太字・下辺線）を基準とし、修正フローに沿って `base.css` の既定も同じ見た目に直した。これにより、`business_definition_sheet.html` のシート切り替えと `calenderschedule.html` の月／週の切り替えが、塗りから下辺線の表示に変わる。作業タブは各ページの `.work-tabs` の指定が残るため変わらない。
+- 食い違いの原因は、2026.11.08に `base.css` で「塗り・下線」を決めた約1時間後、`display.html` の文章だけを `outline.html` 型に変え、`base.css` を直さなかったことにある。基準が2か所にあり、直す順が決まっていなかった。
 
 ## 06. 確認と見直し
 
@@ -159,6 +160,7 @@ HTMLの直し忘れが見つかることが多い場合は、確認スクリプ�
 | --- | --- | --- | --- |
 | 2026.11.14 | 提案中 | 初版を作成 | Claude Code |
 | 2026.11.14 | 提案中 | 利用者の意見で、Markdownを元にしてHTMLを合わせる決定に変更 | Claude Code |
+| 2026.11.14 | 提案中 | 選択中のタブの食い違いを、修正フローに沿って `base.css` で直したことを追記 | Claude Code |
 
 ---
 

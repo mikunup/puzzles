@@ -172,17 +172,16 @@ button:disabled { cursor: default; }
   box-shadow: 5px -5px 0 var(--brown);
 }
 
-/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+/* 選択は深緑・太字・下辺線で示し、塗りと文字の下線は付けない（outline.html型）。横スクロール内でもフォーカスを見せる。 */
 [role="tab"][aria-selected="true"] {
-  background: var(--green);
-  color: #fff;
+  background: transparent;
+  color: var(--green);
   border-bottom-color: var(--green);
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 [role="tab"][aria-selected="true"] .num,
-[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tab"][aria-selected="true"] .number { color: var(--brown); }
 [role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
 [role="tablist"] { min-width: 0; }
 [role="tabpanel"] { min-width: 0; }
@@ -345,7 +344,7 @@ button:disabled { cursor: default; }
         <div class="consequences">
           <article class="panel consequence-good"><h3>良い影響</h3><ul><li>AIが画面を作るときに読むトークン量が大きく減る。</li><li>色の値・タブの決まり・キー操作などを1か所で確認でき、変えるときもそこから始められる。</li></ul></article>
           <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>基準を変えるときは、MarkdownとHTML・<code>base.css</code> の両方を直す必要がある。直し忘れると、HTMLの見本が古くなる。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> に「デザインの基準は bases/README.md を正とする」ルールを追加した。</li><li><code>bases/</code> のHTMLの見た目と、<code>sync_styles.mjs</code> の動きは変わらない。</li><li>選択中のタブの見た目は、Markdownでは <code>outline.html</code> 型（塗りなし・下辺線）を基準とした。<code>base.css</code> の既定との食い違いは、ページ固有のCSSで上書きしている現状を書いた。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> に「デザインの基準は bases/README.md を正とする」ルールを追加した。</li><li><code>bases/</code> のHTMLの見た目と、<code>sync_styles.mjs</code> の動きは変わらない。</li><li>選択中のタブの見た目は、Markdownで <code>outline.html</code> 型（塗りなし・深緑・太字・下辺線）を基準とし、修正フローに沿って <code>base.css</code> の既定も同じ見た目に直した。これにより、<code>business_definition_sheet.html</code> のシート切り替えと <code>calenderschedule.html</code> の月／週の切り替えが、塗りから下辺線の表示に変わる。作業タブは各ページの <code>.work-tabs</code> の指定が残るため変わらない。</li><li>食い違いの原因は、2026.11.08に <code>base.css</code> で「塗り・下線」を決めた約1時間後、<code>display.html</code> の文章だけを <code>outline.html</code> 型に変え、<code>base.css</code> を直さなかったことにある。基準が2か所にあり、直す順が決まっていなかった。</li></ul></article>
         </div>
       </section>
 
@@ -374,6 +373,7 @@ button:disabled { cursor: default; }
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成</td><td>Claude Code</td></tr>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>利用者の意見で、Markdownを元にしてHTMLを合わせる決定に変更</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>選択中のタブの食い違いを、修正フローに沿って <code>base.css</code> で直したことを追記</td><td>Claude Code</td></tr>
           </tbody>
         </table></div>
       </section>
