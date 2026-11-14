@@ -72,10 +72,10 @@
 共通スタイルの編集元は`bases/base.css`です。変更後はリポジトリ直下で次を実行すると、全HTMLの埋め込みCSSを直接更新できます。
 
 ```sh
-python3 bases/sync_styles.py
+node bases/sync_styles.mjs
 ```
 
-保存のたびに自動反映する場合は`python3 bases/sync_styles.py --watch`（Ctrl+Cで終了）、反映漏れを確認する場合は`python3 bases/sync_styles.py --check`を使います。確認モードは未反映があると終了コード1を返します。共通CSSの範囲（`<!-- bases:styles:start -->`〜`<!-- bases:styles:end -->`）は同期で上書きされるため、共通変更は`base.css`を編集し、ページ固有のCSSは範囲外に記述してください。新規HTMLにも、この開始・終了マーカーを1組配置してください。
+保存のたびに自動反映する場合は`node bases/sync_styles.mjs --watch`（Ctrl+Cで終了）、反映漏れを確認する場合は`node bases/sync_styles.mjs --check`を使います。確認モードは未反映があると終了コード1を返します。共通CSSの範囲（`<!-- bases:styles:start -->`〜`<!-- bases:styles:end -->`）は同期で上書きされるため、共通変更は`base.css`を編集し、ページ固有のCSSは範囲外に記述してください。新規HTMLにも、この開始・終了マーカーを1組配置してください。
 
 - **編集画面**：業務フロー図・カレンダー・オブジェクト整理・アウトライン・データ遷移は全幅の作業領域を使います。業務定義シート・スケジュール計画書も画面幅を活かして表示します。
 - **資料画面**：資料一覧・説明資料の雛形・ADR・ドメイン定義書・コンテキスト定義書・機能仕様書の雛形とその使い方・画面設計書・画面単体テストは、本文の領域を最大1440pxのレイアウト内で広く確保し、狭い画面では目次と本文を縦に並べます。
