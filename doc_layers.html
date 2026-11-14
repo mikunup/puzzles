@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Domain → Context → Model（業務フロー・オブジェクト）→ Spec → Catalog の層と、システム共通のルール Design で、ドメイン定義書・コンテキスト定義書・機能仕様書の3つの雛形と業務モデル・実体の一覧・共通ルールが責務でどうつながり、どの順番で書くかを説明する資料。">
-    <title>3つの雛形の使い方｜HOW TO</title>
+    <title>資料の層と使い方｜HOW TO</title>
   <style>
     :root {
       color-scheme:light;
@@ -269,7 +269,7 @@ button:disabled { cursor: default; }
   <div class="layout">
     <aside class="sidebar" aria-label="この資料のナビゲーション">
       <div class="brand"><span class="mark" aria-hidden="true"></span>HOW TO</div>
-      <p class="sidebar-description">ドメイン定義書・コンテキスト定義書・機能仕様書<br>3つの雛形の使い方</p>
+      <p class="sidebar-description">資料の層と使い方<br>Domain → Context → Model → Spec → Catalog ／ Design</p>
       <nav aria-labelledby="toc-title">
         <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
         <ol class="toc">
@@ -293,8 +293,8 @@ button:disabled { cursor: default; }
     <main id="main-content" tabindex="-1">
       <header class="document-header">
         <p class="breadcrumb">使い方 / 設計資料</p>
-        <p class="eyebrow">HOW TO USE THE TEMPLATES</p>
-        <h1>ドメイン定義書・コンテキスト定義書・機能仕様書の<span>関係と使い方</span></h1>
+        <p class="eyebrow">HOW TO USE THE DOCUMENT LAYERS</p>
+        <h1>資料の層と<span>使い方</span></h1>
         <p class="lead">3つの雛形を軸に、Domain → Context → Model → Spec → Catalog と粒度を下げながら、システムを形にしていきます。ドメイン定義書でシステムがまたがるドメイン・サブドメインと責務を洗い出し、コンテキスト定義書で責務をサブドメインごとに分けて解決します。業務の流れ（Flows）と扱う「もの」（Objects）は、システムで1つにまとめた業務モデルに描き、機能仕様書で責務を実現する機能を1つずつ、その機能の作り方まで含めて定義します。仕様書で決めた画面・API・テーブルの実体は Catalog に集め、全機能に共通するルール（非機能要件の満たし方・共通ルール）は Design にまとめます。</p>
         <dl class="metadata"><div><dt>対象</dt><dd>設計資料を書く人・読む人</dd></div><div><dt>雛形</dt><dd>domain.html / context.html / specs.html</dd></div><div><dt>業務モデル</dt><dd>business_flow.html / object_model.html（<a href="#model">05</a>）</dd></div><div><dt>設計</dt><dd>機能ごとは仕様書 08、実体は Catalog、ルールは Design（<a href="#design">06</a>）</dd></div></dl>
       </header>
@@ -778,7 +778,7 @@ Design                エラーは項目の直下に文字で表示する（全�
           <li><a href="adr.html">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><small>判断の理由を残す。すべての層から参照する。</small></li>
         </ul>
       </section>
-      <footer><span>HOW TO / 3つの雛形の使い方</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+      <footer><span>HOW TO / 資料の層と使い方</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
     </main>
   </div>
 </body>

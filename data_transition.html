@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="入力となるテーブルのデータが、操作・処理ごとにどう変わるかを、差分付きで順に整理するツール。">
+<title>データ遷移｜puzzles</title>
+<style>
+:root{color-scheme:light;--error:#9b2c2c;--error-tint:#fbf1ef;--tint:#eaf0e8;--changed:#f6ebe2;--added:#e3efdf;--deleted:#efefeb}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:white;border-radius:6px;padding:7px 12px}
+button:hover{background:var(--tint)}
+:focus-visible{outline:3px solid #b07854;outline-offset:2px}
+a{color:var(--green)}
+header{padding:14px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.header-content{display:flex;align-items:center;flex-wrap:wrap;gap:8px 28px;min-width:0}
+.brand{font-size:12px;font-weight:700;letter-spacing:.12em;white-space:nowrap}
+.header-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px}
+header>a{font-size:12px;white-space:nowrap}
+.mark{display:inline-block;width:13px;height:13px;background:var(--green);border-radius:2px;box-shadow:4px -4px var(--brown);margin-right:16px}
+.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--brown);margin:0}
+h1{font-size:18px;margin:0}h1 span{color:var(--brown)}
+.muted,small{color:var(--muted)}
+main{width:100%;margin:auto;padding:16px 24px}
+.primary{background:var(--green);color:white;border-color:var(--green)}.primary:hover{background:#0c5b33}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.commandbar{padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px}
+
+/* タブ（bases/display.html の作業タブ） */
+.work-tabsbar{display:flex;align-items:center;gap:4px;margin:0;padding:3px 0}
+.work-tabs{display:flex;align-items:stretch;gap:4px;flex:0 1 auto;min-width:0;overflow-x:auto}
+.work-tab-item{display:inline-flex;align-items:stretch;flex:0 0 auto;border-bottom:2px solid transparent}
+.work-tab-item.is-active{border-bottom-color:var(--green)}
+.work-tabs [role="tab"]{white-space:nowrap;border:0;border-radius:0;background:transparent;padding:6px 2px 6px 10px;font-size:13px;line-height:1.5;color:var(--muted)}
+.work-tabs [role="tab"]:hover{background:var(--hover);color:var(--green)}
+.work-tabs [role="tab"][aria-selected="true"]{background:transparent;color:var(--green);font-weight:600;text-decoration:none}
+.work-tab-number{margin-right:6px;color:var(--brown)}
+.work-tab-delete{border:0;border-radius:0;background:transparent;padding:6px 4px;min-width:24px;font-size:16px;line-height:1.22;color:var(--muted)}
+.work-tab-delete:hover{color:var(--brown)}
+#add-tab{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;padding:0;border:0;background:transparent;color:var(--green);font-size:20px;line-height:1}
+.work-tabsbar button:focus-visible{outline-offset:-3px}
+
+/* 作業領域 */
+.workspace{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:max(520px,calc(100dvh - 180px));border:1px solid var(--line);background:white;border-radius:12px;overflow:hidden}
+aside{padding:22px 14px;background:#f0f2eb;border-right:1px solid var(--line);min-width:0}
+aside h2{font-size:12px;color:var(--brown);letter-spacing:.1em;margin:0 0 12px}
+.nav-item{display:flex;gap:8px;width:100%;text-align:left;background:transparent;border:0;font-size:12px;padding:7px 8px;overflow-wrap:anywhere;border-radius:5px}
+.nav-item .nav-no{flex-shrink:0;font-weight:700;color:var(--green);letter-spacing:.06em}
+.nav-item.is-input .nav-no{color:var(--green)}
+.nav-tree,.nav-steps{list-style:none;margin:0;padding:0}
+.nav-input{margin-bottom:10px}
+.nav-input .nav-item.is-input{flex-direction:column;gap:0}
+.nav-item .nav-sub{color:var(--muted);font-size:11px;line-height:1.5}
+.nav-steps{margin-left:24px;padding-left:8px;border-left:1px solid #c9d3c5}
+.nav-steps .nav-item{padding:4px 8px}
+.nav-empty{font-size:11px;color:var(--muted);padding:2px 8px}
+.nav-add{width:100%;margin-top:4px}
+.nav-item:hover{background:var(--hover)}
+.help{font-size:12px;color:var(--muted);margin:18px 0 0}
+.help summary{cursor:pointer;color:var(--ink)}
+.editor{min-width:0;padding:24px}
+.doc-head{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.doc-title{font-size:23px;font-weight:700;width:100%;min-width:0;border:0;border-bottom:1px solid transparent;background:transparent;padding:5px}
+.doc-title:focus{border-bottom-color:var(--green);outline:0}
+.flow-note{width:100%;min-height:56px;resize:vertical;border:1px solid var(--line);border-radius:6px;background:#fcfcf9;padding:8px 12px;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin:0 0 16px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--line)}
+.legend .lg-changed{background:var(--changed);box-shadow:inset 3px 0 0 var(--brown)}
+.legend .lg-added{background:var(--added)}
+.legend .lg-deleted{background:var(--deleted)}
+
+/* 流れ */
+.stage{border:1px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px;scroll-margin-top:16px}
+.stage.is-input{border-left:4px solid var(--green)}
+.stage.is-step{border-left:4px solid var(--green)}
+.stage-head{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-bottom:12px}
+.stage-title{font-size:15px;margin:0}
+.input-name{font-size:17px;font-weight:700;width:12em;min-width:0;border:0;border-bottom:1px solid transparent;background:transparent;padding:2px 4px}
+.input-name:focus{outline:0;border-bottom-color:var(--green)}
+.input-note{margin:0 0 4px}
+/* 一覧：INPUTごとに開閉 */
+.list-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:12px}
+.small-btn{padding:4px 10px;font-size:12px}
+.small-btn:disabled{opacity:.4;cursor:default}
+.input-group{border:1px solid var(--line);border-radius:12px;background:#fbfbf8;padding:12px 16px 16px;margin-bottom:16px;scroll-margin-top:16px}
+.input-group.is-collapsed{padding-bottom:12px}
+.group-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.toggle{display:grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--green);font-size:17px;line-height:1;flex-shrink:0}
+.group-body{margin-top:12px}
+.step-summary{list-style:none;margin:8px 0 0;padding:0 0 0 38px;display:grid;gap:2px}
+.summary-item{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;width:100%;text-align:left;border:0;border-radius:6px;background:transparent;padding:5px 8px;font-size:13px}
+.summary-item:hover{background:var(--hover)}
+.summary-item .nav-no{font-weight:700;color:var(--green);letter-spacing:.06em}
+.add-btn.step-add{display:block;width:100%;padding:10px;margin-top:14px}
+.nav-input-row{display:flex;align-items:flex-start;gap:2px}
+.nav-input-row .nav-item{flex:1;min-width:0}
+.nav-toggle{width:22px;height:22px;margin-top:5px;font-size:14px;border:0;background:transparent}
+.nav-toggle:hover{background:var(--hover)}
+.nav-input.is-collapsed .nav-no{color:var(--muted)}
+.badge{font-size:11px;letter-spacing:.14em;font-weight:700;color:#fff;background:var(--green);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:11px;padding:1px 8px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.c-changed{background:var(--changed);color:var(--brown);border-color:#e3cdbd}
+.chip.c-added{background:var(--added);color:var(--green);border-color:#c5dbbf}
+.chip.c-deleted{background:var(--deleted);color:#5d625b}
+.chip.c-error{background:#f7e4e1;color:var(--error);border-color:#e8c4bf}
+/* バリデーションエラー */
+.outcome{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}
+.outcome-label{font-size:12px;font-weight:700;color:var(--brown);margin-right:2px}
+.outcome button{padding:3px 12px;font-size:12px;border-radius:999px;background:#fff}
+.outcome .outcome-ok[aria-pressed="true"]{background:var(--green);color:#fff;border-color:var(--green)}
+.outcome .outcome-error[aria-pressed="true"]{background:var(--error);color:#fff;border-color:var(--error)}
+.step-input-then.is-error{color:var(--error)}
+.stage.is-step.is-error{border-left-color:var(--error);background:var(--error-tint)}
+.stage.is-step.is-error.is-selected{border-left-color:var(--error)}
+.stage-title .error-label{color:var(--error)}
+.error-box{border:1px solid #e8c4bf;background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.error-box-label{font-size:12px;font-weight:700;color:var(--error);margin:0 0 6px}
+.readonly-table{margin-bottom:10px}.readonly-table .table-title{margin:4px 0}
+.grid.readonly td{padding:6px 8px;color:var(--muted)}
+.nav-error{color:var(--error);font-weight:700}
+.legend .lg-error{background:#f7e4e1;border-color:#e8c4bf}
+.connector{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding:8px 0}
+.connector .line{position:relative;justify-self:center;width:2px;background:var(--brown);margin:2px 0 8px}
+.connector .line::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border:7px solid transparent;border-top:9px solid var(--brown);border-bottom:0}
+.action-card{background:var(--paper);border:1px dashed var(--brown);border-radius:8px;padding:10px 12px}
+.action-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.action-top label{font-size:12px;color:var(--brown);font-weight:700;white-space:nowrap}
+.connector .badge{background:var(--brown)}
+.result-input{flex:1 1 240px;min-width:0;font-weight:700;font-size:15px;border:0;border-bottom:1px solid var(--line);background:transparent;padding:4px 6px}
+.result-input:focus{outline:0;border-bottom-color:var(--green)}
+.stage-title label{cursor:pointer;font-size:12px;color:var(--green);font-weight:700;white-space:nowrap}
+.summary-result{color:var(--muted)}
+.action-input{flex:1 1 240px;min-width:0;font-weight:700;font-size:15px;border:0;border-bottom:1px solid var(--line);background:transparent;padding:4px 6px}
+.action-input:focus,.note-input:focus{outline:0;border-bottom-color:var(--green)}
+.note-input{width:100%;margin-top:6px;border:0;border-bottom:1px solid var(--line);background:transparent;padding:4px 6px;font-size:13px}
+.step-tools{display:flex;gap:2px;margin-left:auto}
+.step-input{margin-top:10px;padding-top:8px;border-top:1px dashed #d9c3b5}
+.step-input-label{font-size:12px;font-weight:700;color:var(--brown);margin:0 0 6px}
+.step-input-label .muted{font-weight:400;margin-left:6px}
+.step-input .grid input{min-width:100px}
+.step-input-then{font-size:12px;font-weight:700;color:var(--brown);margin:8px 0 0}
+.mini{border:0;background:transparent;padding:2px 7px;color:var(--muted);border-radius:4px;font-size:13px;line-height:1.5}
+.mini:hover{color:var(--brown);background:var(--tint)}
+.mini:disabled{opacity:.3;cursor:default}
+.add-btn{border:1px dashed var(--green);color:var(--green);background:transparent;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600}
+.add-btn:hover{background:var(--tint)}
+.add-btn.big{display:block;width:100%;padding:12px;font-size:14px;margin-top:16px;border-width:2px}
+.add-btn.table-add{margin-top:4px}
+
+/* テーブル */
+.table-card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;background:#fcfcf9}
+.table-card>summary{cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap;list-style:none}
+.table-card>summary::-webkit-details-marker{display:none}
+.table-card>summary::before{content:"▸";color:var(--green);width:12px}
+.table-card[open]>summary{margin-bottom:8px}
+.table-card[open]>summary::before{content:"▾"}
+.table-title{font-weight:700}
+.table-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.table-name{flex:1 1 auto;min-width:0;font-weight:700;border:0;border-bottom:1px solid transparent;background:transparent;padding:3px 4px}
+.table-name:focus{outline:0;border-bottom-color:var(--green)}
+.table-scroll{overflow-x:auto}
+table.grid{border-collapse:collapse;font-size:13px;min-width:min(100%,420px)}
+.grid th,.grid td{border:1px solid var(--line);padding:0;vertical-align:top;background:#fff;text-align:left}
+.grid thead th{background:#f0f2eb;font-weight:700}
+.grid input{display:block;width:100%;min-width:120px;border:0;background:transparent;padding:6px 8px}
+.grid input:focus{outline:2px solid var(--green);outline-offset:-2px;background:#fff}
+.grid input:disabled{color:inherit}
+.colhead{display:flex;align-items:center}
+.colhead .col-label{padding:6px 8px;min-width:120px;flex:1}
+.grid th.rowhead{width:1%;white-space:nowrap;padding:4px 4px 4px 8px;color:var(--muted);font-weight:400;font-size:12px;vertical-align:middle}
+.rowhead-inner{display:flex;align-items:center;gap:4px}
+.grid td.changed{background:var(--changed);box-shadow:inset 3px 0 0 var(--brown)}
+.prev{display:block;font-size:11px;color:var(--brown);padding:3px 8px 0;text-decoration:line-through;overflow-wrap:anywhere}
+.prev:empty::before{content:"（空）";text-decoration:none}
+.grid tr.row-added>*{background:var(--added)}
+.grid tr.row-deleted>*{background:var(--deleted);color:var(--muted)}
+.grid tr.row-deleted input{text-decoration:line-through}
+.grid th.col-added,.grid td.col-added{background:var(--added)}
+.grid th.col-deleted,.grid td.col-deleted{background:var(--deleted);color:var(--muted)}
+.grid th.col-deleted .col-label,.grid td.col-deleted input{text-decoration:line-through}
+.tag{font-size:10px;font-weight:700;padding:0 5px;border-radius:3px;white-space:nowrap}
+.tag.add{background:var(--green);color:#fff}.tag.del{background:#8a8f88;color:#fff}
+.empty-row td{padding:10px 12px!important;color:var(--muted);font-size:12px}
+.table-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.unchanged-note{font-size:12px;color:var(--muted);margin:0}
+
+/* 選択・集中・全画面・パネル */
+.input-group.is-selected{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.connector.is-selected .action-card{border-style:solid;border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.stage.is-step.is-selected{border-color:var(--green)}
+.nav-item.is-selected{outline:2px solid var(--green);outline-offset:-2px}
+.focus-bar{background:var(--tint);border-radius:6px;padding:10px 14px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:13px}
+.fullscreen-button{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;padding:0;background:transparent;border:0;border-radius:5px}
+.fullscreen-button:hover{background:var(--tint)}
+body.editor-fullscreen{overflow:hidden}
+.editor.is-fullscreen{position:fixed;inset:0;z-index:100;width:100%;height:100dvh;padding:20px 24px;background:white;overflow:auto;overscroll-behavior:contain}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:0 0 12px}
+.panel-head h2{margin:0}
+.panel-btn{flex-shrink:0;padding:2px 6px;font-size:12px;white-space:nowrap}
+.workspace.closed{grid-template-columns:minmax(0,1fr)}
+.status{font-size:12px;min-height:24px;color:var(--brown);margin-top:14px}
+footer{font-size:11px;color:var(--muted);padding-top:8px}
+dialog{border:1px solid var(--line);border-radius:12px;padding:26px;width:min(620px,calc(100% - 32px));color:var(--ink)}
+dialog::backdrop{background:#203a2c66}
+dialog h2{margin-top:0;font-size:21px}
+dialog textarea{width:100%;min-height:200px;border:1px solid var(--line);border-radius:6px;padding:12px;margin:12px 0}
+.dialog-actions{display:flex;gap:8px;justify-content:flex-end}
+#import-error{color:var(--brown);font-size:12px;min-height:1em}
+
+@media(max-width:760px){
+ header{padding:12px 16px;flex-wrap:wrap}main{padding:12px 16px}
+ .workspace{grid-template-columns:1fr}
+ aside{border-right:0;border-bottom:1px solid var(--line);max-height:200px;overflow:auto}
+ .editor{padding:14px}.connector{grid-template-columns:24px minmax(0,1fr)}
+ .stage{padding:12px}
+}
+@media print{
+ header>a,.work-tabsbar,aside,.commandbar,.status,.add-btn,.mini,.help,footer,.focus-bar,.fullscreen-button,.panel-btn,.list-bar,.toggle{display:none!important}
+ main{padding:0}.workspace{display:block;border:0}.editor{padding:0}
+ .stage,.table-card{break-inside:avoid}
+ .grid input{min-width:0}
+}
+</style>
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
+</head>
+<body data-layout="workspace">
+<header><div class="header-content"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / DATA TRANSITION</div><div class="header-heading"><p class="eyebrow">INPUT · CHANGE · RESULT</p><h1>データが、<span>どう変わるか</span>。</h1></div></div><a href="README.html">資料一覧へ ↗</a></header>
+<main>
+<div class="work-tabsbar"><div id="tabs" class="work-tabs" role="tablist" aria-label="データ遷移"></div><button id="add-tab" type="button" aria-label="データ遷移を追加" title="データ遷移を追加">＋</button></div>
+<div class="workspace" id="workspace">
+<aside id="side-panel" aria-label="流れの見取り図"><div class="panel-head"><h2>FLOW / 流れ</h2><button id="panel-close" type="button" class="panel-btn" aria-controls="side-panel" aria-expanded="true" title="パネルを閉じる">☰ 閉じる</button></div><nav id="navigation" aria-label="段階へ移動"></nav>
+<details class="help"><summary>使い方</summary>
+<p>階層：データ遷移（タブ）› INPUT_1・INPUT_2… › STEP 01・02…。INPUTごとに、始まりのデータと変化の流れを別々に持ちます。</p>
+<p>すべてのINPUTを一覧で表示します。▾／▸でINPUTごとに開閉でき、閉じたINPUTはSTEPの一覧だけを表示します。開閉の状態も保存します。</p>
+<p>1. INPUTに、変化する前のテーブルの列とデータを入力します。別の始まりのデータは「＋ INPUTを追加」で作ります。</p>
+<p>2. 「＋ 次の変化を追加」で操作・処理を追加し、「このデータを入れると」の表に、操作で入れるデータを書きます。</p>
+<p>3. 変化後のテーブルで値を書き換えます。行・列の追加や削除もできます。</p>
+<p>4. 前の段階と違うセルは茶色、追加は緑、削除は灰色で表示します。前の値は取り消し線で残ります。</p>
+<p>5. 入れたデータが不正な場合は、操作・処理の「結果」でバリデーションエラーを選び、エラー内容（項目・エラーメッセージ・ルール）を書きます。そのSTEPではデータが変わらず、次のSTEPは前の段階のデータから続きます。</p>
+<p>INPUTを直すと、後の段階にも反映されます（各段階は「前の段階からの変化」だけを保存しています）。</p>
+</details></aside>
+<section class="editor" id="editor" role="tabpanel">
+<div class="doc-head"><input id="flow-name" class="doc-title" aria-label="データ遷移の名前" placeholder="データ遷移の名前（例：請求のデータ遷移）"><button id="panel-open" type="button" class="panel-btn" aria-controls="side-panel" aria-expanded="false" title="パネルを開く" hidden>☰ パネルを開く</button><button id="fullscreen" type="button" class="fullscreen-button" aria-label="全画面表示" title="全画面表示（f）" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
+<textarea id="flow-note" class="flow-note" aria-label="このデータ遷移の説明" placeholder="説明：対象の機能・前提・関係する仕様書（例：specs.html の機能ID）など"></textarea>
+<div class="legend" aria-label="色の意味"><span><i class="lg-changed"></i>前の段階から変わったセル</span><span><i class="lg-added"></i>追加された行・列</span><span><i class="lg-deleted"></i>削除された行・列</span><span><i class="lg-error"></i>バリデーションエラー（データは変わらない）</span></div>
+<div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button id="exit-focus" type="button">集中を解除</button></div>
+<div id="flow"></div>
+<details class="help" id="key-help"><summary>キーボード・編集操作</summary>
+<p>Esc：入力を終了します（日本語変換中は変換を優先）。入力欄から抜けた状態で次のキーが使えます。</p>
+<p>j：次の項目（INPUT・STEP）へ · k：前の項目へ · h：STEPから親のINPUTへ／INPUTを閉じる · l：INPUTを開く／最初のSTEPへ<br>
+gg：先頭へ · Shift+g：末尾へ</p>
+<p>z：INPUTの開閉 · Shift+z：すべて開く／閉じる<br>
+o：選択中のINPUT・STEPに集中ON／OFF · f：全画面ON／OFF · Esc：全画面・集中を解除</p>
+<p>i：選択中のINPUTにSTEPを追加 · Shift+i：INPUTを追加 · e：選択中の項目の名前・操作を編集 · d：選択中の項目を削除</p>
+<p>t：次のタブ · Shift+t：前のタブ · u：元に戻す · Ctrl+r：やり直す · ?：この操作説明を開く</p>
+<p>表のセルの入力中：Enterで下の行へ（最終行では行を追加）。Shift+Enterで上の行へ。列名のEnterで最初の行へ。</p>
+<p>タイトル横の全画面アイコンで編集エリアを拡大／解除できます。左パネルは「☰ 閉じる」「☰ パネルを開く」で開閉できます。</p>
+</details>
+</section>
+</div>
+<div class="commandbar"><div class="toolbar"><button id="undo" type="button" disabled title="元に戻す（u）">元に戻す</button><button id="redo" type="button" disabled title="やり直す（Ctrl+r）">やり直す</button><span id="save-state" class="muted" role="status">ブラウザ内に自動保存</span></div><div class="toolbar"><button id="import" type="button">JSON読み込み</button><button id="export-json" type="button">全タブをJSON保存</button><button id="export-md" type="button">Markdown保存</button><button id="print" type="button">印刷・PDF</button></div></div>
+<p id="status" class="status" role="status" aria-live="polite"></p>
+<footer>保存先はこのブラウザです。別の端末へ移す場合はJSONを書き出してください。Markdownは現在のタブの全段階を、変化（前の値 → 新しい値）付きで書き出します。</footer>
+</main>
+<dialog id="import-dialog"><h2>データ遷移を読み込む</h2><p>全タブのJSONはすべてのタブを置き換えます。1つのデータ遷移のJSONは新しいタブとして追加します。</p><label>ファイルを選ぶ <input id="import-file" type="file" accept=".json,application/json"></label><textarea id="import-text" aria-label="読み込むJSON" placeholder='{"version":1,"tabs":[...]}'></textarea><p id="import-error" role="alert"></p><div class="dialog-actions"><button id="cancel-import" type="button">キャンセル</button><button id="apply-import" type="button" class="primary">読み込む</button></div></dialog>
+<script>
+(function(){
+'use strict';
+const KEY='puzzles.data_transition.v1';
+const $=id=>document.getElementById(id);
+const uid=()=>globalThis.crypto?.randomUUID?.()||'d'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+const str=v=>typeof v==='string'?v:(v==null?'':String(v));
+const pad=n=>String(n).padStart(2,'0');
+
+/* ---------- データ ---------- */
+// flow  = { id, name, note, inputs:[input] }  … タブ1つ＝データ遷移1つ
+// input = { id, name, note, collapsed, dataTitle, tables:[{id,name,cols:[{id,name}],rows:[{id,cells:{colId:value}}]}],
+//           steps:[{id,action,note,input:{cols,rows},result,outcome,errors:{cols,rows},changes:{tableId:patch}}] }
+//   result＝どう変わったか / outcome＝'ok'（成功：データが変わる）か 'error'（バリデーションエラー：データは変わらない）
+//   errors＝バリデーションエラーの内容（項目・エラーメッセージ・ルール）。エラーの間も changes は消さずに残す  … INPUT_1, INPUT_2 …
+// patch = 前の段階からの変化だけを持つ。INPUTを直すと後の段階にも反映される。
+const emptyPatch=()=>({set:{},addRows:[],delRows:[],addCols:[],delCols:[]});
+function newTable(name='テーブル'){return {id:uid(),name,cols:[{id:uid(),name:'項目1'},{id:uid(),name:'項目2'}],rows:[{id:uid(),cells:{}}]};}
+function newErrorGrid(){return {cols:[{id:uid(),name:'項目'},{id:uid(),name:'エラーメッセージ'},{id:uid(),name:'ルール'}],rows:[{id:uid(),cells:{}}]};}
+function newInput(name='INPUT_1'){return {id:uid(),name,note:'',collapsed:false,dataTitle:'',tables:[newTable()],steps:[]};}
+function newFlow(name='新しいデータ遷移'){return {id:uid(),name,note:'',inputs:[newInput()]};}
+function sampleFlow(){
+ const p=o=>Object.assign(emptyPatch(),o);
+ // 表：列名の配列と行の配列から作る。ids.c[列番号]・ids.r[行番号]で参照する
+ const grid=(names,rows)=>{const cols=names.map(name=>({id:uid(),name}));return {cols,rows:rows.map(v=>({id:uid(),cells:Object.fromEntries(cols.map((c,i)=>[c.id,v[i]??'']))}))};};
+ const tbl=(name,names,...rows)=>{const g=grid(names,rows);return {id:uid(),name,...g,c:g.cols.map(c=>c.id),r:g.rows.map(r=>r.id)};};
+ const inp=(names,...rows)=>grid(names,rows);
+ const strip=t=>({id:t.id,name:t.name,cols:t.cols,rows:t.rows});
+ const step=(action,note,input,changes)=>({id:uid(),action,note,input,changes});
+
+ // INPUT_1：通常の請求（確認 → 確定 → 取り下げ）
+ const b1=tbl('請求データ',['請求番号','顧客','金額','状態'],['INV-001','A社','120,000','作成中'],['INV-002','B社','80,000','作成中']);
+ const d1=tbl('請求書',['請求書番号','請求番号','送付状態']);
+ const fixed=uid();
+ const in1={id:uid(),name:'INPUT_1',note:'通常の請求：確認して確定し、不要な請求は取り下げる。',tables:[strip(b1),strip(d1)],steps:[
+  step('経理が請求データを確認する','金額と顧客を確認し、問題がなければ状態を「確認済み」にする。',inp(['請求番号','確認結果'],['INV-001','OK'],['INV-002','OK']),
+   {[b1.id]:p({set:{[b1.r[0]]:{[b1.c[3]]:'確認済み'},[b1.r[1]]:{[b1.c[3]]:'確認済み'}}})}),
+  step('請求を確定する','確認済みの請求を確定し、確定日を記録する。確定した請求の請求書を作成する。',inp(['請求番号','確定日'],['INV-001','2026-11-14']),
+   {[b1.id]:p({set:{[b1.r[0]]:{[b1.c[3]]:'確定',[fixed]:'2026-11-14'}},addCols:[{id:fixed,name:'確定日'}]}),
+    [d1.id]:p({addRows:[{id:uid(),cells:{[d1.c[0]]:'B-001',[d1.c[1]]:'INV-001',[d1.c[2]]:'未送付'}}]})}),
+  step('B社の請求を取り下げる','受注の取り消しにより、確定前の請求を削除する。',inp(['請求番号','取り下げ理由'],['INV-002','受注の取り消し']),
+   {[b1.id]:p({delRows:[b1.r[1]]})})]};
+
+ // INPUT_2：金額誤りの差し戻し（差し戻し → 修正 → 再確認）
+ const b2=tbl('請求データ',['請求番号','顧客','金額','状態'],['INV-003','C社','50,000','作成中']);
+ const reason=uid();
+ const in2={id:uid(),name:'INPUT_2',collapsed:true,note:'金額に誤りがある請求：差し戻して修正し、もう一度確認する。',tables:[strip(b2)],steps:[
+  step('経理が確認し、差し戻す','金額が受注と一致しないため差し戻す。差し戻し理由を記録する。',inp(['請求番号','確認結果','差し戻し理由'],['INV-003','NG','金額誤り']),
+   {[b2.id]:p({set:{[b2.r[0]]:{[b2.c[3]]:'差し戻し',[reason]:'金額誤り'}},addCols:[{id:reason,name:'差し戻し理由'}]})}),
+  step('営業アシが金額を修正する','修正すると状態は「作成中」に戻る。',inp(['請求番号','金額'],['INV-003','55,000']),
+   {[b2.id]:p({set:{[b2.r[0]]:{[b2.c[2]]:'55,000',[b2.c[3]]:'作成中'}}})}),
+  step('経理が再確認する','問題がなければ「確認済み」にし、差し戻し理由を消す。',inp(['請求番号','確認結果'],['INV-003','OK']),
+   {[b2.id]:p({set:{[b2.r[0]]:{[b2.c[3]]:'確認済み',[reason]:''}}})})]};
+
+ // INPUT_3：入金の消し込み（取り込み → 消し込み）
+ const b3=tbl('請求データ',['請求番号','顧客','金額','状態'],['INV-001','A社','120,000','確定']);
+ const m3=tbl('入金データ',['入金ID','入金日','振込名義','入金額','請求番号']);
+ const in3={id:uid(),name:'INPUT_3',collapsed:true,note:'確定した請求への入金：銀行の入金明細を取り込み、請求に消し込む。',tables:[strip(b3),strip(m3)],steps:[
+  step('入金明細を取り込む','銀行の入金明細ファイルを取り込む。この時点では請求と結びついていない。',inp(['入金日','振込名義','金額'],['2026-11-30','エーシャ','120,000']),
+   {[m3.id]:p({addRows:[{id:uid(),cells:{[m3.c[0]]:'P-001',[m3.c[1]]:'2026-11-30',[m3.c[2]]:'エーシャ',[m3.c[3]]:'120,000',[m3.c[4]]:''}}]})}),
+  step('入金を請求に消し込む','金額と名義が一致する請求に結びつけ、請求を「入金済み」にする。',inp(['入金ID','請求番号'],['P-001','INV-001']),
+   {[b3.id]:p({set:{[b3.r[0]]:{[b3.c[3]]:'入金済み'}}})})]};
+ // 取り込んだ入金行のIDを消し込みで参照する
+ const paid=in3.steps[0].changes[m3.id].addRows[0].id;
+ in3.steps[1].changes[m3.id]=p({set:{[paid]:{[m3.c[4]]:'INV-001'}}});
+ // 変化後のデータのタイトル（どう変わったか）
+ const results=(inp,list)=>inp.steps.forEach((st,i)=>{st.result=list[i];});
+ results(in1,['請求データの状態が「確認済み」になる','INV-001が「確定」になり、確定日と請求書が作られる','INV-002の請求データが削除される']);
+ results(in2,['状態が「差し戻し」になり、差し戻し理由が記録される','金額が55,000に直り、状態が「作成中」に戻る','状態が「確認済み」になり、差し戻し理由が消える']);
+ results(in3,['入金データが1件追加される（請求とはまだ結びつかない）','入金に請求番号が入り、請求が「入金済み」になる']);
+ // バリデーションエラーの見本：金額を空欄で保存しようとして、データは変わらない
+ in2.steps.splice(1,0,{id:uid(),action:'営業アシが金額を空欄のまま保存しようとする',note:'金額は必須。保存前にチェックする。',
+  input:inp(['請求番号','金額'],['INV-003','']),result:'金額が未入力のため保存できない。請求データは変わらない',outcome:'error',
+  errors:inp(['項目','エラーメッセージ','ルール'],['金額','金額を入力してください','RULE-003 金額は必須・1円以上']),changes:{}});
+ [in1,in2,in3].forEach(x=>x.steps.forEach(st=>{st.outcome=st.outcome||'ok';st.errors=st.errors||newErrorGrid();}));
+ // 入力データのタイトル（どんなデータか）
+ in1.dataTitle='作成中の請求データが2件ある（請求書はまだない）';
+ in2.dataTitle='金額に誤りがある、作成中の請求データが1件ある';
+ in3.dataTitle='確定した請求データが1件あり、入金データはまだない';
+
+ return {id:uid(),name:'請求のデータ遷移',note:'請求データが、操作によってどう変わるかの見本です。INPUTごとに別の始まりのデータと流れを持ちます。書き換えるか、＋でタブを追加して使います。',inputs:[in1,in2,in3]};
+}
+
+function normCells(o){const out={};if(o&&typeof o==='object')for(const[k,v]of Object.entries(o))out[k]=str(v);return out;}
+function normPatch(p){
+ p=p&&typeof p==='object'?p:{};
+ const set={};if(p.set&&typeof p.set==='object')for(const[r,cells]of Object.entries(p.set))set[r]=normCells(cells);
+ const ids=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'):[];
+ return {set,addRows:(Array.isArray(p.addRows)?p.addRows:[]).map(r=>({id:str(r?.id)||uid(),cells:normCells(r?.cells)})),delRows:ids(p.delRows),addCols:(Array.isArray(p.addCols)?p.addCols:[]).map(c=>({id:str(c?.id)||uid(),name:str(c?.name)})),delCols:ids(p.delCols)};
+}
+function normInput(f,fallbackName){
+ if(!f||typeof f!=='object'||!Array.isArray(f.tables))throw Error('INPUTの形式ではありません（tables がありません）。');
+ const grid=t=>({cols:(Array.isArray(t?.cols)?t.cols:[]).map(c=>({id:str(c?.id)||uid(),name:str(c?.name)})),rows:(Array.isArray(t?.rows)?t.rows:[]).map(r=>({id:str(r?.id)||uid(),cells:normCells(r?.cells)}))});
+ const tables=f.tables.map(t=>{if(!t||!Array.isArray(t.cols)||!Array.isArray(t.rows))throw Error('テーブルの形式が不正です。');
+  return {id:str(t.id)||uid(),name:str(t.name),...grid(t)};});
+ const steps=(Array.isArray(f.steps)?f.steps:[]).map(s=>{const changes={};if(s?.changes&&typeof s.changes==='object')for(const[k,v]of Object.entries(s.changes))changes[k]=normPatch(v);return {id:str(s?.id)||uid(),action:str(s?.action),note:str(s?.note),result:str(s?.result),outcome:s?.outcome==='error'?'error':'ok',errors:(()=>{const g=grid(s?.errors);return g.cols.length?g:newErrorGrid();})(),input:grid(s?.input),changes};});
+ return {id:str(f.id)||uid(),name:typeof f.name==='string'?f.name:fallbackName,note:str(f.note),collapsed:f.collapsed===true,dataTitle:str(f.dataTitle),tables,steps};
+}
+function normFlow(f){
+ if(!f||typeof f!=='object')throw Error('データ遷移の形式ではありません。');
+ let inputs;
+ if(Array.isArray(f.inputs)){if(!f.inputs.length)throw Error('INPUTがありません。');inputs=f.inputs.map((x,i)=>normInput(x,'INPUT_'+(i+1)));}
+ else if(Array.isArray(f.tables))inputs=[{...normInput({...f,id:uid(),note:''},'INPUT_1'),name:'INPUT_1'}]; // 旧形式（INPUTが1つ）
+ else throw Error('データ遷移の形式ではありません（inputs がありません）。');
+ return {id:str(f.id)||uid(),name:str(f.name),note:str(f.note),inputs};
+}
+function normState(raw){
+ if(!raw||raw.version!==1||!Array.isArray(raw.tabs)||!raw.tabs.length||raw.tabs.length>100)throw Error('対応するJSONではありません。');
+ const tabs=raw.tabs.map(normFlow);
+ return {version:1,tabs,active:tabs.some(t=>t.id===raw.active)?raw.active:tabs[0].id,panelOpen:raw.panelOpen!==false};
+}
+
+let state;{const f=sampleFlow();state={version:1,tabs:[f],active:f.id,panelOpen:true};}
+let loadError='';
+try{const saved=localStorage.getItem(KEY);if(saved)state=normState(JSON.parse(saved));}catch(e){loadError='保存データを読み込めませんでした。JSONを読み込んで復元できます。';}
+const current=()=>state.tabs.find(t=>t.id===state.active)||state.tabs[0];
+// 編集履歴：続けて入力した文字はまとめて1回分として戻す
+let past=[],future=[],lastSnap=JSON.stringify(state),lastChange=0;
+function persist(snap){let ok=true;try{localStorage.setItem(KEY,snap);}catch(e){ok=false;}$('save-state').textContent=ok?'ブラウザ内に保存済み':'保存できません。JSONを書き出してください。';}
+function save(force){
+ const snap=JSON.stringify(state);
+ if(snap!==lastSnap){const now=Date.now();if(force||now-lastChange>1000){past.push(lastSnap);if(past.length>100)past.shift();}future=[];lastChange=force?0:now;lastSnap=snap;}
+ persist(snap);updateHistoryButtons();
+}
+function updateHistoryButtons(){$('undo').disabled=!past.length;$('redo').disabled=!future.length;}
+function restore(snap,msg){state=normState(JSON.parse(snap));lastSnap=snap;lastChange=0;persist(snap);updateHistoryButtons();render();announce(msg);}
+function undo(){if(!past.length){announce('元に戻す操作はありません。');return;}future.push(lastSnap);restore(past.pop(),'元に戻しました。');}
+function redo(){if(!future.length){announce('やり直す操作はありません。');return;}past.push(lastSnap);restore(future.pop(),'やり直しました。');}
+function announce(t){$('status').textContent=t;}
+
+/* ---------- 差分の計算 ---------- */
+function patchOf(step,tableId,create){let p=step.changes[tableId];if(!p&&create)p=step.changes[tableId]=emptyPatch();return p;}
+function cleanPatch(step,tableId){const p=step.changes[tableId];if(!p)return;for(const r of Object.keys(p.set))if(!Object.keys(p.set[r]).length)delete p.set[r];if(!Object.keys(p.set).length&&!p.addRows.length&&!p.delRows.length&&!p.addCols.length&&!p.delCols.length)delete step.changes[tableId];}
+function computeFlow(inp){
+ let prev={};inp.tables.forEach(t=>{prev[t.id]={cols:t.cols.map(c=>({id:c.id,name:c.name})),rows:t.rows.map(r=>({id:r.id,cells:{...r.cells}}))};});
+ return inp.steps.map(step=>{
+  const next={},tables={};
+  inp.tables.forEach(t=>{
+   const base=prev[t.id],p=(step.outcome!=='error'&&step.changes[t.id])||emptyPatch();
+   const delC=new Set(p.delCols),delR=new Set(p.delRows);
+   const cols=[...base.cols.map(c=>({...c,status:delC.has(c.id)?'deleted':'same'})),...p.addCols.map(c=>({id:c.id,name:c.name,status:'added',ref:c}))];
+   const sum={changed:0,addedRows:0,deletedRows:0,addedCols:0,deletedCols:0};
+   cols.forEach(c=>{if(c.status==='added')sum.addedCols++;if(c.status==='deleted')sum.deletedCols++;});
+   const rows=[];
+   base.rows.forEach(r=>{
+    const deleted=delR.has(r.id),set=p.set[r.id]||{},cells={};
+    cols.forEach(c=>{const before=r.cells[c.id]??'';const value=(c.id in set)?set[c.id]:before;const changed=!deleted&&c.status==='same'&&value!==before;if(changed)sum.changed++;cells[c.id]={value,before,changed};});
+    if(deleted)sum.deletedRows++;
+    rows.push({id:r.id,status:deleted?'deleted':'same',cells});
+   });
+   p.addRows.forEach(r=>{const cells={};cols.forEach(c=>{cells[c.id]={value:r.cells[c.id]??'',before:'',changed:false};});sum.addedRows++;rows.push({id:r.id,status:'added',cells,ref:r});});
+   const liveCols=cols.filter(c=>c.status!=='deleted');
+   next[t.id]={cols:liveCols.map(c=>({id:c.id,name:c.name})),rows:rows.filter(r=>r.status!=='deleted').map(r=>{const cells={};liveCols.forEach(c=>{cells[c.id]=r.cells[c.id].value;});return {id:r.id,cells};})};
+   sum.total=sum.changed+sum.addedRows+sum.deletedRows+sum.addedCols+sum.deletedCols;
+   tables[t.id]={cols,rows,sum};
+  });
+  prev=next;
+  return tables;
+ });
+}
+// 削除した行・列への参照を、同じINPUTの後の段階からも取り除く
+function purge(inp,tableId,ids){
+ const has=id=>ids.includes(id);
+ inp.steps.forEach(s=>{const p=s.changes[tableId];if(!p)return;
+  for(const r of Object.keys(p.set)){if(has(r)){delete p.set[r];continue;}for(const c of Object.keys(p.set[r]))if(has(c))delete p.set[r][c];}
+  p.delRows=p.delRows.filter(x=>!has(x));p.delCols=p.delCols.filter(x=>!has(x));
+  p.addRows.forEach(r=>{for(const c of Object.keys(r.cells))if(has(c))delete r.cells[c];});
+  cleanPatch(s,tableId);});
+}
+
+/* ---------- 描画 ---------- */
+function h(tag,props,...kids){
+ const e=document.createElement(tag);
+ if(props)for(const[k,v]of Object.entries(props)){
+  if(v==null||v===false)continue;
+  if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k==='value')e.value=v;
+  else if(k==='dataset')Object.assign(e.dataset,v);else if(k.startsWith('on'))e[k]=v;
+  else if(k==='disabled'||k==='open')e[k]=!!v;else e.setAttribute(k,v===true?'':v);
+ }
+ kids.flat().forEach(k=>{if(k!=null&&k!==false)e.append(k);});
+ return e;
+}
+function mini(text,label,fn,extra){return h('button',{type:'button',class:'mini',text,'aria-label':label,title:label,onclick:fn,...extra});}
+
+let pending=false,pointerDown=false;
+// 画面だけの状態（保存しない）：選択中の項目・集中・全画面
+const ui={sel:null,focus:null,fullscreen:false};
+const openState=new Map();
+document.addEventListener('pointerdown',()=>{pointerDown=true;},true);
+document.addEventListener('pointerup',()=>{pointerDown=false;if(pending)setTimeout(flush,0);},true);
+document.addEventListener('pointercancel',()=>{pointerDown=false;},true);
+function scheduleRender(){pending=true;if(!pointerDown)setTimeout(flush,0);}
+function flush(){if(pending)render();}
+function commit(msg,focusKey){save(true);render(focusKey);if(msg)announce(msg);}
+function focusKey(key,select){const e=key&&document.querySelector('[data-key="'+CSS.escape(key)+'"]');if(e){e.focus();if(select&&e.select)e.select();}return !!e;}
+
+function render(wantFocus){
+ pending=false;
+ const a=document.activeElement,key=a?.dataset?.key;let s0=null,s1=null;try{s0=a.selectionStart;s1=a.selectionEnd;}catch(e){}
+ const sy=window.scrollY;
+ const flow=current();
+ renderTabs(flow);
+ $('flow-name').value=flow.name;$('flow-note').value=flow.note;
+ $('editor').setAttribute('aria-labelledby','tab-'+flow.id);
+ const views=new Map(flow.inputs.map(inp=>[inp.id,computeFlow(inp)]));
+ // 集中の対象が消えていれば解除する
+ if(ui.focus){const fi=flow.inputs.find(x=>x.id===ui.focus.inputId);if(!fi)ui.focus=null;else if(ui.focus.stepId&&!fi.steps.some(x=>x.id===ui.focus.stepId))ui.focus.stepId=null;}
+ renderNav(flow,views);
+ renderChrome(flow);
+ const edScroll=$('editor').scrollTop;
+ const root=$('flow');root.replaceChildren();
+ const allOpen=flow.inputs.every(x=>!x.collapsed),allClosed=flow.inputs.every(x=>x.collapsed);
+ root.append(h('div',{class:'list-bar'},h('span',{class:'muted',text:'INPUT '+flow.inputs.length+'件・STEP '+flow.inputs.reduce((n,x)=>n+x.steps.length,0)+'件'}),
+  h('span',{class:'toolbar'},
+   h('button',{type:'button',class:'small-btn',text:'▾ すべて開く',disabled:allOpen,onclick:()=>{flow.inputs.forEach(x=>x.collapsed=false);commit('すべてのINPUTを開きました。');}}),
+   h('button',{type:'button',class:'small-btn',text:'▸ すべて閉じる',disabled:allClosed,onclick:()=>{flow.inputs.forEach(x=>x.collapsed=true);commit('すべてのINPUTを閉じました。');}}))));
+ if(ui.focus)root.firstChild.hidden=true;
+ flow.inputs.forEach((inp,idx)=>{if(!ui.focus||ui.focus.inputId===inp.id)root.append(renderGroup(flow,inp,idx,views.get(inp.id)));});
+ if(!ui.focus)root.append(h('button',{type:'button',class:'add-btn big',text:'＋ INPUTを追加',onclick:()=>addInput(flow)}));
+ window.scrollTo(window.scrollX,sy);$('editor').scrollTop=edScroll;
+ applySelection(false);
+ if(wantFocus){focusKey(wantFocus,true);}
+ else if(key){const e=document.querySelector('[data-key="'+CSS.escape(key)+'"]');if(e&&e!==document.activeElement){e.focus({preventScroll:true});try{if(s0!=null)e.setSelectionRange(s0,s1);}catch(x){}}}
+}
+
+function renderTabs(flow){
+ const box=$('tabs');box.replaceChildren();
+ state.tabs.forEach((t,i)=>{
+  const label=pad(i)+' '+(t.name||'無題');
+  const b=h('button',{type:'button',role:'tab',id:'tab-'+t.id,'aria-selected':String(t.id===flow.id),'aria-controls':'editor',tabindex:t.id===flow.id?'0':'-1',title:label,onclick:()=>{state.active=t.id;commit();}},h('span',{class:'work-tab-number',text:pad(i)}),t.name||'無題');
+  b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const n=state.tabs.length,j=e.key==='Home'?0:e.key==='End'?n-1:(i+(e.key==='ArrowRight'?1:-1)+n)%n;state.active=state.tabs[j].id;commit();$('tab-'+state.active).focus();};
+  const del=h('button',{type:'button',class:'work-tab-delete',text:'×','aria-label':'タブを削除：'+(t.name||'無題'),title:'タブを削除',onclick:()=>removeTab(t.id)});
+  box.append(h('div',{class:'work-tab-item'+(t.id===flow.id?' is-active':''),role:'presentation'},b,del));
+ });
+}
+function stepTotal(view){return Object.values(view).reduce((n,v)=>n+v.sum.total,0);}
+// 閉じていれば開いてから、INPUT・段階へ移動する
+function reveal(inp,targetId,step=null){
+ if(ui.focus&&(ui.focus.inputId!==inp.id||(ui.focus.stepId&&ui.focus.stepId!==step?.id)))ui.focus=null;
+ ui.sel={inputId:inp.id,stepId:step?.id||null};
+ if(inp.collapsed){inp.collapsed=false;commit();}else render();
+ $(targetId)?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function toggleInput(inp){
+ if(ui.focus?.inputId===inp.id)ui.focus=null;
+ inp.collapsed=!inp.collapsed;
+ if(inp.collapsed&&ui.sel?.inputId===inp.id)ui.sel={inputId:inp.id,stepId:null};
+ commit((inp.name||'無題')+'を'+(inp.collapsed?'閉じました。':'開きました。'));
+}
+const isCollapsed=inp=>inp.collapsed&&ui.focus?.inputId!==inp.id;
+function toggleButton(inp,extraClass){
+ return h('button',{type:'button',class:'toggle '+(extraClass||''),text:isCollapsed(inp)?'▸':'▾','aria-expanded':String(!isCollapsed(inp)),'aria-controls':'body-'+inp.id,
+  'aria-label':(inp.name||'無題')+'を'+(isCollapsed(inp)?'開く':'閉じる'),title:(isCollapsed(inp)?'開く':'閉じる')+'（z）',onclick:()=>toggleInput(inp)});
+}
+function renderNav(flow,views){
+ const nav=$('navigation');nav.replaceChildren();
+ const tree=h('ul',{class:'nav-tree'});
+ flow.inputs.forEach(inp=>{
+  const v=views.get(inp.id);
+  const steps=h('ul',{class:'nav-steps',hidden:isCollapsed(inp)});
+  inp.steps.forEach((s,i)=>steps.append(h('li',null,h('button',{type:'button',class:'nav-item',dataset:{nav:'st:'+s.id},onclick:()=>reveal(inp,'stage-'+s.id,s)},
+   h('span',{class:'nav-no',text:pad(i+1)}),h('span',{text:s.action||'（操作が未入力）'},s.outcome==='error'?h('span',{class:'nav-error',text:'　※エラー'}):stepTotal(v[i])?null:'　※変化なし')))));
+  if(!inp.steps.length)steps.append(h('li',{class:'nav-empty',text:'（変化がまだありません）'}));
+  tree.append(h('li',{class:'nav-input'+(isCollapsed(inp)?' is-collapsed':'')},
+   h('div',{class:'nav-input-row'},toggleButton(inp,'nav-toggle'),
+    h('button',{type:'button',class:'nav-item is-input',dataset:{nav:'in:'+inp.id},onclick:()=>reveal(inp,'group-'+inp.id)},
+     h('span',{class:'nav-no',text:(inp.name||'無題')+(isCollapsed(inp)?'　('+inp.steps.length+')':'')}),h('span',{class:'nav-sub',text:inp.note||inp.tables.map(t=>t.name||'無題').join('・')}))),steps));
+ });
+ nav.append(tree,h('button',{type:'button',class:'add-btn nav-add',text:'＋ INPUTを追加',onclick:()=>addInput(flow)}));
+}
+function addInput(flow){
+ ui.focus=null;
+ const n=flow.inputs.length+1;let name='INPUT_'+n;while(flow.inputs.some(x=>x.name===name))name='INPUT_'+(n+=1);
+ const i=newInput(name);flow.inputs.push(i);commit(name+'を追加しました。','input-name:'+i.id);
+ $('group-'+i.id)?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function removeInput(flow,inp){
+ if(!confirm('「'+(inp.name||'無題')+'」と、そのすべての段階を削除しますか？'))return;
+ flow.inputs.splice(flow.inputs.indexOf(inp),1);
+ if(!flow.inputs.length)flow.inputs.push(newInput());
+ commit('INPUTを削除しました。');
+}
+
+/* INPUT（一覧の1件） */
+function renderGroup(flow,inp,idx,views){
+ const n=flow.inputs.length;
+ const move=d=>()=>{const j=idx+d;[flow.inputs[idx],flow.inputs[j]]=[flow.inputs[j],flow.inputs[idx]];commit('INPUTの順番を変えました。');};
+ const total=views.reduce((s,v)=>s+stepTotal(v),0);
+ const collapsed=isCollapsed(inp),onlyStep=ui.focus?.inputId===inp.id?ui.focus.stepId:null;
+ const group=h('section',{class:'input-group'+(collapsed?' is-collapsed':''),id:'group-'+inp.id,'aria-label':'INPUT：'+(inp.name||'無題'),dataset:{item:'in:'+inp.id}});
+ group.append(h('div',{class:'group-head'},
+  toggleButton(inp),h('span',{class:'badge',text:'INPUT'}),
+  h('input',{class:'input-name',value:inp.name,placeholder:'INPUT名','aria-label':'INPUTの名前',dataset:{key:'input-name:'+inp.id},oninput:e=>{inp.name=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur}),
+  h('span',{class:'chips'},h('span',{class:'chip',text:'STEP '+inp.steps.length}),h('span',{class:'chip',text:'テーブル '+inp.tables.length}),inp.steps.some(x=>x.outcome==='error')?h('span',{class:'chip c-error',text:'エラー '+inp.steps.filter(x=>x.outcome==='error').length}):null,total?null:h('span',{class:'chip',text:'変化なし'})),
+  h('span',{class:'step-tools'},mini('↑','このINPUTを上へ',move(-1),{disabled:idx===0}),mini('↓','このINPUTを下へ',move(1),{disabled:idx===n-1}),mini('集中','このINPUTに集中（o）',()=>setFocus({inputId:inp.id,stepId:null})),mini('INPUTを削除','このINPUTを削除',()=>removeInput(flow,inp)))),
+  h('input',{class:'note-input input-note',value:inp.note,placeholder:'このINPUTの説明（例：通常の請求 / 金額誤りで差し戻す場合）','aria-label':(inp.name||'無題')+'の説明',dataset:{key:'input-note:'+inp.id},oninput:e=>{inp.note=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur}));
+ if(collapsed){
+  // 閉じている間は、段階の一覧だけを見せる
+  const list=h('ol',{class:'step-summary',id:'body-'+inp.id});
+  if(inp.dataTitle)list.append(h('li',null,h('button',{type:'button',class:'summary-item',onclick:()=>reveal(inp,'stage-input-'+inp.id)},h('span',{class:'nav-no',text:'IN'}),h('span',{text:inp.dataTitle}))));
+  inp.steps.forEach((s,i)=>list.append(h('li',null,h('button',{type:'button',class:'summary-item',onclick:()=>reveal(inp,'stage-'+s.id,s)},
+   h('span',{class:'nav-no',text:pad(i+1)}),h('span',{text:s.action||'（操作が未入力）'}),s.result?h('span',{class:'summary-result',text:'→ '+s.result}):null,s.outcome==='error'?h('span',{class:'chips'},h('span',{class:'chip c-error',text:'バリデーションエラー'})):chipsFor(Object.values(views[i]).reduce((a,v)=>{for(const k of Object.keys(a))a[k]+=v.sum[k];return a;},{changed:0,addedRows:0,deletedRows:0,addedCols:0,deletedCols:0}))))));
+  if(!inp.steps.length)list.append(h('li',{class:'nav-empty',text:'（変化がまだありません）'}));
+  group.append(list);
+  return group;
+ }
+ const body=h('div',{class:'group-body',id:'body-'+inp.id});
+ body.append(renderInput(inp));
+ inp.steps.forEach((step,i)=>{if(!onlyStep||onlyStep===step.id)body.append(renderConnector(inp,step,i),renderStep(inp,step,i,views[i]));});
+ if(!onlyStep)body.append(h('button',{type:'button',class:'add-btn step-add',text:'＋ 次の変化を追加（'+(inp.name||'無題')+'）',onclick:()=>addStep(inp)}));
+ group.append(body);
+ return group;
+}
+function renderInput(inp){
+ const sec=h('section',{class:'stage is-input',id:'stage-input-'+inp.id,'aria-label':'入力データ：'+(inp.name||'無題')},
+  h('div',{class:'stage-head'},h('span',{class:'badge',text:'INPUT'}),h('h3',{class:'stage-title'},h('label',{for:'data-'+inp.id,text:'入力データ'})),
+   h('input',{id:'data-'+inp.id,class:'result-input',value:inp.dataTitle,placeholder:'どんなデータか（例：作成中の請求データが2件ある）',dataset:{key:'input-data:'+inp.id},oninput:e=>{inp.dataTitle=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur})));
+ inp.tables.forEach(t=>sec.append(renderInputTable(inp,t)));
+ sec.append(h('button',{type:'button',class:'add-btn table-add',text:'＋ テーブルを追加',onclick:()=>{const t=newTable('テーブル'+(inp.tables.length+1));inp.tables.push(t);commit('テーブルを追加しました。','in:'+t.id+':name');}}));
+ return sec;
+}
+function renderInputTable(inp,t){
+ const card=h('div',{class:'table-card'});
+ card.append(h('div',{class:'table-head'},
+  h('input',{class:'table-name',value:t.name,placeholder:'テーブル名',  'aria-label':'テーブル名',dataset:{key:'in:'+t.id+':name'},oninput:e=>{t.name=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur}),
+  mini('テーブルを削除','テーブルを削除：'+(t.name||'無題'),()=>{if(!confirm('「'+(t.name||'無題')+'」と、各段階でのこのテーブルの変化を削除しますか？'))return;inp.tables=inp.tables.filter(x=>x!==t);inp.steps.forEach(s=>delete s.changes[t.id]);commit('テーブルを削除しました。');})));
+ card.append(...plainGrid(t,'in:'+t.id,{afterDelete:id=>purge(inp,t.id,[id]),
+  emptyText:'行がありません。最初は空のテーブル（後の段階で作られるデータ）にもできます。'}));
+ return card;
+}
+// 差分を持たない、そのまま編集する表（INPUTのテーブル・操作で入れるデータ）
+function plainGrid(t,prefix,opt={}){
+ const headRow=h('tr',null,h('th',{class:'rowhead',scope:'col',text:'#'}));
+ t.cols.forEach(c=>headRow.append(h('th',{scope:'col'},h('div',{class:'colhead'},
+  h('input',{value:c.name,placeholder:'列名','aria-label':'列名',dataset:{key:prefix+':h:'+c.id},oninput:e=>{c.name=e.target.value;save();},onchange:scheduleRender,onkeydown:headerKey}),
+  mini('×','列を削除：'+(c.name||'無題'),()=>{t.cols=t.cols.filter(x=>x!==c);t.rows.forEach(r=>delete r.cells[c.id]);opt.afterDelete?.(c.id);commit('列を削除しました。');})))));
+ const body=h('tbody');
+ const addRow=()=>{const r={id:uid(),cells:{}};t.rows.push(r);return r;};
+ t.rows.forEach((r,ri)=>{
+  const tr=h('tr',null,h('th',{class:'rowhead',scope:'row'},h('span',{class:'rowhead-inner'},String(ri+1),
+   mini('×',(ri+1)+'行目を削除',()=>{t.rows=t.rows.filter(x=>x!==r);opt.afterDelete?.(r.id);commit('行を削除しました。');}))));
+  t.cols.forEach(c=>tr.append(h('td',null,h('input',{value:r.cells[c.id]??'','aria-label':(ri+1)+'行目 '+(c.name||'無題'),dataset:{key:prefix+':'+r.id+':'+c.id,col:c.id},
+   oninput:e=>{r.cells[c.id]=e.target.value;save();},onchange:scheduleRender,
+   onkeydown:e=>cellKey(e,colId=>prefix+':'+addRow().id+':'+colId)}))));
+  body.append(tr);
+ });
+ if(!t.cols.length)body.append(h('tr',{class:'empty-row'},h('td',{colspan:'1',text:'列がありません。「＋ 列を追加」で追加します。'})));
+ else if(!t.rows.length)body.append(h('tr',{class:'empty-row'},h('td',{colspan:String(t.cols.length+1),text:opt.emptyText||'行がありません。'})));
+ return [h('div',{class:'table-scroll'},h('table',{class:'grid'},h('thead',null,headRow),body)),
+  h('div',{class:'table-actions'},
+   h('button',{type:'button',class:'add-btn',text:'＋ 行を追加',onclick:()=>{const r=addRow();commit('行を追加しました。',t.cols[0]?prefix+':'+r.id+':'+t.cols[0].id:null);}}),
+   h('button',{type:'button',class:'add-btn',text:'＋ 列を追加',onclick:()=>{const c={id:uid(),name:'項目'+(t.cols.length+1)};t.cols.push(c);commit('列を追加しました。',prefix+':h:'+c.id);}}))];
+}
+
+/* 操作（矢印） */
+function renderConnector(inp,step,i){
+ const n=inp.steps.length;
+ const move=d=>()=>{const j=i+d;[inp.steps[i],inp.steps[j]]=[inp.steps[j],inp.steps[i]];commit('段階を移動しました。');};
+ return h('div',{class:'connector',dataset:{item:'st:'+step.id}},h('span',{class:'line','aria-hidden':'true'}),
+  h('div',{class:'action-card'},
+   h('div',{class:'action-top'},h('span',{class:'badge',text:'STEP '+pad(i+1)}),h('label',{for:'act-'+step.id,text:'操作・処理'}),
+    h('input',{id:'act-'+step.id,class:'action-input',value:step.action,placeholder:'例：経理が請求を確定する',dataset:{key:'st:'+step.id+':act'},oninput:e=>{step.action=e.target.value;save();},onchange:scheduleRender,onkeydown:e=>{if(isEnter(e)){e.preventDefault();focusKey('st:'+step.id+':note');}}}),
+    h('span',{class:'step-tools'},mini('↑','この段階を上へ',move(-1),{disabled:i===0}),mini('↓','この段階を下へ',move(1),{disabled:i===n-1}),
+     mini('集中','このSTEPに集中（o）',()=>setFocus({inputId:inp.id,stepId:step.id})),
+     mini('削除','この段階を削除',()=>{if(Object.keys(step.changes).length&&!confirm('STEP '+pad(i+1)+' と、その変化を削除しますか？'))return;inp.steps.splice(i,1);commit('段階を削除しました。');}))),
+   h('input',{class:'note-input',value:step.note,placeholder:'条件・ルール・補足（例：確認済みの請求だけ確定できる / RULE-001）','aria-label':'STEP '+pad(i+1)+' の条件・補足',dataset:{key:'st:'+step.id+':note'},oninput:e=>{step.note=e.target.value;save();},onkeydown:enterBlur}),
+   h('div',{class:'step-input'},
+    h('p',{class:'step-input-label'},'このデータを入れると',h('span',{class:'muted',text:'（画面の入力・APIのリクエスト・取り込むファイルなど）'})),
+    ...plainGrid(step.input,'si:'+step.id,{emptyText:'入力するデータがありません。「＋ 行を追加」で追加します。'}),
+    h('div',{class:'outcome',role:'group','aria-label':'STEP '+pad(i+1)+' の結果'},h('span',{class:'outcome-label',text:'結果'}),
+     h('button',{type:'button',class:'outcome-ok','aria-pressed':String(step.outcome!=='error'),onclick:()=>setOutcome(step,'ok')},'成功（データが変わる）'),
+     h('button',{type:'button',class:'outcome-error','aria-pressed':String(step.outcome==='error'),onclick:()=>setOutcome(step,'error')},'バリデーションエラー')),
+    h('p',{class:'step-input-then'+(step.outcome==='error'?' is-error':''),text:step.outcome==='error'?'↓ バリデーションエラーになり、データは変わらない':'↓ データが次のように変わる'}))));
+}
+function setOutcome(step,outcome){
+ if(step.outcome===outcome)return;
+ step.outcome=outcome;if(outcome==='error'&&!step.errors.cols.length)step.errors=newErrorGrid();
+ commit(outcome==='error'?'バリデーションエラーにしました。データは前の段階のまま変わりません（書き換えた値は残しています）。':'成功に戻しました。書き換えた値を反映します。');
+}
+function newStepInput(){return {cols:[{id:uid(),name:'項目1'},{id:uid(),name:'項目2'}],rows:[{id:uid(),cells:{}}]};}
+function addStep(inp){const s={id:uid(),action:'',note:'',input:newStepInput(),result:'',outcome:'ok',errors:newErrorGrid(),changes:{}};inp.steps.push(s);commit('段階を追加しました。前の段階と同じデータから、変わる値を書き換えてください。','st:'+s.id+':act');}
+
+/* 変化後 */
+function chipsFor(sum){
+ const list=[];
+ if(sum.changed)list.push(['c-changed','セル変更 '+sum.changed]);
+ if(sum.addedRows)list.push(['c-added','行追加 '+sum.addedRows]);
+ if(sum.addedCols)list.push(['c-added','列追加 '+sum.addedCols]);
+ if(sum.deletedRows)list.push(['c-deleted','行削除 '+sum.deletedRows]);
+ if(sum.deletedCols)list.push(['c-deleted','列削除 '+sum.deletedCols]);
+ if(!list.length)list.push(['','変化なし']);
+ return h('span',{class:'chips'},list.map(([c,t])=>h('span',{class:'chip '+c,text:t})));
+}
+function readonlyTable(t,v){
+ return h('div',{class:'readonly-table'},h('p',{class:'table-title',text:t.name||'無題'}),
+  h('div',{class:'table-scroll'},h('table',{class:'grid readonly'},
+   h('thead',null,h('tr',null,h('th',{class:'rowhead',scope:'col',text:'#'}),v.cols.map(c=>h('th',{scope:'col',text:c.name||'無題'})))),
+   h('tbody',null,v.rows.length?v.rows.map((r,j)=>h('tr',null,h('th',{class:'rowhead',scope:'row',text:String(j+1)}),v.cols.map(c=>h('td',{text:r.cells[c.id].value})))):
+    h('tr',{class:'empty-row'},h('td',{colspan:String(v.cols.length+1),text:'行がありません。'}))))));
+}
+function renderErrorStep(inp,step,i,view){
+ const sec=h('section',{class:'stage is-step is-error',id:'stage-'+step.id,'aria-labelledby':'title-'+step.id,dataset:{item:'st:'+step.id}},
+  h('div',{class:'stage-head'},h('span',{class:'badge',text:'STEP '+pad(i+1)}),h('h3',{class:'stage-title',id:'title-'+step.id},h('label',{for:'res-'+step.id,class:'error-label',text:'バリデーションエラー'})),
+   h('input',{id:'res-'+step.id,class:'result-input',value:step.result,placeholder:'どうなったか（例：金額が未入力のため保存できない）',dataset:{key:'st:'+step.id+':res'},oninput:e=>{step.result=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur}),
+   h('span',{class:'chips'},h('span',{class:'chip c-error',text:'エラー '+step.errors.rows.length+'件'}),h('span',{class:'chip',text:'データ変化なし'}))));
+ sec.append(h('div',{class:'error-box'},h('p',{class:'error-box-label',text:'エラー内容（どの項目で、どんなエラーになるか）'}),
+  ...plainGrid(step.errors,'er:'+step.id,{emptyText:'エラーがありません。「＋ 行を追加」で、項目・エラーメッセージ・ルールを追加します。'})));
+ const okey=step.id+':data';
+ const det=h('details',{class:'table-card',open:openState.get(okey)===true});
+ det.ontoggle=()=>openState.set(okey,det.open);
+ det.append(h('summary',null,h('span',{class:'table-title',text:'データ（前の段階のまま）'}),h('span',{class:'chips'},h('span',{class:'chip',text:'変化なし'}))));
+ inp.tables.forEach(t=>det.append(readonlyTable(t,view[t.id])));
+ sec.append(det);
+ return sec;
+}
+function renderStep(inp,step,i,view){
+ if(step.outcome==='error')return renderErrorStep(inp,step,i,view);
+ const total={changed:0,addedRows:0,deletedRows:0,addedCols:0,deletedCols:0};
+ Object.values(view).forEach(v=>{for(const k of Object.keys(total))total[k]+=v.sum[k];});
+ const sec=h('section',{class:'stage is-step',id:'stage-'+step.id,'aria-labelledby':'title-'+step.id,dataset:{item:'st:'+step.id}},
+  h('div',{class:'stage-head'},h('span',{class:'badge',text:'STEP '+pad(i+1)}),h('h3',{class:'stage-title',id:'title-'+step.id},h('label',{for:'res-'+step.id,text:'変化後のデータ'})),
+   h('input',{id:'res-'+step.id,class:'result-input',value:step.result,placeholder:'どう変わったか（例：請求データの状態が「確認済み」になる）',dataset:{key:'st:'+step.id+':res'},oninput:e=>{step.result=e.target.value;save();},onchange:scheduleRender,onkeydown:enterBlur}),
+   chipsFor(total)));
+ inp.tables.forEach(t=>sec.append(renderStepTable(inp,step,t,view[t.id])));
+ if(!inp.tables.length)sec.append(h('p',{class:'unchanged-note',text:'INPUTにテーブルを追加してください。'}));
+ return sec;
+}
+function renderStepTable(inp,step,t,v){
+ const okey=step.id+':'+t.id;
+ const open=openState.has(okey)?openState.get(okey):true;
+ const card=h('details',{class:'table-card',open});
+ card.ontoggle=()=>openState.set(okey,card.open);
+ card.append(h('summary',null,h('span',{class:'table-title',text:t.name||'無題'}),chipsFor(v.sum)));
+ const k=(...a)=>'st:'+step.id+':'+t.id+':'+a.join(':');
+ const headRow=h('tr',null,h('th',{class:'rowhead',scope:'col',text:'#'}));
+ v.cols.forEach(c=>{
+  let label,btn;
+  if(c.status==='added'){
+   label=h('input',{value:c.name,placeholder:'列名','aria-label':'追加した列の名前',dataset:{key:k('h',c.id)},oninput:e=>{c.ref.name=e.target.value;save();},onchange:scheduleRender,onkeydown:headerKey});
+   btn=mini('×','追加した列を取り消す：'+(c.name||'無題'),()=>{const p=patchOf(step,t.id);p.addCols=p.addCols.filter(x=>x.id!==c.id);purge(inp,t.id,[c.id]);commit('列の追加を取り消しました。');});
+  }else if(c.status==='deleted'){
+   label=h('span',{class:'col-label',text:c.name||'無題'});
+   btn=mini('↺','列の削除を取り消す：'+(c.name||'無題'),()=>{const p=patchOf(step,t.id);p.delCols=p.delCols.filter(x=>x!==c.id);cleanPatch(step,t.id);commit('列の削除を取り消しました。');});
+  }else{
+   label=h('span',{class:'col-label',text:c.name||'無題'});
+   btn=mini('×','この段階で列を削除：'+(c.name||'無題'),()=>{patchOf(step,t.id,true).delCols.push(c.id);commit('この段階で列を削除しました。');});
+  }
+  const tag=c.status==='added'?h('span',{class:'tag add',text:'追加'}):c.status==='deleted'?h('span',{class:'tag del',text:'削除'}):null;
+  headRow.append(h('th',{scope:'col',class:c.status==='added'?'col-added':c.status==='deleted'?'col-deleted':null},h('div',{class:'colhead'},label,tag,btn)));
+ });
+ const body=h('tbody');
+ const addRow=colId=>{const r={id:uid(),cells:{}};patchOf(step,t.id,true).addRows.push(r);return k(r.id,colId);};
+ v.rows.forEach((r,ri)=>{
+  const deleted=r.status==='deleted',added=r.status==='added';
+  let btn;
+  if(added)btn=mini('×','追加した行を取り消す',()=>{const p=patchOf(step,t.id);p.addRows=p.addRows.filter(x=>x.id!==r.id);purge(inp,t.id,[r.id]);cleanPatch(step,t.id);commit('行の追加を取り消しました。');});
+  else if(deleted)btn=mini('↺','行の削除を取り消す',()=>{const p=patchOf(step,t.id);p.delRows=p.delRows.filter(x=>x!==r.id);cleanPatch(step,t.id);commit('行の削除を取り消しました。');});
+  else btn=mini('×','この段階で行を削除',()=>{const p=patchOf(step,t.id,true);p.delRows.push(r.id);delete p.set[r.id];commit('この段階で行を削除しました。');});
+  const tr=h('tr',{class:added?'row-added':deleted?'row-deleted':null},h('th',{class:'rowhead',scope:'row'},h('span',{class:'rowhead-inner'},String(ri+1),added?h('span',{class:'tag add',text:'追加'}):deleted?h('span',{class:'tag del',text:'削除'}):null,btn)));
+  v.cols.forEach(c=>{
+   const cell=r.cells[c.id],colDel=c.status==='deleted',locked=deleted||colDel;
+   const prev=h('span',{class:'prev',text:cell.before,hidden:!cell.changed,'aria-hidden':'true'});
+   const td=h('td',{class:[cell.changed?'changed':'',c.status==='added'?'col-added':'',colDel?'col-deleted':''].filter(Boolean).join(' ')||null},prev);
+   const input=h('input',{value:cell.value,disabled:locked,'aria-label':(ri+1)+'行目 '+(c.name||'無題')+(cell.changed?'（前の値：'+(cell.before||'空')+'）':''),dataset:{key:k(r.id,c.id),col:c.id},
+    oninput:e=>{
+     const val=e.target.value,p=patchOf(step,t.id,true);
+     if(added){r.ref.cells[c.id]=val;}
+     else{if(val===cell.before){if(p.set[r.id])delete p.set[r.id][c.id];}else{(p.set[r.id]||(p.set[r.id]={}))[c.id]=val;}}
+     cleanPatch(step,t.id);save();
+     const ch=!added&&c.status==='same'&&val!==cell.before;td.classList.toggle('changed',ch);prev.hidden=!ch;
+    },onchange:scheduleRender,onkeydown:e=>cellKey(e,addRow)});
+   td.append(input);tr.append(td);
+  });
+  body.append(tr);
+ });
+ if(!v.rows.length)body.append(h('tr',{class:'empty-row'},h('td',{colspan:String(v.cols.length+1),text:'行がありません。この段階でデータが作られる場合は「＋ 行を追加」を使います。'})));
+ card.append(h('div',{class:'table-scroll'},h('table',{class:'grid'},h('thead',null,headRow),body)));
+ card.append(h('div',{class:'table-actions'},
+  h('button',{type:'button',class:'add-btn',text:'＋ 行を追加',onclick:()=>{const live=v.cols.find(c=>c.status!=='deleted');const key=addRow(live?live.id:'');commit('この段階で行を追加しました。',live?key:null);}}),
+  h('button',{type:'button',class:'add-btn',text:'＋ 列を追加',onclick:()=>{const c={id:uid(),name:'新しい列'};patchOf(step,t.id,true).addCols.push(c);commit('この段階で列を追加しました。',k('h',c.id));}})));
+ return card;
+}
+
+/* キー操作 */
+function isEnter(e){return e.key==='Enter'&&!e.isComposing&&e.keyCode!==229;}
+function enterBlur(e){if(isEnter(e)){e.preventDefault();e.target.blur();}}
+function cellKey(e,addRow){
+ if(!isEnter(e))return;
+ e.preventDefault();
+ const input=e.target,td=input.closest('td'),idx=td.cellIndex,up=e.shiftKey;
+ let tr=td.parentElement;
+ while((tr=up?tr.previousElementSibling:tr.nextElementSibling)){const next=tr.cells[idx]?.querySelector('input:not([disabled])');if(next){next.focus();next.select();return;}}
+ if(up)return;
+ const key=addRow(input.dataset.col);
+ commit('行を追加しました。',key);
+}
+function headerKey(e){
+ if(!isEnter(e))return;
+ e.preventDefault();
+ const th=e.target.closest('th'),first=th.closest('table').tBodies[0]?.rows[0]?.cells[th.cellIndex]?.querySelector('input:not([disabled])');
+ if(first){first.focus();first.select();}else e.target.blur();
+}
+
+/* タブ */
+function removeTab(id){
+ const t=state.tabs.find(x=>x.id===id);if(!t)return;
+ if(!confirm('「'+(t.name||'無題')+'」を削除しますか？'))return;
+ const i=state.tabs.indexOf(t);state.tabs.splice(i,1);
+ if(!state.tabs.length)state.tabs.push(newFlow());
+ if(state.active===id)state.active=state.tabs[Math.max(0,i-1)].id;
+ commit('タブを削除しました。');
+}
+$('add-tab').onclick=()=>{const f=newFlow();state.tabs.push(f);state.active=f.id;commit('データ遷移を追加しました。');$('flow-name').focus();$('flow-name').select();};
+$('flow-name').oninput=e=>{current().name=e.target.value;save();};
+$('flow-name').onchange=scheduleRender;
+$('flow-name').onkeydown=enterBlur;
+$('flow-note').oninput=e=>{current().note=e.target.value;save();};
+
+/* 書き出し・読み込み */
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+const fileName=(s,ext)=>(s||'data_transition').replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,60)+ext;
+$('export-json').onclick=()=>{download('data_transition.json',JSON.stringify(state,null,2),'application/json');announce('全タブをJSONで書き出しました。');};
+const md=v=>String(v).replace(/\|/g,'\\|').replace(/\r?\n/g,' ');
+function mdTable(cols,rows){
+ if(!cols.length)return '（列がありません）\n';
+ const out=['| # | '+cols.map(c=>c.label).join(' | ')+' |','|---|'+cols.map(()=>'---').join('|')+'|'];
+ rows.forEach((r,i)=>out.push('| '+r.head(i)+' | '+cols.map(c=>r.cell(c)).join(' | ')+' |'));
+ if(!rows.length)out.push('| （行なし） |'+cols.map(()=>' ').join('|')+'|');
+ return out.join('\n')+'\n';
+}
+$('export-md').onclick=()=>{
+ const flow=current(),L=[];
+ L.push('# '+(flow.name||'データ遷移'),'');if(flow.note)L.push(flow.note,'');
+ L.push('凡例：`前 → 後` は値の変化、＋ は追加、~~取り消し線~~ は削除。','');
+ flow.inputs.forEach(inp=>{const views=computeFlow(inp);
+ L.push('## '+(inp.name||'INPUT')+(inp.note?'：'+inp.note:''),'','### 入力データ','');if(inp.dataTitle)L.push('**入力データ**：'+inp.dataTitle,'');
+ inp.tables.forEach(t=>{L.push('#### '+(t.name||'無題'),'',mdTable(t.cols.map(c=>({id:c.id,label:md(c.name||'無題')})),t.rows.map(r=>({head:i=>String(i+1),cell:c=>md(r.cells[c.id]??'')}))));});
+ inp.steps.forEach((s,i)=>{
+  L.push('### STEP '+pad(i+1)+' '+(s.action||'（操作が未入力）'),'');if(s.note)L.push(s.note,'');
+  const isErr=s.outcome==='error';
+  const resultLine=isErr?'**結果：バリデーションエラー**'+(s.result?'：'+s.result:'')+'（データは変わらない）':'**変化後のデータ**'+(s.result?'：'+s.result:'');
+  if(s.input.cols.length)L.push('**このデータを入れると**','',mdTable(s.input.cols.map(c=>({id:c.id,label:md(c.name||'無題')})),s.input.rows.map(r=>({head:j=>String(j+1),cell:c=>md(r.cells[c.id]??'')}))),isErr?'**↓ バリデーションエラーになる**':'**↓ データが次のように変わる**','');
+  L.push(resultLine,'');
+  if(isErr){if(s.errors.cols.length)L.push(mdTable(s.errors.cols.map(c=>({id:c.id,label:md(c.name||'無題')})),s.errors.rows.map(r=>({head:j=>String(j+1),cell:c=>md(r.cells[c.id]??'')}))));return;}
+  inp.tables.forEach(t=>{const v=views[i][t.id];
+   if(!v.sum.total){L.push('#### '+(t.name||'無題')+'（変化なし）','');return;}
+   const sm=[];if(v.sum.changed)sm.push('セル変更 '+v.sum.changed);if(v.sum.addedRows)sm.push('行追加 '+v.sum.addedRows);if(v.sum.addedCols)sm.push('列追加 '+v.sum.addedCols);if(v.sum.deletedRows)sm.push('行削除 '+v.sum.deletedRows);if(v.sum.deletedCols)sm.push('列削除 '+v.sum.deletedCols);
+   L.push('#### '+(t.name||'無題')+'（'+sm.join('・')+'）','');
+   const cols=v.cols.map(c=>({id:c.id,status:c.status,label:c.status==='added'?'＋'+md(c.name||'無題'):c.status==='deleted'?'~~'+md(c.name||'無題')+'~~':md(c.name||'無題')}));
+   L.push(mdTable(cols,v.rows.map(r=>({head:j=>r.status==='added'?'＋':r.status==='deleted'?'−'+(j+1):String(j+1),cell:c=>{const x=r.cells[c.id];const val=md(x.value);if(r.status==='deleted'||c.status==='deleted')return val?'~~'+val+'~~':'';return x.changed?'`'+(md(x.before)||'（空）')+' → '+(val||'（空）')+'`':val;}}))));
+  });
+ });
+ });
+ download(fileName(flow.name,'.md'),L.join('\n'),'text/markdown');announce('現在のタブ（全INPUT）をMarkdownで書き出しました。');
+};
+$('print').onclick=()=>{document.querySelectorAll('details.table-card').forEach(d=>d.open=true);window.print();};
+$('import').onclick=()=>{$('import-error').textContent='';$('import-text').value='';$('import-file').value='';$('import-dialog').showModal();};
+$('cancel-import').onclick=()=>$('import-dialog').close();
+$('import-file').onchange=async e=>{const f=e.target.files[0];if(f)$('import-text').value=await f.text();};
+$('apply-import').onclick=()=>{
+ try{
+  const raw=JSON.parse($('import-text').value);
+  if(raw&&Array.isArray(raw.tabs)){if(!confirm('現在のすべてのタブを、読み込んだJSONで置き換えますか？'))return;state=normState(raw);commit('全タブを読み込みました。');}
+  else{const f=normFlow(raw);if(state.tabs.some(t=>t.id===f.id))f.id=uid();state.tabs.push(f);state.active=f.id;commit('新しいタブとして読み込みました。');}
+  $('import-dialog').close();
+ }catch(err){$('import-error').textContent=err instanceof SyntaxError?'JSONの形式が正しくありません。':err.message;}
+};
+
+/* ---------- 選択・集中・全画面・パネル ---------- */
+const itemKey=it=>it.step?'st:'+it.step.id:'in:'+it.inp.id;
+function items(){
+ const out=[];
+ current().inputs.forEach(inp=>{
+  if(ui.focus&&ui.focus.inputId!==inp.id)return;
+  out.push({inp,step:null});
+  if(!isCollapsed(inp))inp.steps.forEach(st=>{if(!ui.focus?.stepId||ui.focus.stepId===st.id)out.push({inp,step:st});});
+ });
+ return out;
+}
+function selIndex(list=items()){
+ const i=list.findIndex(it=>it.inp.id===ui.sel?.inputId&&(it.step?.id||null)===(ui.sel?.stepId||null));
+ if(i>=0)return i;
+ const j=list.findIndex(it=>it.inp.id===ui.sel?.inputId);
+ return j>=0?j:0;
+}
+function selected(){const list=items();return list[selIndex(list)]||null;}
+function select(it,scroll=true){if(!it)return;ui.sel={inputId:it.inp.id,stepId:it.step?.id||null};applySelection(scroll);}
+function applySelection(scroll){
+ document.querySelectorAll('.is-selected').forEach(e=>e.classList.remove('is-selected'));
+ if(!ui.sel)return;
+ const it=selected();if(!it)return;
+ const key=itemKey(it);
+ document.querySelectorAll('[data-item="'+CSS.escape(key)+'"],[data-nav="'+CSS.escape(key)+'"]').forEach(e=>e.classList.add('is-selected'));
+ if(scroll){const target=it.step?document.querySelector('.connector[data-item="'+CSS.escape(key)+'"]'):$('group-'+it.inp.id)?.querySelector('.group-head');target?.scrollIntoView({block:'nearest'});}
+}
+// クリック・入力した場所を選択中にする
+$('flow').addEventListener('focusin',e=>{
+ const el=e.target.closest('[data-item]');if(!el)return;
+ const [kind,id]=el.dataset.item.split(':');const flow=current();
+ const inp=kind==='in'?flow.inputs.find(x=>x.id===id):flow.inputs.find(x=>x.steps.some(st=>st.id===id));
+ if(!inp)return;ui.sel={inputId:inp.id,stepId:kind==='st'?id:null};applySelection(false);
+});
+function setFocus(target){
+ ui.focus=target;
+ if(target)ui.sel={...target};
+ render();
+ if(target){const inp=current().inputs.find(x=>x.id===target.inputId),st=inp?.steps.find(x=>x.id===target.stepId);
+  announce('集中：'+(inp?.name||'無題')+(st?' › STEP '+pad(inp.steps.indexOf(st)+1):'')+'（oまたはEscで解除）');
+  $('group-'+target.inputId)?.scrollIntoView({block:'start'});}
+ else announce('集中を解除しました。');
+}
+function setFullscreen(on){
+ ui.fullscreen=on;
+ $('editor').classList.toggle('is-fullscreen',on);document.body.classList.toggle('editor-fullscreen',on);
+ const label=on?'全画面を解除':'全画面表示';
+ $('fullscreen').setAttribute('aria-pressed',String(on));$('fullscreen').setAttribute('aria-label',label);$('fullscreen').title=label+'（f）';
+ $('fullscreen-icon').setAttribute('d',on?'M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5':'M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5');
+ announce(on?'全画面で表示しています。fまたはEscで解除できます。':'全画面を解除しました。');
+ applySelection(true);
+}
+function renderChrome(flow){
+ $('side-panel').hidden=!state.panelOpen;$('workspace').classList.toggle('closed',!state.panelOpen);
+ $('panel-open').hidden=state.panelOpen;$('panel-close').setAttribute('aria-expanded','true');$('panel-open').setAttribute('aria-expanded','false');
+ const fb=$('focus-bar');fb.hidden=!ui.focus;
+ if(ui.focus){const inp=flow.inputs.find(x=>x.id===ui.focus.inputId),st=inp?.steps.find(x=>x.id===ui.focus.stepId);
+  $('focus-label').textContent='集中：'+(inp?.name||'無題')+(st?' › STEP '+pad(inp.steps.indexOf(st)+1)+' '+(st.action||''):'（このINPUTだけを表示）');}
+}
+$('panel-close').onclick=()=>{state.panelOpen=false;commit('パネルを閉じました。');$('panel-open').focus();};
+$('panel-open').onclick=()=>{state.panelOpen=true;commit('パネルを開きました。');$('panel-close').focus();};
+$('fullscreen').onclick=()=>setFullscreen(!ui.fullscreen);
+$('exit-focus').onclick=()=>setFocus(null);
+$('undo').onclick=undo;$('redo').onclick=redo;
+
+/* ---------- キー操作（Vim） ---------- */
+function deleteItem(it){
+ const flow=current();
+ if(!it.step){removeInput(flow,it.inp);return;}
+ const i=it.inp.steps.indexOf(it.step);
+ if(!confirm('STEP '+pad(i+1)+'「'+(it.step.action||'操作が未入力')+'」を削除しますか？'))return;
+ it.inp.steps.splice(i,1);
+ const next=it.inp.steps[Math.min(i,it.inp.steps.length-1)];
+ ui.sel={inputId:it.inp.id,stepId:next?.id||null};
+ commit('段階を削除しました。');
+}
+function switchTab(d){
+ const n=state.tabs.length,i=state.tabs.findIndex(t=>t.id===state.active);
+ state.active=state.tabs[(i+d+n)%n].id;ui.focus=null;ui.sel=null;commit('タブ：'+(current().name||'無題'));
+}
+let gPending=false,gTimer=null;
+document.addEventListener('keydown',e=>{
+ if(document.querySelector('dialog[open]'))return;
+ const t=e.target;
+ if(t.matches?.('input,textarea,select,[contenteditable="true"]')){
+  if(e.key==='Escape'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();t.blur();applySelection(false);announce('入力を終了しました。j/kで移動できます。');}
+  return;
+ }
+ if(e.altKey||e.metaKey)return;
+ if(e.key==='Escape'){if(ui.fullscreen){e.preventDefault();setFullscreen(false);}else if(ui.focus){e.preventDefault();setFocus(null);}return;}
+ if(e.ctrlKey){if(e.key==='r'){e.preventDefault();redo();}return;}
+ if(t.closest?.('[role="tab"]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+ const k=e.key,list=items(),idx=selIndex(list),it=list[idx];
+ if(k==='g'){e.preventDefault();if(gPending){gPending=false;clearTimeout(gTimer);select(list[0]);}else{gPending=true;gTimer=setTimeout(()=>{gPending=false;},700);}return;}
+ gPending=false;
+ const flow=current();
+ switch(k){
+  case 'j':if(!ui.sel)select(list[0]);else select(list[Math.min(idx+1,list.length-1)]);break;
+  case 'k':if(!ui.sel)select(list[0]);else select(list[Math.max(idx-1,0)]);break;
+  case 'G':select(list[list.length-1]);break;
+  case 'h':
+   if(!it)break;
+   if(it.step)select({inp:it.inp,step:null});
+   else if(!isCollapsed(it.inp)){ui.sel={inputId:it.inp.id,stepId:null};toggleInput(it.inp);}
+   break;
+  case 'l':
+   if(!it)break;
+   if(!it.step&&isCollapsed(it.inp)){ui.sel={inputId:it.inp.id,stepId:null};toggleInput(it.inp);}
+   else if(!it.step&&it.inp.steps.length)select({inp:it.inp,step:ui.focus?.stepId?it.inp.steps.find(x=>x.id===ui.focus.stepId):it.inp.steps[0]});
+   break;
+  case 'z':if(it){ui.sel={inputId:it.inp.id,stepId:null};toggleInput(it.inp);}break;
+  case 'Z':{const open=flow.inputs.some(x=>x.collapsed);flow.inputs.forEach(x=>x.collapsed=!open);if(!open&&ui.sel)ui.sel.stepId=null;ui.focus=null;commit(open?'すべてのINPUTを開きました。':'すべてのINPUTを閉じました。');break;}
+  case 'o':{
+   if(!it)break;
+   const target={inputId:it.inp.id,stepId:it.step?.id||null};
+   setFocus(ui.focus&&ui.focus.inputId===target.inputId&&ui.focus.stepId===target.stepId?null:target);break;}
+  case 'f':setFullscreen(!ui.fullscreen);break;
+  case 'i':
+   if(!it)break;
+   if(ui.focus?.stepId)ui.focus.stepId=null;
+   it.inp.collapsed=false;addStep(it.inp);ui.sel={inputId:it.inp.id,stepId:it.inp.steps[it.inp.steps.length-1].id};applySelection(false);break;
+  case 'I':addInput(flow);ui.sel={inputId:flow.inputs[flow.inputs.length-1].id,stepId:null};applySelection(false);break;
+  case 'e':
+   if(!it)break;
+   if(it.step)focusKey('st:'+it.step.id+':act',true);else focusKey('input-name:'+it.inp.id,true);break;
+  case 'd':if(it)deleteItem(it);break;
+  case 't':switchTab(1);break;
+  case 'T':switchTab(-1);break;
+  case 'u':undo();break;
+  case '?':{const d=$('key-help');d.open=true;d.scrollIntoView({block:'nearest'});break;}
+  default:return;
+ }
+ e.preventDefault();
+});
+
+render();
+updateHistoryButtons();
+if(loadError)announce(loadError);
+})();
+</script>
+</body>
+</html>
