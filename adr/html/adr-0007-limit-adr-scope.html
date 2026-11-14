@@ -271,7 +271,7 @@ button:disabled { cursor: default; }
         <h1>ADR-0007：<span>ADRは重要な決定だけに使い、作業の管理はIssueとPRで行う</span></h1>
         <p class="lead">ADRを作るのは、技術・道具の選択、ディレクトリ構成や命名の決まり、リポジトリ全体に効くルール、元に戻しにくい変更に当たる決定だけにする。作業の管理はIssueとPRで行い、承認済みのADRはステータス・リンク・誤字以外を書き換えない。</p>
         <dl class="metadata">
-          <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
+          <div><dt>ステータス</dt><dd><span class="status status-superseded">置換</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
           <div><dt>関係者</dt><dd>Claude Code（調査・提案）</dd></div>
@@ -357,6 +357,7 @@ button:disabled { cursor: default; }
       <section id="related" aria-labelledby="related-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
+          <li><a href="adr-0009-narrow-adr-criteria.html">ADR-0009：ADRは今後の開発を継続して制約し、後から理由が必要になる決定だけに使う</a><small>置き換えられる</small></li>
           <li><a href="adr-0001-share-agent-rules-with-agents-md.html">ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む</a><small>関連する（ADRのルールを置く場所）</small></li>
           <li><a href="adr-0005-generate-adr-html-from-markdown.html">ADR-0005：ADRはMarkdownだけを書き、HTMLはスクリプトで生成する</a><small>関連する（トークン量を減らす方針）</small></li>
           <li><a href="../../AGENTS.md">AGENTS.md</a><small>ADRのルール</small></li>
@@ -369,6 +370,8 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者がルールの変更を採用</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>ADRを作る場面を絞るADR-0009（提案中）へのリンクを追加</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-superseded">置換</span></td><td>ADR-0009の承認により置換</td><td>Claude Code</td></tr>
           </tbody>
         </table></div>
       </section>
