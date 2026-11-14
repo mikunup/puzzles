@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// Rebuild the ADR list in adr/README.md and adr/index.html from adr/adr-NNNN-*.md.
+// Rebuild the ADR pages (adr-NNNN-*.html) and the ADR list in adr/README.md and adr/index.html
+// from adr/adr-NNNN-*.md. The Markdown files are the only source; the HTML files are generated.
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { STATUSES, escapeHtml, renderAdr } from "./render_adr.mjs";
 
 const ADR_DIR = dirname(fileURLToPath(import.meta.url));
 const START = "<!-- adr:index:start -->";
@@ -11,20 +13,9 @@ const END = "<!-- adr:index:end -->";
 const BLOCK = new RegExp(escapeRegExp(START) + "[\\s\\S]*?" + escapeRegExp(END), "g");
 const FILE_NAME = /^adr-(\d{4})-[a-z0-9-]+\.md$/;
 const TITLE = /^# ADR-(\d{4})：(.+)$/m;
-const STATUSES = {
-  "提案中": "proposed",
-  "承認": "accepted",
-  "却下": "rejected",
-  "廃止": "deprecated",
-  "置換": "superseded",
-};
 
 function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function escapeHtml(text) {
-  return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[char]);
 }
 
 function metadata(text, label) {
@@ -56,9 +47,6 @@ function readRecords(adrDir = ADR_DIR) {
     }
     numbers.set(number, name);
     const htmlName = name.replace(/\.md$/, ".html");
-    if (!existsSync(join(adrDir, htmlName))) {
-      throw new Error(`${name}: 対になる ${htmlName} がありません。`);
-    }
     const text = readFileSync(join(adrDir, name), "utf8");
     const title = text.match(TITLE);
     if (!title || title[1] !== number) {
@@ -78,7 +66,12 @@ function readRecords(adrDir = ADR_DIR) {
       summary: lead ? lead[1].trim() : "",
       md: name,
       html: htmlName,
+      text,
     });
+  }
+  const orphans = readdirSync(adrDir).filter((name) => /^adr-.*\.html$/.test(name) && !files.includes(name.replace(/\.html$/, ".md")));
+  if (orphans.length) {
+    throw new Error(`${orphans.join("・")}: 元になる .md がありません。生成されたHTMLなので、不要なら削除してください。`);
   }
   return records;
 }
@@ -133,8 +126,19 @@ function htmlBlock(records) {
 
 function build(adrDir = ADR_DIR, check = false) {
   const records = readRecords(adrDir);
-  const targets = { "README.md": markdownBlock(records), "index.html": htmlBlock(records) };
   const updates = [];
+  // ADR pages take the head (styles) of the template adr.html, so they follow its design.
+  const template = readFileSync(join(adrDir, "../adr.html"), "utf8");
+  const head = template.slice(0, template.indexOf("<body"));
+  for (const r of records) {
+    const page = join(adrDir, r.html);
+    const original = existsSync(page) ? readFileSync(page, "utf8") : "";
+    const updated = renderAdr(r.text, { head, source: r.md });
+    if (original !== updated) {
+      updates.push([page, r.html, updated]);
+    }
+  }
+  const targets = { "README.md": markdownBlock(records), "index.html": htmlBlock(records) };
   for (const [name, block] of Object.entries(targets)) {
     const page = join(adrDir, name);
     const original = readFileSync(page, "utf8");
@@ -146,7 +150,7 @@ function build(adrDir = ADR_DIR, check = false) {
       updates.push([page, name, updated]);
     }
   }
-  // Validate every page before writing, so a broken page never leaves the two lists out of sync.
+  // Validate every page before writing, so a broken page never leaves the lists and pages out of sync.
   for (const [page, name, updated] of updates) {
     if (!check) {
       writeFileSync(page, updated, "utf8");
@@ -160,7 +164,7 @@ function build(adrDir = ADR_DIR, check = false) {
 
 function main(args) {
   if (args.includes("-h") || args.includes("--help")) {
-    console.log("使い方: node adr/build_index.mjs [--check]\n\nadr/ 配下のADRから、README.md と index.html の一覧を作り直します。\n\n  --check  書き換えずに未反映の有無を確認");
+    console.log("使い方: node adr/build_index.mjs [--check]\n\nadr/ 配下のADR（Markdown）から、各ADRのHTMLと、README.md・index.html の一覧を作り直します。\n\n  --check  書き換えずに未反映の有無を確認");
     return 0;
   }
   const unknown = args.filter((arg) => arg !== "--check");
@@ -177,7 +181,7 @@ function main(args) {
     return 1;
   }
   if (!changed) {
-    console.log("一覧は最新です。");
+    console.log("一覧とADRのHTMLは最新です。");
   }
   return Number(check && changed > 0);
 }

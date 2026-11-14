@@ -63,7 +63,7 @@
 | <a href="bases/atomic_component.html" target="_blank" rel="noopener noreferrer">デザイン要素の説明資料 ↗</a><br><code>bases/atomic_component.html</code> | 背景色・重なった四角のアイコン・文字・ボタン・余白・角丸を、見本とCSSで確認します。 | 共通デザインを再利用する時の参照資料。 |
 | <a href="bases/display.html" target="_blank" rel="noopener noreferrer">画面構成と操作の考え方 ↗</a><br><code>bases/display.html</code> | タブの概念、Vim操作、メインのタスクに集中できる広い作業領域の考え方を説明します。 | レイアウトの見本、オブジェクト整理のキー操作例、補助パネル・集中表示・全画面の使い分け。 |
 | <a href="document_template.html" target="_blank" rel="noopener noreferrer">説明資料の雛形 ↗</a><br><code>document_template.html</code> | 左に目次、右に本文を置いた説明資料を作成します。 | HTML内の見出し・本文・表・手順・コード例を差し替えて利用します。 |
-| <a href="adr.html" target="_blank" rel="noopener noreferrer">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><br><code>adr.html</code> | アーキテクチャ上の決定について、背景・判断基準・検討した選択肢・決定・影響を1件ずつ記録します。 | 1つの決定につき1ファイル複製し、［ ］内を書き換えて使います。ステータス（提案中・承認・却下・廃止・置換）、選択肢の比較表、実施と見直し、変更履歴の枠付き。 |
+| <a href="adr.html" target="_blank" rel="noopener noreferrer">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><br><code>adr.html</code> | アーキテクチャ上の決定について、背景・判断基準・検討した選択肢・決定・影響を1件ずつ記録します。 | 1つの決定につき1ファイル複製し、［ ］内を書き換えて使います。ステータス（提案中・承認・却下・廃止・置換）、選択肢の比較表、実施と見直し、変更履歴の枠付き。このリポジトリのADRは `adr/` にMarkdown（雛形 `adr.md`）で書き、HTMLは `node adr/build_index.mjs` で生成します（`adr/README.md`）。 |
 
 ## 共通デザインの適用
 
