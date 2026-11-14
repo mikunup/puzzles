@@ -18,7 +18,7 @@
 | ADR-0005 | [ADRはMarkdownだけを書き、HTMLはスクリプトで生成する](adr-0005-generate-adr-html-from-markdown.md) | 承認 | 2026.11.14 | `adr/` のADR・`adr/build_index.mjs`・`adr/render_adr.mjs`・`AGENTS.md` のADRルール | [開く](html/adr-0005-generate-adr-html-from-markdown.html) |
 | ADR-0006 | [生成したADRのHTMLを adr/html/ に置く](adr-0006-move-adr-html-to-subdirectory.md) | 承認 | 2026.11.14 | `adr/html/`・`adr/build_index.mjs`・`adr/render_adr.mjs` | [開く](html/adr-0006-move-adr-html-to-subdirectory.html) |
 | ADR-0007 | [ADRは重要な決定だけに使い、作業の管理はIssueとPRで行う](adr-0007-limit-adr-scope.md) | 承認 | 2026.11.14 | `AGENTS.md` のADRルール・雛形 `adr.md`・`adr.html` | [開く](html/adr-0007-limit-adr-scope.html) |
-| ADR-0008 | [bases/ の基準をMarkdownに要約し、AIはまずそれを読む](adr-0008-summarize-bases-in-markdown.md) | 提案中 | 2026.11.14 | `bases/README.md`・`AGENTS.md` のルール | [開く](html/adr-0008-summarize-bases-in-markdown.html) |
+| ADR-0008 | [bases/ の基準はMarkdownを元にし、HTMLはそれに合わせて直す](adr-0008-summarize-bases-in-markdown.md) | 提案中 | 2026.11.14 | `bases/README.md`・`bases/` のHTML・`bases/base.css`・`AGENTS.md` のルール | [開く](html/adr-0008-summarize-bases-in-markdown.html) |
 <!-- adr:index:end -->
 
 上の一覧と各ADRのHTMLは `adr/build_index.mjs` が生成します。マーカー（`adr:index:start`〜`adr:index:end`）の間と、`html/` 配下のHTMLは手で編集しないでください。

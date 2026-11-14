@@ -4,8 +4,8 @@
   <!-- このファイルは adr/adr-0008-summarize-bases-in-markdown.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ADR-0008：bases/ の基準をMarkdownに要約し、AIはまずそれを読む">
-  <title>ADR-0008 bases/ の基準をMarkdownに要約し、AIはまずそれを読む｜DECISION RECORD</title>
+  <meta name="description" content="ADR-0008：bases/ の基準はMarkdownを元にし、HTMLはそれに合わせて直す">
+  <title>ADR-0008 bases/ の基準はMarkdownを元にし、HTMLはそれに合わせて直す｜DECISION RECORD</title>
   <style>
     :root {
       color-scheme:light;
@@ -269,14 +269,14 @@ button:disabled { cursor: default; }
       <header class="document-header">
         <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・共通デザイン</p>
         <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
-        <h1>ADR-0008：<span>bases/ の基準をMarkdownに要約し、AIはまずそれを読む</span></h1>
-        <p class="lead"><code>bases/</code> のHTMLの要点を <code>bases/README.md</code> にまとめ、AIはデザインの基準をまずこのMarkdownから読む。HTMLは見本の見た目や操作を確かめるときだけ読み、HTMLや <code>base.css</code> を変えたら同じ作業で要約も直す。</p>
+        <h1>ADR-0008：<span>bases/ の基準はMarkdownを元にし、HTMLはそれに合わせて直す</span></h1>
+        <p class="lead"><code>bases/</code> のデザイン・レイアウトの基準を <code>bases/README.md</code> にまとめ、これを基準の元にする。基準を変えるときは、まずMarkdownを書き換え、同じ作業の中でそれに合わせて <code>bases/</code> のHTMLと <code>base.css</code> を直す。AIは基準をこのMarkdownから読む。</p>
         <dl class="metadata">
           <div><dt>ステータス</dt><dd><span class="status status-proposed">提案中</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
           <div><dt>関係者</dt><dd>Claude Code（調査・提案）</dd></div>
-          <div><dt>対象範囲</dt><dd><code>bases/README.md</code>・<code>AGENTS.md</code> のルール</dd></div>
+          <div><dt>対象範囲</dt><dd><code>bases/README.md</code>・<code>bases/</code> のHTML・<code>bases/base.css</code>・<code>AGENTS.md</code> のルール</dd></div>
         </dl>
       </header>
 
@@ -295,17 +295,17 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">01 /</span><h2 id="context-title">背景・課題</h2></div>
         <p><code>bases/</code> は、新しい画面を作るときや既存画面を整えるときに参照するデザイン・レイアウトの基準である。AIが画面を作るたびに、この基準を読む必要がある。</p>
         <div class="two-columns">
-          <article class="panel"><h3>現状</h3><ul><li>基準はHTML3ページ（<code>display.html</code>・<code>atomic_component.html</code>・<code>color.html</code>）で、合わせて約17万バイトある。</li><li>大半は埋め込み画像・CSS・JavaScript・見本の装飾で、基準として読む必要がある文章は一部だけである。</li><li>表示用のHTMLなので、AIが必要な情報（色の値・タブの決まり・キー操作など）を探すのに手間がかかる。</li></ul></article>
-          <article class="panel"><h3>制約・前提</h3><ul><li>各HTMLは1ファイルで動く、見て学ぶ資料として残す。</li><li>AIのトークン量を減らす方針（ADR-0005）を続ける。</li><li>外部パッケージは使わない（ADR-0003）。</li></ul></article>
+          <article class="panel"><h3>現状</h3><ul><li>基準はHTML3ページ（<code>display.html</code>・<code>atomic_component.html</code>・<code>color.html</code>）で、合わせて約17万バイトある。</li><li>大半は埋め込み画像・CSS・JavaScript・見本の装飾で、基準として読む必要がある文章は一部だけである。</li><li>基準がHTMLの文章と <code>base.css</code> に分かれていて、食い違いがある。例えば選択中のタブは、<code>display.html</code> では塗りなし・下辺線、<code>base.css</code> の既定では深緑の塗り・白文字・下線になっている。</li></ul></article>
+          <article class="panel"><h3>制約・前提</h3><ul><li>各HTMLは1ファイルで動く、見て学ぶ資料として残す。スライダーやコピーボタンなど、操作できる見本を含む。</li><li>AIのトークン量を減らす方針（ADR-0005）を続ける。</li><li>外部パッケージは使わない（ADR-0003）。</li></ul></article>
         </div>
-        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>AIが <code>bases/</code> の基準を、少ないトークンで正しく読むにはどうするか。</aside>
+        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong><code>bases/</code> の基準をどこに書き、どの順で変え、AIは何を読むか。</aside>
       </section>
 
       <section id="drivers" aria-labelledby="drivers-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="drivers-title">判断基準</h2></div>
         <ol class="steps">
           <li><div><strong>AIのトークン量を減らせること</strong><p>画面を作るたびに読む資料なので、効果が大きい。</p></div></li>
-          <li><div><strong>HTMLと内容がずれないこと</strong><p>要約が古いと、AIが誤った基準で画面を作る。</p></div></li>
+          <li><div><strong>基準の元が1つに決まっていること</strong><p>元が2つあると、どちらを信じるか迷い、内容もずれる。</p></div></li>
           <li><div><strong>手間が増えすぎないこと</strong><p>基準を変えるときの作業を大きく増やさない。</p></div></li>
         </ol>
       </section>
@@ -313,19 +313,20 @@ button:disabled { cursor: default; }
       <section id="options" aria-labelledby="options-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
         <div class="table-wrap" role="region" aria-label="検討した選択肢" tabindex="0"><table>
-          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：手で書いた要約Markdown<span class="chosen">採用</span></th><th scope="col">選択肢 B：HTMLから自動で抽出</th><th scope="col">選択肢 C：現状維持</th></tr></thead>
+          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：Markdownを元にし、HTMLを合わせる<span class="chosen">採用</span></th><th scope="col">選択肢 B：HTMLを元にし、Markdownは要約</th><th scope="col">選択肢 C：MarkdownからHTMLを生成</th><th scope="col">選択肢 D：現状維持</th></tr></thead>
           <tbody>
-            <tr><th scope="row">トークン量を減らせる</th><td><span class="score good">◎</span>要点だけで約8.6千バイト（HTMLの約5%）</td><td><span class="score fair">○</span>見本の文言や重複も残る</td><td><span class="score poor">×</span>毎回HTMLを読む</td></tr>
-            <tr><th scope="row">HTMLとずれない</th><td><span class="score poor">△</span>直し忘れのおそれがある</td><td><span class="score good">◎</span>生成するのでずれない</td><td><span class="score good">◎</span>元を直接読む</td></tr>
-            <tr><th scope="row">手間が増えすぎない</th><td><span class="score fair">○</span>基準を変えたときだけ要約も直す</td><td><span class="score poor">△</span>抽出スクリプトの作成と保守が要る</td><td><span class="score good">◎</span>何も増えない</td></tr>
+            <tr><th scope="row">トークン量を減らせる</th><td><span class="score good">◎</span>約8.6千バイト（HTMLの約5%）を読む</td><td><span class="score good">◎</span>同じ</td><td><span class="score good">◎</span>同じ</td><td><span class="score poor">×</span>毎回HTMLを読む</td></tr>
+            <tr><th scope="row">基準の元が1つ</th><td><span class="score good">◎</span>Markdownが正</td><td><span class="score poor">△</span>要約の直し忘れでずれる</td><td><span class="score good">◎</span>Markdownが正で、HTMLもずれない</td><td><span class="score poor">△</span>HTMLと <code>base.css</code> に分かれる</td></tr>
+            <tr><th scope="row">手間が増えすぎない</th><td><span class="score fair">○</span>基準を変えたときに両方を直す</td><td><span class="score fair">○</span>同じ</td><td><span class="score poor">×</span>操作できる見本を生成する仕組みが大きい</td><td><span class="score good">◎</span>何も増えない</td></tr>
           </tbody>
         </table></div>
         <p class="caption">◎：基準を十分に満たす　○：満たす　△：課題がある　×：満たさない</p>
         <h3>選択肢ごとの詳細</h3>
         <div class="options">
-          <article class="panel"><h3>選択肢 A：手で書いた要約Markdown</h3><p class="muted"><code>bases/README.md</code> に、実装ルール・配色・部品・タブ・Vim操作・画面の幅・記号の意味を表とリストでまとめる。<code>AGENTS.md</code> に「まず要約を読む」「基準を変えたら要約も直す」ルールを置く。</p><dl class="pros-cons"><dt>良い点</dt><dd>必要な情報だけを、AIが探しやすい形で読める。GitHubでもディレクトリを開くと表示される。</dd><dt>懸念点</dt><dd>HTMLを変えたときに要約の直し忘れが起きうる。</dd></dl></article>
-          <article class="panel"><h3>選択肢 B：HTMLから自動で抽出</h3><p class="muted">スクリプトでHTMLから本文を取り出し、Markdownを生成する。</p><dl class="pros-cons"><dt>良い点</dt><dd>要約がHTMLとずれない。</dd><dt>懸念点</dt><dd>見本の文言や説明用の注記まで残り、要約ほど短くならない。抽出の決まりを保守する必要がある。</dd></dl></article>
-          <article class="panel"><h3>選択肢 C：現状維持</h3><p class="muted">AIは毎回 <code>bases/</code> のHTMLを読む。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が増えない。</dd><dt>懸念点</dt><dd>トークン量が多いまま残る。</dd></dl></article>
+          <article class="panel"><h3>選択肢 A：Markdownを元にし、HTMLを合わせる</h3><p class="muted"><code>bases/README.md</code> に、実装ルール・配色・部品・タブ・Vim操作・画面の幅・記号の意味を表とリストでまとめ、基準の元にする。基準を変えるときは、まずMarkdownを書き換え、同じ作業の中でHTMLと <code>base.css</code> を合わせる。食い違いはMarkdownを正としてHTMLを直す。</p><dl class="pros-cons"><dt>良い点</dt><dd>基準の元が1つになり、AIは短いMarkdownだけで基準を読める。HTMLを読む前に変更内容が決まる。</dd><dt>懸念点</dt><dd>HTMLの直し忘れが起きうる（ただし、どちらを直すかは迷わない）。</dd></dl></article>
+          <article class="panel"><h3>選択肢 B：HTMLを元にし、Markdownは要約</h3><p class="muted">HTMLと <code>base.css</code> を元のまま残し、変えたら要約も直す。</p><dl class="pros-cons"><dt>良い点</dt><dd>これまでの作業の流れを変えない。</dd><dt>懸念点</dt><dd>要約が古くなると、AIが誤った基準で画面を作る。どちらが正しいかが決まらない。</dd></dl></article>
+          <article class="panel"><h3>選択肢 C：MarkdownからHTMLを生成</h3><p class="muted">ADRと同じように、スクリプトでMarkdownからHTMLを生成する。</p><dl class="pros-cons"><dt>良い点</dt><dd>HTMLとMarkdownがずれない。</dd><dt>懸念点</dt><dd>スライダー・コピーボタン・レイアウトの見本など、操作できる見本を生成する仕組みが大きくなり、保守が難しい。</dd></dl></article>
+          <article class="panel"><h3>選択肢 D：現状維持</h3><p class="muted">AIは毎回 <code>bases/</code> のHTMLを読む。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が増えない。</dd><dt>懸念点</dt><dd>トークン量が多いまま残る。HTMLと <code>base.css</code> の食い違いも残る。</dd></dl></article>
         </div>
       </section>
 
@@ -333,26 +334,26 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="decision-title">決定</h2></div>
         <div class="decision">
           <p class="decision-label">DECISION</p>
-          <p class="decision-text"><code>bases/</code> の基準の要点を <code>bases/README.md</code> に手で要約し、AIはまずこのファイルを読む。HTMLや <code>base.css</code> の内容を変えたら、同じ作業で要約も直す（選択肢 A）。</p>
+          <p class="decision-text"><code>bases/</code> の基準は <code>bases/README.md</code> を元にする。基準を変えるときは、まずMarkdownを書き換え、同じ作業の中でそれに合わせて <code>bases/</code> のHTMLと <code>base.css</code> を直す。食い違いはMarkdownを正とする（選択肢 A）。</p>
         </div>
         <h3>決定の理由</h3>
-        <ul><li>基準 1：読む量が約17万バイトから約8.6千バイトに減る。</li><li>基準 3：基準を変えるのはまれで、そのときに要約を直す手間は小さい。</li><li>基準 2の懸念は、<code>AGENTS.md</code> のルールで同じ作業の中で直すことにして抑える。</li><li>選択肢 Bは、要約ほど短くならず、スクリプトの保守も増えるため選ばなかった。</li><li>選択肢 Cは、トークン量が減らないため選ばなかった。</li></ul>
+        <ul><li>基準 1：AIが読む量が約17万バイトから約8.6千バイトに減る。</li><li>基準 2：元がMarkdownに決まり、食い違ったときに直す側が明確になる。</li><li>基準 3：基準を変えるのはまれで、そのときにHTMLを合わせる手間は小さい。</li><li>選択肢 Bは、どちらが正しいかが決まらないため選ばなかった。</li><li>選択肢 Cは、操作できる見本の生成が大きな仕組みになるため選ばなかった。</li><li>選択肢 Dは、トークン量が減らないため選ばなかった。</li></ul>
       </section>
 
       <section id="consequences" aria-labelledby="consequences-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="consequences-title">結果・影響</h2></div>
         <div class="consequences">
-          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>AIが画面を作るときに読むトークン量が大きく減る。</li><li>色の値・タブの決まり・キー操作などを1か所で確認できる。</li></ul></article>
-          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>要約とHTMLの2か所を直す必要があり、直し忘れると内容がずれる。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> に「デザインの基準は bases/README.md から読む」ルールを追加した。</li><li><code>bases/</code> のHTMLの見た目と、<code>sync_styles.mjs</code> の動きは変わらない。</li></ul></article>
+          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>AIが画面を作るときに読むトークン量が大きく減る。</li><li>色の値・タブの決まり・キー操作などを1か所で確認でき、変えるときもそこから始められる。</li></ul></article>
+          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>基準を変えるときは、MarkdownとHTML・<code>base.css</code> の両方を直す必要がある。直し忘れると、HTMLの見本が古くなる。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> に「デザインの基準は bases/README.md を正とする」ルールを追加した。</li><li><code>bases/</code> のHTMLの見た目と、<code>sync_styles.mjs</code> の動きは変わらない。</li><li>選択中のタブの見た目は、Markdownでは <code>outline.html</code> 型（塗りなし・下辺線）を基準とした。<code>base.css</code> の既定との食い違いは、ページ固有のCSSで上書きしている現状を書いた。</li></ul></article>
         </div>
       </section>
 
       <section id="follow-up" aria-labelledby="follow-up-title">
         <div class="section-heading"><span class="section-number">06 /</span><h2 id="follow-up-title">確認と見直し</h2></div>
         <div class="two-columns review">
-          <article class="panel"><h3>確認する指標</h3><p class="muted">AIが画面を作るときに、<code>bases/</code> のHTMLを読まずに基準どおりの画面を作れていること。</p></article>
-          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">要約とHTMLのずれが見つかることが多い場合は、選択肢 B（自動での抽出）や確認スクリプトを検討する。</p></article>
+          <article class="panel"><h3>確認する指標</h3><ul><li>AIが <code>bases/</code> のHTMLを読まずに、基準どおりの画面を作れていること。</li><li><code>bases/README.md</code> と <code>bases/</code> のHTML・<code>base.css</code> の内容が食い違っていないこと。</li></ul></article>
+          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">HTMLの直し忘れが見つかることが多い場合は、確認スクリプトや選択肢 C（生成）を検討する。</p></article>
         </div>
       </section>
 
@@ -360,8 +361,8 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
           <li><a href="adr-0003-use-nodejs-for-scripts.html">ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</a><small>関連する（スクリプトを作る場合の決まり）</small></li>
-          <li><a href="adr-0005-generate-adr-html-from-markdown.html">ADR-0005：ADRはMarkdownだけを書き、HTMLはスクリプトで生成する</a><small>関連する（トークン量を減らす方針）</small></li>
-          <li><a href="../../bases/README.md">bases/README.md</a><small>要約したファイル</small></li>
+          <li><a href="adr-0005-generate-adr-html-from-markdown.html">ADR-0005：ADRはMarkdownだけを書き、HTMLはスクリプトで生成する</a><small>関連する（Markdownを元にし、トークン量を減らす方針）</small></li>
+          <li><a href="../../bases/README.md">bases/README.md</a><small>基準の元になるファイル</small></li>
           <li><a href="../../AGENTS.md">AGENTS.md</a><small>追加したルール</small></li>
         </ul>
       </section>
@@ -372,6 +373,7 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>利用者の意見で、Markdownを元にしてHTMLを合わせる決定に変更</td><td>Claude Code</td></tr>
           </tbody>
         </table></div>
       </section>

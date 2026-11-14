@@ -29,8 +29,9 @@ AIエージェント向けのルールです。Codexはこのファイルを直�
 - **共通CSSの範囲は直接編集しない**：各HTMLの `<!-- bases:styles:start -->`〜`<!-- bases:styles:end -->` の中は同期で上書きされます。ページ固有のCSSは範囲外の `<style>` に書き、共通の変更は `bases/base.css` に書きます。HTMLを変更した作業の最後に `node bases/sync_styles.mjs --check` を実行し、「すべてのHTMLに反映済みです。」になることを確認します（ADR-0004）。
 - **ADRのHTMLと一覧の生成**：`node adr/build_index.mjs`（確認だけなら `--check`）。
 
-## デザインの基準は bases/README.md から読む
+## デザインの基準は bases/README.md を正とする
 
-`bases/` のデザイン・レイアウトの基準は、まず `bases/README.md`（HTMLの要点をまとめたMarkdown）を読みます。`bases/` のHTMLは、見本の見た目や操作を確かめる必要があるときだけ読みます（ADR-0008）。
+`bases/` のデザイン・レイアウトの基準は、`bases/README.md`（Markdown）を元にします。基準を読むときはこのファイルを読み、`bases/` のHTMLは見本の見た目や操作を確かめる必要があるときだけ読みます（ADR-0008）。
 
-- **要約も直す**：`bases/` のHTMLや `base.css` の内容（色・部品・ルールなど）を変えたら、同じ作業で `bases/README.md` も直します。
+- **Markdownから変える**：基準（色・部品・ルールなど）を変えるときは、まず `bases/README.md` を書き換え、同じ作業の中でそれに合わせて `bases/` のHTMLと `base.css` を直します。HTMLや `base.css` だけを先に変えません。
+- **食い違いはMarkdownを正とする**：`bases/README.md` とHTMLの内容が食い違うときは、Markdownに合わせてHTMLを直します。
