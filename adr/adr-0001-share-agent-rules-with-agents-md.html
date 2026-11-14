@@ -144,7 +144,7 @@
   </style>
 <!-- bases:styles:start -->
 <style>
-/* puzzles共通基準。sync_styles.pyで各HTMLに埋め込む。実行時の読み込みは不要。 */
+/* puzzles共通基準。sync_styles.mjsで各HTMLに埋め込む。実行時の読み込みは不要。 */
 :root {
   color-scheme: light;
   --green: #044523;
@@ -261,12 +261,12 @@ button:disabled { cursor: default; }
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note">同じ内容のMarkdown版：<br><a href="adr-0001-share-agent-rules-with-agents-md.md">adr-0001-share-agent-rules-with-agents-md.md</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>同じ内容のMarkdown版：<br><a href="adr-0001-share-agent-rules-with-agents-md.md">adr-0001-share-agent-rules-with-agents-md.md</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
       <header class="document-header">
-        <p class="breadcrumb">ADR / puzzles・AIエージェント向けルール</p>
+        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・AIエージェント向けルール</p>
         <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
         <h1>ADR-0001：<span>AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む</span></h1>
         <p class="lead">Claude CodeとCodexに同じルールを読ませるため、ルールの本体をリポジトリ直下の <code>AGENTS.md</code> に置き、<code>CLAUDE.md</code> は <code>@AGENTS.md</code> の1行で取り込む。</p>
