@@ -7,12 +7,12 @@
 ## 一覧
 
 <!-- adr:index:start -->
-全 3 件　（提案中 1　承認 2　却下 0　廃止 0　置換 0）
+全 3 件　（提案中 0　承認 3　却下 0　廃止 0　置換 0）
 
 | 番号 | タイトル | ステータス | 決定日 | 対象範囲 | HTML |
 | --- | --- | --- | --- | --- | --- |
 | ADR-0001 | [AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む](adr-0001-share-agent-rules-with-agents-md.md) | 承認 | 2026.11.14 | リポジトリ直下の `AGENTS.md`・`CLAUDE.md` | [開く](adr-0001-share-agent-rules-with-agents-md.html) |
-| ADR-0002 | [ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する](adr-0002-generate-adr-index.md) | 提案中 | 2026.11.14 | `adr/README.md`・`adr/index.html`・`adr/build_index.mjs` | [開く](adr-0002-generate-adr-index.html) |
+| ADR-0002 | [ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する](adr-0002-generate-adr-index.md) | 承認 | 2026.11.14 | `adr/README.md`・`adr/index.html`・`adr/build_index.mjs` | [開く](adr-0002-generate-adr-index.html) |
 | ADR-0003 | [リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない](adr-0003-use-nodejs-for-scripts.md) | 承認 | 2026.11.14 | `bases/sync_styles.mjs`・`adr/build_index.mjs`・リポジトリのスクリプト全般 | [開く](adr-0003-use-nodejs-for-scripts.html) |
 <!-- adr:index:end -->
 
