@@ -1,7 +1,7 @@
 <!--
   ADR（Architecture Decision Record）の雛形（Markdown版）。adr.html と同じ構成です。
   1つの決定につき1ファイル作成します。ファイル名は adr-0001-［決定の要約］.md のように番号を付けると一覧しやすくなります。
-  adr/ に置いたADRは、node adr/build_index.mjs でHTML（adr.html と同じ見た目）が生成されます。HTMLは書きません。
+  adr/ に置いたADRは、node adr/build_index.mjs でHTML（adr.html と同じ見た目）が adr/html/ に生成されます。HTMLは書きません。
   ファイルを複製し、［ ］内を書き換えてください。承認後の決定は書き換えず、新しいADRで置き換えます。
 -->
 

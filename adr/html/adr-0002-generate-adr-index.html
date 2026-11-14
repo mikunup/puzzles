@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <!-- このファイルは adr/adr-0003-use-nodejs-for-scripts.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
+  <!-- このファイルは adr/adr-0002-generate-adr-index.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない">
-  <title>ADR-0003 リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない｜DECISION RECORD</title>
+  <meta name="description" content="ADR-0002：ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する">
+  <title>ADR-0002 ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する｜DECISION RECORD</title>
   <style>
     :root {
       color-scheme:light;
@@ -248,7 +248,7 @@ button:disabled { cursor: default; }
   <div class="layout">
     <aside class="sidebar" aria-label="ADRのナビゲーション">
       <div class="brand"><span class="mark" aria-hidden="true"></span>DECISION RECORD</div>
-      <p class="sidebar-description">ADR-0003<br>アーキテクチャ決定レコード</p>
+      <p class="sidebar-description">ADR-0002<br>アーキテクチャ決定レコード</p>
       <nav aria-labelledby="toc-title">
         <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
         <ol class="toc">
@@ -262,21 +262,21 @@ button:disabled { cursor: default; }
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="adr-0003-use-nodejs-for-scripts.md">adr-0003-use-nodejs-for-scripts.md</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="../adr-0002-generate-adr-index.md">adr-0002-generate-adr-index.md</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
       <header class="document-header">
-        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・開発環境</p>
+        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・ADRの管理</p>
         <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
-        <h1>ADR-0003：<span>リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</span></h1>
-        <p class="lead">リポジトリで使うスクリプトはNode.jsで書き、Pythonのスクリプト（<code>bases/sync_styles.py</code>・<code>adr/build_index.py</code>）は同じ動きのNode.js版に置き換えて削除する。</p>
+        <h1>ADR-0002：<span>ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する</span></h1>
+        <p class="lead">ADRの一覧を <code>adr/README.md</code> と <code>adr/index.html</code> に置き、一覧部分は <code>adr/build_index.mjs</code> が各ADRのMarkdownから生成する。</p>
         <dl class="metadata">
           <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
-          <div><dt>関係者</dt><dd>Claude Code（調査・移植）</dd></div>
-          <div><dt>対象範囲</dt><dd><code>bases/sync_styles.mjs</code>・<code>adr/build_index.mjs</code>・リポジトリのスクリプト全般</dd></div>
+          <div><dt>関係者</dt><dd>Claude Code（調査・作成）</dd></div>
+          <div><dt>対象範囲</dt><dd><code>adr/README.md</code>・<code>adr/index.html</code>・<code>adr/build_index.mjs</code></dd></div>
         </dl>
       </header>
 
@@ -293,39 +293,40 @@ button:disabled { cursor: default; }
 
       <section id="context" aria-labelledby="context-title">
         <div class="section-heading"><span class="section-number">01 /</span><h2 id="context-title">背景・課題</h2></div>
-        <p>リポジトリ管理者は、Node.jsが使えればよい環境で作業している。一方、共通CSSを各HTMLへ反映する <code>bases/sync_styles.py</code> と、ADR-0002で作ったADR一覧を生成する <code>adr/build_index.py</code> はPythonで書かれており、Node.jsとは別にPython 3の実行環境が必要だった。</p>
+        <p>ADR-0001で、変更のたびに <code>adr/</code> 配下へMarkdownとHTMLのADRを1組作るルールを決めた。変更のたびにADRが増えるため、どんな決定があるかを一覧で確認し、件数が増えても目的のADRを探せる仕組みが必要になった。</p>
         <div class="two-columns">
-          <article class="panel"><h3>現状</h3><ul><li>Pythonのスクリプトが2つある（<code>bases/sync_styles.py</code>・<code>adr/build_index.py</code>）。</li><li><code>electron/</code> はすでにNode.js（npm）を使っている。</li></ul></article>
-          <article class="panel"><h3>制約・前提</h3><ul><li>利用者の環境はNode.jsがあればよく、Pythonを前提にしない。</li><li>既存コマンドの動き（<code>--check</code>・<code>--watch</code>、終了コード、表示するメッセージ、書き換える内容）を変えない。</li><li>外部パッケージを使わず、<code>npm install</code> なしで動くこと。</li></ul></article>
+          <article class="panel"><h3>現状</h3><ul><li><code>adr/</code> 配下にADRが1件あるが、一覧はない。</li><li>ADRは変更のたびに増え、ステータスも「提案中」から「承認」「置換」などへ変わる。</li></ul></article>
+          <article class="panel"><h3>制約・前提</h3><ul><li>リポジトリの他のHTMLと同じく、HTMLは1ファイル単独で表示・操作でき、外部に依存しないこと。</li><li>ブラウザでHTMLファイルを直接開いて（<code>file://</code>）使えること。</li><li>ADRと同じく、一覧もMarkdownとHTMLの両方で読めること。</li></ul></article>
         </div>
-        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>リポジトリのスクリプトを、どの実行環境で動かすか。</aside>
+        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>ADRの一覧をどこに置き、件数が増えても内容がずれず探しやすい状態をどう保つか。</aside>
       </section>
 
       <section id="drivers" aria-labelledby="drivers-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="drivers-title">判断基準</h2></div>
         <ol class="steps">
-          <li><div><strong>利用者が用意する実行環境が1つで済むこと</strong><p>利用者はNode.jsだけが使えればよく、別の言語の環境を用意する手間をなくすため。</p></div></li>
-          <li><div><strong>既存の動きを変えないこと</strong><p>共通CSSの反映やADR一覧の生成の結果が変わると、HTMLが意図せず書き換わるため。</p></div></li>
-          <li><div><strong>追加のインストールが不要であること</strong><p>クローンしてすぐにスクリプトを実行できるようにするため。</p></div></li>
+          <li><div><strong>一覧がADR本体とずれないこと</strong><p>一覧のステータスやタイトルが本体と違うと、一覧を信用できなくなるため。</p></div></li>
+          <li><div><strong>件数が増えても探せること</strong><p>変更のたびにADRが増えるため、番号順の表だけでは目的のADRにたどり着きにくくなる。</p></div></li>
+          <li><div><strong>HTML単体で動き、外部に依存しないこと</strong><p>リポジトリの他のHTMLと同じ方針で、ファイルを開くだけで使えるようにするため。</p></div></li>
         </ol>
       </section>
 
       <section id="options" aria-labelledby="options-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
         <div class="table-wrap" role="region" aria-label="検討した選択肢" tabindex="0"><table>
-          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：Node.jsに統一<span class="chosen">採用</span></th><th scope="col">選択肢 B：Pythonのまま</th><th scope="col">選択肢 C：新しいものだけNode.js</th></tr></thead>
+          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：スクリプトで生成<span class="chosen">採用</span></th><th scope="col">選択肢 B：手で一覧を更新</th><th scope="col">選択肢 C：HTMLがADRを読み込んで表示</th><th scope="col">選択肢 D：一覧を作らない</th></tr></thead>
           <tbody>
-            <tr><th scope="row">実行環境が1つで済む</th><td><span class="score good">◎</span>Node.jsだけで、<code>electron/</code> も含めて動く</td><td><span class="score poor">△</span>Python 3が必要（<code>electron/</code> にはNode.jsも必要）</td><td><span class="score poor">×</span>PythonとNode.jsの両方が必要</td></tr>
-            <tr><th scope="row">既存の動きを変えない</th><td><span class="score fair">○</span>移植が必要だが、同じ出力になることを確認した</td><td><span class="score good">◎</span>変更なし</td><td><span class="score good">◎</span>既存のスクリプトはそのまま</td></tr>
-            <tr><th scope="row">追加のインストールが不要</th><td><span class="score good">◎</span>Node.jsの標準モジュールだけを使う</td><td><span class="score good">◎</span>標準ライブラリだけを使う</td><td><span class="score good">◎</span>どちらも標準の機能だけを使う</td></tr>
+            <tr><th scope="row">ADR本体とずれない</th><td><span class="score good">◎</span>本体から生成し、<code>--check</code> で古さも検出できる</td><td><span class="score poor">△</span>更新漏れが起きやすい</td><td><span class="score good">◎</span>開くたびに本体を読む</td><td><span class="score fair">○</span>一覧がないのでずれないが、確認もできない</td></tr>
+            <tr><th scope="row">件数が増えても探せる</th><td><span class="score good">◎</span>検索・ステータス絞り込み・並べ替え</td><td><span class="score fair">○</span>表はあるが、件数が増えると探しにくい</td><td><span class="score good">◎</span>検索・絞り込みを作れる</td><td><span class="score poor">×</span>ファイル名から探すしかない</td></tr>
+            <tr><th scope="row">HTML単体で動く</th><td><span class="score good">◎</span>生成済みの行をHTMLに埋め込む</td><td><span class="score good">◎</span>静的な表</td><td><span class="score poor">×</span><code>file://</code> ではADRのファイルを読み込めない</td><td><span class="score good">◎</span>対象のファイルがない</td></tr>
           </tbody>
         </table></div>
         <p class="caption">◎：基準を十分に満たす　○：満たす　△：課題がある　×：満たさない</p>
         <h3>選択肢ごとの詳細</h3>
         <div class="options">
-          <article class="panel"><h3>選択肢 A：Node.jsに統一</h3><p class="muted">2つのPythonスクリプトを、同じ動きのNode.js版（<code>.mjs</code>、標準モジュールのみ）に置き換え、Python版を削除する。今後のスクリプトもNode.jsで書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>利用者はNode.jsだけを用意すればよい。スクリプトの言語が1つになり、保守しやすい。</dd><dt>懸念点</dt><dd>移植の手間がかかる。実行コマンドが <code>python3</code> から <code>node</code> に変わる。</dd></dl></article>
-          <article class="panel"><h3>選択肢 B：Pythonのまま</h3><p class="muted">スクリプトはPythonで書き続ける。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd>Node.jsだけの環境ではスクリプトを実行できない。</dd></dl></article>
-          <article class="panel"><h3>選択肢 C：新しいものだけNode.js</h3><p class="muted">既存の <code>bases/sync_styles.py</code> は残し、これから作るスクリプトだけをNode.jsで書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>既存のスクリプトに手を入れずに済む。</dd><dt>懸念点</dt><dd>PythonとNode.jsの両方が必要になり、利用者の手間が最も大きい。</dd></dl></article>
+          <article class="panel"><h3>選択肢 A：スクリプトで生成</h3><p class="muted"><code>adr/build_index.mjs</code> が <code>adr/adr-NNNN-*.md</code> を読み、見出し・要約・ステータス・決定日・対象範囲を取り出して、<code>README.md</code> と <code>index.html</code> のマーカーの間を書き換える。スクリプトはNode.jsで書き、外部パッケージは使わない。</p><dl class="pros-cons"><dt>良い点</dt><dd>MarkdownとHTMLの一覧が同じ元データから作られる。ファイル名・番号の重複・対になるHTMLの有無・ステータスの表記をまとめて検査できる。</dd><dt>懸念点</dt><dd>ADRを追加・更新したあとにスクリプトの実行が必要。ADRのMarkdownの書式に依存する。</dd></dl></article>
+          <article class="panel"><h3>選択肢 B：手で一覧を更新</h3><p class="muted">ADRを作るたびに、<code>README.md</code> と <code>index.html</code> の表へ1行ずつ手で追加する。</p><dl class="pros-cons"><dt>良い点</dt><dd>仕組みが不要で、すぐに始められる。</dd><dt>懸念点</dt><dd>MarkdownとHTMLの2か所を手で揃える必要があり、ステータス変更の反映漏れが起きやすい。</dd></dl></article>
+          <article class="panel"><h3>選択肢 C：HTMLがADRを読み込んで表示</h3><p class="muted"><code>index.html</code> がJavaScriptで各ADRのファイルを読み込み、一覧を組み立てる。</p><dl class="pros-cons"><dt>良い点</dt><dd>スクリプトを実行しなくても、開くたびに最新の一覧になる。</dd><dt>懸念点</dt><dd>ブラウザでファイルを直接開いた場合（<code>file://</code>）、他のファイルを読み込めない。Markdown版の一覧は別に必要になる。</dd></dl></article>
+          <article class="panel"><h3>選択肢 D：一覧を作らない</h3><p class="muted">GitHubやエディタのファイル一覧で <code>adr/</code> を見る。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd>タイトルやステータスがファイルを開かないとわからず、件数が増えると探せない。</dd></dl></article>
         </div>
       </section>
 
@@ -333,21 +334,19 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="decision-title">決定</h2></div>
         <div class="decision">
           <p class="decision-label">DECISION</p>
-          <p class="decision-text">リポジトリで使うスクリプトはNode.js（標準モジュールのみ、拡張子 <code>.mjs</code>）で書く。既存のPythonスクリプトは同じ動きのNode.js版に置き換えて削除する（選択肢 A）。</p>
+          <p class="decision-text">ADRの一覧を <code>adr/README.md</code> と <code>adr/index.html</code> に置き、一覧部分は <code>adr/build_index.mjs</code> が各ADRのMarkdownから生成する（選択肢 A）。</p>
         </div>
         <h3>決定の理由</h3>
-        <p>利用者が「Node.jsが使えればよい」としているため、基準 1を最も重視した。</p>
-        <ul><li>基準 1：Node.jsだけで、すべてのスクリプトと <code>electron/</code> が動く。</li><li>基準 2：移植後の出力がPython版と一致することを確認した（下記「確認した内容」）。</li><li>基準 3：Node.jsの標準モジュールだけを使い、<code>npm install</code> は不要。</li><li>選択肢 Bは、Node.jsだけの環境で動かないため選ばなかった。</li><li>選択肢 Cは、PythonとNode.jsの両方が必要になるため選ばなかった。</li></ul>
-        <h3>確認した内容（Node.js v26.2.0）</h3>
-        <ul><li><code>bases/sync_styles.mjs</code>：リポジトリのコピーで <code>base.css</code> を変更して両方を実行し、19ページの書き換え結果が完全に一致した。<code>--check</code> はどちらも同じ2ページを未反映として報告した。<code>--watch</code> は保存後に各ページを更新した。</li><li><code>adr/build_index.mjs</code>：153件のADR（記号やリンクを含むものを含む）で、表示と <code>README.md</code>・<code>index.html</code> の生成結果が完全に一致した。</li></ul>
+        <p>判断基準の3つすべてを満たすのは選択肢 Aだけだった。</p>
+        <ul><li>基準 1：一覧はADR本体から生成し、<code>--check</code> で一覧が古くなっていないかを確認できる。</li><li>基準 2：HTML版はキーワード検索・ステータスでの絞り込み・並べ替えに対応し、件数が増えても探せる。</li><li>基準 3：生成した行をHTMLに埋め込むため、ファイルを開くだけで動く。</li><li>選択肢 Bは、2か所を手で揃える必要があり、ずれが起きやすいため選ばなかった。</li><li>選択肢 Cは、<code>file://</code> で開いたときに動かないため選ばなかった。</li><li>選択肢 Dは、件数が増えると探せないため選ばなかった。</li></ul>
       </section>
 
       <section id="consequences" aria-labelledby="consequences-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="consequences-title">結果・影響</h2></div>
         <div class="consequences">
-          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>利用者はNode.jsだけを用意すれば、共通CSSの反映・ADR一覧の生成・<code>electron/</code> のすべてを使える。</li><li>スクリプトの言語がNode.jsに揃い、読む・直すときに迷わない。</li></ul></article>
-          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>Pythonだけがある環境では、スクリプトを実行できない。</li><li>実行コマンドが変わる（<code>python3 bases/sync_styles.py</code> → <code>node bases/sync_styles.mjs</code>、<code>python3 adr/build_index.py</code> → <code>node adr/build_index.mjs</code>）。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>README.md</code>・<code>README.html</code>・<code>bases/display.html</code>・<code>AGENTS.md</code> のコマンドを書き換えた。<code>AGENTS.md</code> に「スクリプトはNode.jsで書く」ルールを追加した。</li><li><code>base.css</code> 冒頭のコメント（<code>sync_styles.py</code> → <code>sync_styles.mjs</code>）は、各HTMLの埋め込みCSSを文字列置換で直した。共通CSSの同期は実行していない。</li></ul></article>
+          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>ADRを追加したら <code>node adr/build_index.mjs</code> を実行するだけで、MarkdownとHTMLの一覧が揃う。</li><li>ファイル名の形式・番号の重複・HTMLの作り忘れ・ステータスの表記ゆれを、実行時にエラーとして検出できる。</li><li>スクリプトが次に使う番号を表示するため、番号の付け間違いを防げる。</li></ul></article>
+          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>スクリプトの実行を忘れると、一覧が古いままになる（<code>--check</code> で検出できる）。</li><li>一覧はADRのMarkdownの書式（見出し・<code>&gt; </code> で始まる要約・ステータスなどの表）に依存する。書式を崩すとエラーになる。</li><li>一覧の情報はMarkdown版から取り出す。HTML版だけを直しても一覧には反映されない。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> のADRルールに、一覧の更新手順を追加した。</li><li><code>README.md</code> と <code>index.html</code> のマーカー（<code>adr:index:start</code>〜<code>adr:index:end</code>）の間は手で編集しない。</li></ul></article>
         </div>
       </section>
 
@@ -356,25 +355,27 @@ button:disabled { cursor: default; }
         <div class="table-wrap" role="region" aria-label="実施と見直し" tabindex="0"><table>
           <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><code>bases/sync_styles.mjs</code> を作成し、<code>bases/sync_styles.py</code> を削除する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row"><code>adr/build_index.mjs</code> を作成し、<code>adr/build_index.py</code> を削除する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row">README・<code>bases/display.html</code>・<code>AGENTS.md</code> のコマンドを書き換える</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>adr/build_index.mjs</code> を作成する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>adr/README.md</code> と <code>adr/index.html</code> を作成し、一覧を生成する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>AGENTS.md</code> に一覧の更新手順を追加する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
             <tr><th scope="row">このADRをMarkdownとHTMLで作成する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>adr/index.html</code> の検索・絞り込み・並べ替えをブラウザで確認する</th><td>mikunup</td><td>［YYYY.MM.DD］</td><td>未着手</td></tr>
           </tbody>
         </table></div>
         <div class="two-columns review">
-          <article class="panel"><h3>確認する指標</h3><p class="muted">リポジトリに <code>.py</code> ファイルがなく、<code>node bases/sync_styles.mjs --check</code> と <code>node adr/build_index.mjs --check</code> がNode.jsだけで実行できること。</p></article>
-          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">Node.jsの標準モジュールでは実現しにくい処理が必要になった場合に、外部パッケージの利用や他の言語を含めて見直す。</p></article>
+          <article class="panel"><h3>確認する指標</h3><p class="muted">ADRを追加・更新したあとに <code>node adr/build_index.mjs --check</code> を実行し、常に「一覧は最新です。」と表示されること。</p></article>
+          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">ADRが100件程度を超えて一覧が見づらくなった場合は、年やステータスでの分割を検討する。各ADRのHTMLをMarkdownから自動生成する仕組みを作る場合は、このスクリプトと統合する。</p></article>
         </div>
       </section>
 
       <section id="related" aria-labelledby="related-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
-          <li><a href="adr-0002-generate-adr-index.html">ADR-0002：ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する</a><small>関連する（一覧を生成するスクリプトをNode.jsで作る）</small></li>
-          <li><a href="../bases/sync_styles.mjs">bases/sync_styles.mjs</a><small>共通CSSを各HTMLへ反映するスクリプト</small></li>
-          <li><a href="build_index.mjs">build_index.mjs</a><small>ADR一覧を生成するスクリプト</small></li>
-          <li><a href="../AGENTS.md">AGENTS.md</a><small>「スクリプトはNode.jsで書く」ルール</small></li>
+          <li><a href="adr-0001-share-agent-rules-with-agents-md.html">ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む</a><small>関連する（ADRを作るルールの置き場所）</small></li>
+          <li><a href="adr-0003-use-nodejs-for-scripts.html">ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</a><small>関連する（一覧を生成するスクリプトをNode.jsで書く理由）</small></li>
+          <li><a href="../README.md">ADR一覧（README.md）</a>・<a href="../html/index.html">ADR一覧（index.html）</a><small>この決定で作成した一覧</small></li>
+          <li><a href="../build_index.mjs">build_index.mjs</a><small>一覧を生成するスクリプト</small></li>
+          <li><a href="../../bases/sync_styles.mjs">bases/sync_styles.mjs</a><small>マーカーの間を書き換える方式と <code>--check</code> の参考にしたスクリプト</small></li>
         </ul>
       </section>
 
@@ -384,11 +385,12 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
             <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成</td><td>Claude Code</td></tr>
-            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者が「Node.jsが使えればよい」として、ADRへの記録とPythonの削除を指示</td><td>mikunup</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>利用者の指示で、一覧を生成するスクリプトをPython（<code>build_index.py</code>）からNode.js（<code>build_index.mjs</code>）に変更</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者がADR-0002を承認</td><td>mikunup</td></tr>
           </tbody>
         </table></div>
       </section>
-      <footer><span>DECISION RECORD / ADR-0003 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+      <footer><span>DECISION RECORD / ADR-0002 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
     </main>
   </div>
 </body>

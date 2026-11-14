@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <!-- このファイルは adr/adr-0005-generate-adr-html-from-markdown.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
+  <!-- このファイルは adr/adr-0006-move-adr-html-to-subdirectory.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ADR-0005：ADRはMarkdownだけを書き、HTMLはスクリプトで生成する">
-  <title>ADR-0005 ADRはMarkdownだけを書き、HTMLはスクリプトで生成する｜DECISION RECORD</title>
+  <meta name="description" content="ADR-0006：生成したADRのHTMLを adr/html/ に置く">
+  <title>ADR-0006 生成したADRのHTMLを adr/html/ に置く｜DECISION RECORD</title>
   <style>
     :root {
       color-scheme:light;
@@ -248,7 +248,7 @@ button:disabled { cursor: default; }
   <div class="layout">
     <aside class="sidebar" aria-label="ADRのナビゲーション">
       <div class="brand"><span class="mark" aria-hidden="true"></span>DECISION RECORD</div>
-      <p class="sidebar-description">ADR-0005<br>アーキテクチャ決定レコード</p>
+      <p class="sidebar-description">ADR-0006<br>アーキテクチャ決定レコード</p>
       <nav aria-labelledby="toc-title">
         <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
         <ol class="toc">
@@ -262,21 +262,21 @@ button:disabled { cursor: default; }
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="adr-0005-generate-adr-html-from-markdown.md">adr-0005-generate-adr-html-from-markdown.md</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="../adr-0006-move-adr-html-to-subdirectory.md">adr-0006-move-adr-html-to-subdirectory.md</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
       <header class="document-header">
         <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・ADRの管理</p>
         <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
-        <h1>ADR-0005：<span>ADRはMarkdownだけを書き、HTMLはスクリプトで生成する</span></h1>
-        <p class="lead">ADRの元データはMarkdown（<code>adr/adr-NNNN-*.md</code>）だけにし、HTML（<code>adr/adr-NNNN-*.html</code>）は <code>node adr/build_index.mjs</code> が <code>adr.html</code> と同じ見た目で生成する。AIがADRを作るときに使うトークンを、1件あたり約7割減らす。</p>
+        <h1>ADR-0006：<span>生成したADRのHTMLを adr/html/ に置く</span></h1>
+        <p class="lead">生成したADRのHTMLと一覧 <code>index.html</code> を <code>adr/html/</code> に置き、<code>adr/</code> にはMarkdownとスクリプトだけを残す。HTML版を見たい人は <code>adr/html/</code> を開く。</p>
         <dl class="metadata">
           <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
           <div><dt>決定日</dt><dd>2026.11.14</dd></div>
           <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
-          <div><dt>関係者</dt><dd>Claude Code（調査・実装）</dd></div>
-          <div><dt>対象範囲</dt><dd><code>adr/</code> のADR・<code>adr/build_index.mjs</code>・<code>adr/render_adr.mjs</code>・<code>AGENTS.md</code> のADRルール</dd></div>
+          <div><dt>関係者</dt><dd>Claude Code（実装）</dd></div>
+          <div><dt>対象範囲</dt><dd><code>adr/html/</code>・<code>adr/build_index.mjs</code>・<code>adr/render_adr.mjs</code></dd></div>
         </dl>
       </header>
 
@@ -293,40 +293,36 @@ button:disabled { cursor: default; }
 
       <section id="context" aria-labelledby="context-title">
         <div class="section-heading"><span class="section-number">01 /</span><h2 id="context-title">背景・課題</h2></div>
-        <p><code>AGENTS.md</code> のルールで、ADRは1件ごとにMarkdownとHTMLを1組作っている。同じ内容を2つの形式で書くため、AIのトークンを多く使い、ステータスの変更などのたびに2ファイルを直す必要があった。リポジトリ管理者から「両方作るのは無駄ではないか」という指摘があり、トークン量を測って見直した。</p>
+        <p>ADR-0005で、ADRのHTMLをMarkdownから生成するようにした。生成したHTMLは <code>adr/</code> にMarkdownと並べて置いていたため、ADRが増えるとファイル数が2倍になり、元データのMarkdownが探しにくくなっていた。</p>
         <div class="two-columns">
-          <article class="panel"><h3>現状</h3><ul><li>ADR-0001〜0004の実測（日本語は1文字約1トークン、英数字は4文字約1トークンとした概算）では、<code>.md</code> が1件約3,000トークン、<code>.html</code> が1件約8,400トークン（埋め込みCSSなど約3,400＋本文約5,000）だった。</li><li>ADRを1件作るとき、AIは雛形を2つ読み（約9,500）、2ファイルを書く（約8,000）ため、合計約17,500トークンを使う。</li><li>手書きのHTMLとMarkdownで、括弧の有無やリンクの順番など、細かい内容のずれが起きていた（ADR-0001・ADR-0002）。</li></ul></article>
-          <article class="panel"><h3>制約・前提</h3><ul><li>このリポジトリの資料はHTMLが中心で、ADRもブラウザで今の見た目のまま読めるようにしたい。</li><li>HTMLは1ファイルで動き、外部に依存しない。</li><li>スクリプトはNode.jsの標準モジュールだけで書く（ADR-0003）。</li></ul></article>
+          <article class="panel"><h3>現状</h3><ul><li><code>adr/</code> に、ADRのMarkdown・生成したHTML・<code>index.html</code>・<code>README.md</code>・スクリプトが混在している。</li></ul></article>
+          <article class="panel"><h3>制約・前提</h3><ul><li>HTMLは生成物で、編集するのはMarkdownだけ（ADR-0005）。</li><li>HTML版は、ブラウザでファイルを開くだけで読めるようにする。</li></ul></article>
         </div>
-        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>ADRをどの形式で書き、ブラウザで読むためのHTMLをどう用意するか。</aside>
+        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>生成したADRのHTMLをどこに置くか。</aside>
       </section>
 
       <section id="drivers" aria-labelledby="drivers-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="drivers-title">判断基準</h2></div>
         <ol class="steps">
-          <li><div><strong>AIのトークン量を減らせること</strong><p>ADRは変更のたびに作るため、1件あたりの消費が作業全体のコストと時間に直結するため。</p></div></li>
-          <li><div><strong>ブラウザで今の見た目のまま読めること</strong><p>リポジトリの他の資料と同じく、HTMLで読めるようにするため。</p></div></li>
-          <li><div><strong>内容のずれが起きないこと</strong><p>同じ決定が2つの形式で違って書かれると、どちらが正しいかわからなくなるため。</p></div></li>
+          <li><div><strong>元データのMarkdownを探しやすいこと</strong><p><code>adr/</code> を開いたときに、編集するファイルだけが並ぶようにするため。</p></div></li>
+          <li><div><strong>HTML版の入口がわかりやすいこと</strong><p>HTML版を見たい人が、迷わず一覧にたどり着けるようにするため。</p></div></li>
         </ol>
       </section>
 
       <section id="options" aria-labelledby="options-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
         <div class="table-wrap" role="region" aria-label="検討した選択肢" tabindex="0"><table>
-          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：MarkdownとHTMLを両方書く</th><th scope="col">選択肢 B：Markdownだけにする</th><th scope="col">選択肢 C：MarkdownからHTMLを生成する<span class="chosen">採用</span></th><th scope="col">選択肢 D：HTMLだけにする</th></tr></thead>
+          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：<code>adr/html/</code> に置く<span class="chosen">採用</span></th><th scope="col">選択肢 B：現状維持（<code>adr/</code> に並べる）</th></tr></thead>
           <tbody>
-            <tr><th scope="row">トークン量</th><td><span class="score poor">×</span>1件約17,500</td><td><span class="score good">◎</span>1件約5,200</td><td><span class="score good">◎</span>1件約5,200（HTMLはスクリプトが作る）</td><td><span class="score poor">△</span>1件約12,000（雛形とHTMLが大きい）</td></tr>
-            <tr><th scope="row">ブラウザで読める</th><td><span class="score good">◎</span>今の見た目</td><td><span class="score poor">△</span><code>.md</code> を直接開くと整形されない</td><td><span class="score good">◎</span><code>adr.html</code> と同じ見た目</td><td><span class="score good">◎</span>今の見た目</td></tr>
-            <tr><th scope="row">内容がずれない</th><td><span class="score poor">△</span>2ファイルを手で揃える（実際にずれた）</td><td><span class="score good">◎</span>元データは1つ</td><td><span class="score good">◎</span>元データはMarkdownだけ</td><td><span class="score fair">○</span>元データは1つだが、一覧の生成を作り直す必要がある</td></tr>
+            <tr><th scope="row">Markdownを探しやすい</th><td><span class="score good">◎</span><code>adr/</code> はMarkdownとスクリプトだけ</td><td><span class="score poor">△</span>HTMLと混在し、ファイル数が2倍</td></tr>
+            <tr><th scope="row">HTML版の入口</th><td><span class="score good">◎</span><code>adr/html/index.html</code> に集まる</td><td><span class="score fair">○</span><code>adr/index.html</code> だが、他のファイルに埋もれる</td></tr>
           </tbody>
         </table></div>
         <p class="caption">◎：基準を十分に満たす　○：満たす　△：課題がある　×：満たさない</p>
         <h3>選択肢ごとの詳細</h3>
         <div class="options">
-          <article class="panel"><h3>選択肢 A：MarkdownとHTMLを両方書く</h3><p class="muted">今のまま、1件ごとに2ファイルを書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>仕組みを変えずに済む。</dd><dt>懸念点</dt><dd>トークン量が最も多い。2ファイルの内容がずれる。</dd></dl></article>
-          <article class="panel"><h3>選択肢 B：Markdownだけにする</h3><p class="muted">HTMLをやめ、Markdownだけを残す。</p><dl class="pros-cons"><dt>良い点</dt><dd>最も簡単で、トークン量も少ない。GitHubではMarkdownが整形されて表示される。</dd><dt>懸念点</dt><dd>ブラウザで <code>.md</code> を直接開くと、整形されない生のテキストになる。</dd></dl></article>
-          <article class="panel"><h3>選択肢 C：MarkdownからHTMLを生成する</h3><p class="muted">AIや人はMarkdownだけを書き、<code>node adr/build_index.mjs</code> が各ADRのHTMLを生成する。HTMLの見た目（埋め込みCSS）は雛形 <code>adr.html</code> から取り込む。</p><dl class="pros-cons"><dt>良い点</dt><dd>トークン量はBと同じで、HTMLも今の見た目で残る。内容は必ずMarkdownと一致する。</dd><dt>懸念点</dt><dd>変換スクリプトの作成と保守が必要。ADRの雛形で使う書き方（見出し・段落・リスト・表・引用）にだけ対応する。</dd></dl></article>
-          <article class="panel"><h3>選択肢 D：HTMLだけにする</h3><p class="muted">Markdownをやめ、HTMLだけを書く。</p><dl class="pros-cons"><dt>良い点</dt><dd>ブラウザでそのまま読める。</dd><dt>懸念点</dt><dd>トークン量がMarkdownより多い。一覧の生成はMarkdownを読んでいるため、作り直しが必要になる。</dd></dl></article>
+          <article class="panel"><h3>選択肢 A：<code>adr/html/</code> に置く</h3><p class="muted">生成したHTMLと <code>index.html</code> を <code>adr/html/</code> に置く。HTML内の相対リンクは、生成時に1つ上の階層へ向け直す。</p><dl class="pros-cons"><dt>良い点</dt><dd><code>adr/</code> が元データだけになる。HTML版は1か所にまとまる。</dd><dt>懸念点</dt><dd>リンクの書き換えが必要になる（生成時に自動で行う）。</dd></dl></article>
+          <article class="panel"><h3>選択肢 B：現状維持</h3><p class="muted"><code>adr/</code> にMarkdownとHTMLを並べたままにする。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd>ADRが増えるほど <code>adr/</code> が見づらくなる。</dd></dl></article>
         </div>
       </section>
 
@@ -334,20 +330,18 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="decision-title">決定</h2></div>
         <div class="decision">
           <p class="decision-label">DECISION</p>
-          <p class="decision-text">ADRの元データはMarkdownだけにし、HTMLは <code>node adr/build_index.mjs</code> が <code>adr.html</code> と同じ見た目で生成する（選択肢 C）。生成されたHTMLは読まず、直接編集しない。</p>
+          <p class="decision-text">生成したADRのHTMLと一覧 <code>index.html</code> を <code>adr/html/</code> に置く（選択肢 A）。<code>render_adr.mjs</code> などのスクリプトは <code>adr/</code> に残す。</p>
         </div>
         <h3>決定の理由</h3>
-        <ul><li>基準 1：AIはMarkdownの雛形を読んで1ファイルを書くだけになり、1件あたり約17,500から約5,200トークン（約7割減）になる。書き出すトークン（読むより料金が高く、時間もかかる）は約8,000から約3,000になる。</li><li>基準 2：生成したHTMLは <code>adr.html</code> の埋め込みCSSを使い、今の見た目のままブラウザで読める。</li><li>基準 3：HTMLは毎回Markdownから作り直すため、内容がずれない。</li><li>選択肢 Aは、トークン量が最も多く、内容もずれるため選ばなかった。</li><li>選択肢 Bは、ブラウザで整形された状態で読めなくなるため選ばなかった。</li><li>選択肢 Dは、トークン量が多く、一覧の生成も作り直しになるため選ばなかった。</li></ul>
-        <h3>確認した内容</h3>
-        <ul><li>手書きだったADR-0001〜0004のHTMLを生成に置き換え、見えるテキストを比べた。ADR-0003・ADR-0004は完全に一致した。ADR-0001・ADR-0002の差は、手書きのHTMLがMarkdownとずれていた箇所（括弧の有無とリンクの順番）だけで、生成版はMarkdownどおりになった。</li><li>ADR-0004を、手書き版と生成版でヘッドレスのGoogle Chromeで描画して比べ、レイアウトが同じであることを確認した。</li><li>生成した4件のHTMLで、タグの開始と終了が対応していることを確認した。</li></ul>
+        <ul><li>基準 1：<code>adr/</code> には編集するMarkdownとスクリプトだけが残る。</li><li>基準 2：HTML版を見たい人は <code>adr/html/index.html</code> を開けばよい。</li><li>選択肢 Bは、ADRが増えるほど元データが探しにくくなるため選ばなかった。</li><li>スクリプトの置き場所は、利用者が「AIのトークン量が少ないほう」を条件にAIへ任せた。AI（Claude Code）は、スクリプトを移すと実行コマンドの説明（<code>AGENTS.md</code>・<code>README</code> など）、ADRの参考資料のリンク、スクリプト内のパスの処理を書き換える必要があり、トークン量が増えると判断して <code>adr/</code> に残した。この判断は書き換え箇所の見積もりによるもので、トークン量は測っていない。</li></ul>
       </section>
 
       <section id="consequences" aria-labelledby="consequences-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="consequences-title">結果・影響</h2></div>
         <div class="consequences">
-          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>ADR1件あたりのAIのトークン量が約7割減り、作成と修正が速くなる。</li><li>ステータスの変更などは、Markdownを直して <code>node adr/build_index.mjs</code> を実行するだけで済む。</li><li>雛形 <code>adr.html</code> の見た目（共通CSSを含む）を変えると、再生成で全ADRのHTMLに反映される。</li></ul></article>
-          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>変換はADRの雛形で使う書き方だけに対応する。画像やコードブロックなどを使うと、正しく表示されない。</li><li>HTMLを直接直しても、次の生成で上書きされる。</li><li>生成されたHTMLもGitで管理するため、PRの差分にはHTMLの変更も出る（AIが読む必要はない）。</li></ul></article>
-          <article class="panel"><h3>その他の影響</h3><ul><li><code>AGENTS.md</code> のADRルールを「Markdownだけを書き、HTMLは生成する。<code>adr/adr-*.html</code> は読まず、直接編集しない」に変えた。</li><li><code>adr/README.md</code>・<code>adr/index.html</code>・雛形 <code>adr.md</code>・<code>README.md</code>・<code>README.html</code> の説明を更新した。</li></ul></article>
+          <article class="panel consequence-good"><h3>良い影響</h3><ul><li><code>adr/</code> のファイル数がADR1件につき1つになる。</li></ul></article>
+          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>HTML版のURL（パス）が <code>adr/</code> から <code>adr/html/</code> に変わる。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li>生成時に、ADR同士のリンクは同じ階層のHTMLへ、それ以外の相対リンク（<code>../AGENTS.md</code> など）は1つ上の階層へ向け直す。</li><li><code>AGENTS.md</code>・<code>adr/README.md</code>・<code>adr.md</code>・<code>README.md</code>・<code>README.html</code> のパスを更新した。ADR-0002の参考資料のリンクも <code>html/index.html</code> に直した。</li></ul></article>
         </div>
       </section>
 
@@ -356,27 +350,20 @@ button:disabled { cursor: default; }
         <div class="table-wrap" role="region" aria-label="実施と見直し" tabindex="0"><table>
           <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
           <tbody>
-            <tr><th scope="row">MarkdownからHTMLを作る <code>adr/render_adr.mjs</code> を作成する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row"><code>adr/build_index.mjs</code> でADRのHTMLも生成し、<code>--check</code> でも確認する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row">ADR-0001〜0004のHTMLを生成版に置き換える</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row"><code>AGENTS.md</code> と各説明を更新する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
-            <tr><th scope="row">生成したADRのHTMLをブラウザで確認する</th><td>mikunup</td><td>［YYYY.MM.DD］</td><td>未着手</td></tr>
+            <tr><th scope="row"><code>build_index.mjs</code>・<code>render_adr.mjs</code> の出力先とリンクを <code>adr/html/</code> に合わせる</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row">既存のHTMLを <code>adr/html/</code> に生成し直す</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
           </tbody>
         </table></div>
         <div class="two-columns review">
-          <article class="panel"><h3>確認する指標</h3><p class="muted">ADRを作るときにAIが書くのが <code>.md</code> だけになり、<code>node adr/build_index.mjs --check</code> が「一覧とADRのHTMLは最新です。」になること。</p></article>
-          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">ADRに雛形以外の書き方（画像・コードブロックなど）が必要になった場合は、<code>adr/render_adr.mjs</code> の対応を広げる。ブラウザでHTMLを読む必要がなくなった場合は、選択肢 B（Markdownだけ）への切り替えを検討する。</p></article>
+          <article class="panel"><h3>確認する指標</h3><p class="muted"><code>adr/</code> 直下に <code>.html</code> がなく、<code>node adr/build_index.mjs --check</code> が通ること。</p></article>
+          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">なし</p></article>
         </div>
       </section>
 
       <section id="related" aria-labelledby="related-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
-          <li><a href="adr-0002-generate-adr-index.html">ADR-0002：ADR一覧をスクリプトで生成し、MarkdownとHTMLで提供する</a><small>関連する（一覧の生成に、各ADRのHTMLの生成を加えた）</small></li>
-          <li><a href="adr-0003-use-nodejs-for-scripts.html">ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</a><small>関連する（変換スクリプトもNode.jsの標準モジュールだけで書く）</small></li>
-          <li><a href="render_adr.mjs">render_adr.mjs</a><small>MarkdownのADRをHTMLにする変換</small></li>
-          <li><a href="build_index.mjs">build_index.mjs</a><small>ADRのHTMLと一覧を生成するスクリプト</small></li>
-          <li><a href="../AGENTS.md">AGENTS.md</a><small>ADRの作成ルール</small></li>
+          <li><a href="adr-0005-generate-adr-html-from-markdown.html">ADR-0005：ADRはMarkdownだけを書き、HTMLはスクリプトで生成する</a><small>関連する（生成したHTMLの置き場所を変える）</small></li>
         </ul>
       </section>
 
@@ -385,12 +372,11 @@ button:disabled { cursor: default; }
         <div class="table-wrap" role="region" aria-label="変更履歴" tabindex="0"><table>
           <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
-            <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成（トークン量の測定結果をもとに提案）</td><td>Claude Code</td></tr>
-            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者が選択肢 C（Markdownから生成）を採用</td><td>mikunup</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者の指示で作成</td><td>Claude Code</td></tr>
           </tbody>
         </table></div>
       </section>
-      <footer><span>DECISION RECORD / ADR-0005 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+      <footer><span>DECISION RECORD / ADR-0006 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
     </main>
   </div>
 </body>
