@@ -28,3 +28,9 @@ AIエージェント向けのルールです。Codexはこのファイルを直�
 - **共通CSSの反映**：`bases/base.css` を変更したら `node bases/sync_styles.mjs` を実行します。確認だけなら `--check`、保存時の自動反映は `--watch` です。
 - **共通CSSの範囲は直接編集しない**：各HTMLの `<!-- bases:styles:start -->`〜`<!-- bases:styles:end -->` の中は同期で上書きされます。ページ固有のCSSは範囲外の `<style>` に書き、共通の変更は `bases/base.css` に書きます。HTMLを変更した作業の最後に `node bases/sync_styles.mjs --check` を実行し、「すべてのHTMLに反映済みです。」になることを確認します（ADR-0004）。
 - **ADRのHTMLと一覧の生成**：`node adr/build_index.mjs`（確認だけなら `--check`）。
+
+## デザインの基準は bases/README.md から読む
+
+`bases/` のデザイン・レイアウトの基準は、まず `bases/README.md`（HTMLの要点をまとめたMarkdown）を読みます。`bases/` のHTMLは、見本の見た目や操作を確かめる必要があるときだけ読みます（ADR-0008）。
+
+- **要約も直す**：`bases/` のHTMLや `base.css` の内容（色・部品・ルールなど）を変えたら、同じ作業で `bases/README.md` も直します。
