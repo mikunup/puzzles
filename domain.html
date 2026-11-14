@@ -315,7 +315,7 @@ button:disabled { cursor: default; }
             <tr><th scope="row"><span class="id">RESP-006</span></th><td>［例：入金を確認し、請求と消し込む］</td><td>［入金データを受け取った］</td><td>［消し込み結果］</td><td>［会計］／［入金管理］</td></tr>
           </tbody>
         </table></div>
-        <aside class="callout" aria-label="システムで行わない業務"><strong>システムで行わない業務</strong>［人が行う業務・判断と、そのときにシステムが提供する情報を記載します。例：「与信の最終判断は経理担当が行う。システムは与信枠と利用額を表示する。」業務の流れは<a href="business_sequence.html">業務シーケンス図</a>で整理できます。］</aside>
+        <aside class="callout" aria-label="システムで行わない業務"><strong>システムで行わない業務</strong>［人が行う業務・判断と、そのときにシステムが提供する情報を記載します。例：「与信の最終判断は経理担当が行う。システムは与信枠と利用額を表示する。」業務の流れは<a href="business_flow.html">業務フロー図</a>で整理できます。］</aside>
       </section>
 
       <section id="subdomains" aria-labelledby="subdomains-title">
@@ -353,7 +353,7 @@ button:disabled { cursor: default; }
 
       <section id="relations" aria-labelledby="relations-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="relations-title">コンテキスト間の関係</h2></div>
-        <p>［コンテキスト同士の関係を、ドメインをまたぐものも含めて図と表で示します。図ではドメインを大きな枠、コンテキストをその中の箱で描くと、ドメインをまたぐ連携が見やすくなります。図を載せる場合は、下の枠をimgやfigureに差し替えてください。矢印は「上流（提供する側）→ 下流（利用する側）」で描きます。連携の詳細は、各コンテキスト定義書の「連携」に書きます。］</p>
+        <p>［コンテキスト同士の関係を、ドメインをまたぐものも含めて図と表で示します。図ではドメインを大きな枠、コンテキストをその中の箱で描くと、ドメインをまたぐ連携が見やすくなります。図を載せる場合は、下の枠をimgやfigureに差し替えてください。矢印は「上流（提供する側）→ 下流（利用する側）」で描きます。関係パターンはこの表が正本で、各コンテキスト定義書の「07 連携」には書きません。何をやり取りするかは各コンテキスト定義書の「06 イベント」「07 連携」に書きます。］</p>
         <div class="preview">ドメイン・コンテキストの関係図（コンテキストマップ）をここに配置</div>
         <p class="caption">図1：［図の説明。上流 → 下流の向きと、関係パターンの記号を示します。］</p>
         <div class="table-wrap" role="region" aria-label="サブドメイン間の関係" tabindex="0"><table>
@@ -364,6 +364,7 @@ button:disabled { cursor: default; }
             <tr><th scope="row">［外部の会計システム］</th><td>［請求］</td><td>［腐敗防止層］</td><td>［ファイル連携（日次）］</td><td>［外部の形式を内部モデルに変換して取り込む］</td></tr>
           </tbody>
         </table></div>
+        <aside class="callout" aria-label="全体の業務フロー"><strong>全体の業務フロー</strong>［コンテキストをまたぐ業務の流れ（例：受注 → 在庫の引き当て → 請求）は、<a href="business_flow.html">業務フロー図</a>の「全体」タブに描き、ここからリンクします。各コンテキストの中の流れは、同じファイルのコンテキストごとのタブに描きます。］<br><a href="business_flow.html">［業務フロー図「全体」タブ］</a></aside>
         <h3>関係パターンの意味</h3>
         <div class="table-wrap" role="region" aria-label="関係パターン" tabindex="0"><table>
           <thead><tr><th scope="col">パターン</th><th scope="col">意味</th><th scope="col">選ぶ場面</th></tr></thead>
@@ -382,12 +383,12 @@ button:disabled { cursor: default; }
 
       <section id="shared-terms" aria-labelledby="shared-terms-title">
         <div class="section-heading"><span class="section-number">06 /</span><h2 id="shared-terms-title">境界をまたぐ用語</h2></div>
-        <p>［同じ言葉が、サブドメインによって別の意味になるものを記載します。連携するときに変換が必要になる根拠です。各サブドメインでの正確な定義は、それぞれのコンテキスト定義書の用語集に書きます。］</p>
+        <p>［同じ言葉が、コンテキストによって別の意味になるものを記載します。連携するときに変換が必要になる根拠です。意味そのものは各コンテキスト定義書の「02 ユビキタス言語」が正本なので、ここには書き写さず、どのコンテキストで意味が違うかと、連携のときの変換だけを書きます。］</p>
         <div class="table-wrap" role="region" aria-label="境界をまたぐ用語" tabindex="0"><table>
-          <thead><tr><th scope="col">用語</th><th scope="col">［受注］での意味</th><th scope="col">［在庫］での意味</th><th scope="col">［請求］での意味</th></tr></thead>
+          <thead><tr><th scope="col">用語</th><th scope="col">意味が違うコンテキスト（定義へのリンク）</th><th scope="col">連携のときの変換</th></tr></thead>
           <tbody>
-            <tr><th scope="row">［商品］</th><td>［販売単位（SKU）］</td><td>［保管単位（ロット）］</td><td>［請求明細の品目］</td></tr>
-            <tr><th scope="row">［顧客］</th><td>［注文した人・届け先］</td><td>—</td><td>［請求先・支払者］</td></tr>
+            <tr><th scope="row">［商品］</th><td>［受注 02 ／ 在庫 02 ／ 請求 02］</td><td>［受注 → 在庫：SKU からロットへ変換する（腐敗防止層）］</td></tr>
+            <tr><th scope="row">［顧客］</th><td>［受注 02 ／ 請求 02］</td><td>［受注 → 請求：届け先ではなく請求先を引き継ぐ］</td></tr>
           </tbody>
         </table></div>
       </section>

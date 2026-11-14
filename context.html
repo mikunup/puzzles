@@ -258,7 +258,7 @@ button:disabled { cursor: default; }
           <li><a href="#related"><span class="toc-number">09</span>関連資料・変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note">この雛形の使い方<br><a href="domain.html">ドメイン定義書</a> 03「コンテキストとの対応」の1行につき1ファイル作成します。基本はサブドメイン1つにつき1つです。ファイル名は context-［サブドメイン名］.html のようにすると一覧しやすくなります。</div>
+      <div class="sidebar-note">この雛形の使い方<br><a href="domain.html">ドメイン定義書</a> 04「コンテキストとの対応」の1行につき1ファイル作成します。基本はサブドメイン1つにつき1つです。ファイル名は context-［サブドメイン名］.html のようにすると一覧しやすくなります。</div>
     </aside>
 
     <main id="main-content" tabindex="-1">
@@ -302,7 +302,7 @@ button:disabled { cursor: default; }
 
       <section id="glossary" aria-labelledby="glossary-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="glossary-title">ユビキタス言語</h2></div>
-        <p>［このコンテキストの中で、業務担当者と開発者が共通で使う用語を定義します。会話・画面・コード・データベースで同じ言葉を使います。他のコンテキストで意味が変わる用語は、ドメイン定義書 06 にも載せます。］</p>
+        <p>［このコンテキストの中で、業務担当者と開発者が共通で使う用語を定義します。会話・画面・コード・データベースで同じ言葉を使います。用語の意味はここが正本です。他のコンテキストで意味が変わる用語は、ドメイン定義書 06 に用語名だけを載せ、意味は書き写しません。業務モデル・仕様書・Catalog も、ここの名前を使います。］</p>
         <div class="table-wrap" role="region" aria-label="用語集" tabindex="0"><table>
           <thead><tr><th scope="col">用語</th><th scope="col">英語名・コード上の名前</th><th scope="col">意味</th><th scope="col">使わない言い方・注意</th></tr></thead>
           <tbody>
@@ -315,23 +315,24 @@ button:disabled { cursor: default; }
 
       <section id="model" aria-labelledby="model-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="model-title">ドメインモデル</h2></div>
-        <p>［このコンテキストに登場する概念と、その関係を記載します。図を載せる場合は、下の枠をimgやfigureに差し替えてください。オブジェクトの詳細は<a href="object_model.html">オブジェクト整理</a>で設計できます。］</p>
+        <p>［このコンテキストに登場する概念の名前・区分と、集約の境界を要約として記載します。プロパティ・型・操作・一覧などの詳細は、システムで1つの<a href="object_model.html">オブジェクト整理</a>（Objects）に書き、ここには書き写しません。図を載せる場合は、下の枠をimgやfigureに差し替えてください。］</p>
         <div class="preview">ドメインモデル図（概念とその関係）をここに配置</div>
         <p class="caption">図1：［図の説明・見てほしいポイント］</p>
         <h3>概念の一覧</h3>
         <div class="table-wrap" role="region" aria-label="概念の一覧" tabindex="0"><table>
-          <thead><tr><th scope="col">名前</th><th scope="col">種別</th><th scope="col">識別子</th><th scope="col">主な属性</th><th scope="col">説明</th></tr></thead>
+          <thead><tr><th scope="col">名前</th><th scope="col">種別</th><th scope="col">識別子</th><th scope="col">説明</th><th scope="col">Objects</th></tr></thead>
           <tbody>
-            <tr><th scope="row">［注文］</th><td><span class="tag tag-green">集約ルート</span></td><td>［注文番号］</td><td>［注文日・顧客・明細・状態］</td><td>［役割と、含む概念］</td></tr>
-            <tr><th scope="row">［注文明細］</th><td><span class="tag tag-brown">エンティティ</span></td><td>［明細番号］</td><td>［商品・数量・単価］</td><td>［集約の内部でのみ扱う］</td></tr>
-            <tr><th scope="row">［金額］</th><td><span class="tag tag-muted">値オブジェクト</span></td><td>—</td><td>［金額・通貨］</td><td>［値が同じなら同一とみなす。変更せず作り直す］</td></tr>
+            <tr><th scope="row">［注文］</th><td><span class="tag tag-green">集約ルート</span></td><td>［注文番号］</td><td>［役割と、含む概念］</td><td>［注文［受注］］</td></tr>
+            <tr><th scope="row">［注文明細］</th><td><span class="tag tag-brown">エンティティ</span></td><td>［明細番号］</td><td>［集約の内部でのみ扱う］</td><td>［注文明細［受注］］</td></tr>
+            <tr><th scope="row">［金額］</th><td><span class="tag tag-muted">値オブジェクト</span></td><td>—</td><td>［値が同じなら同一とみなす。変更せず作り直す］</td><td>［金額］</td></tr>
           </tbody>
         </table></div>
         <p class="legend"><span><span class="tag tag-green">集約ルート</span>外部から操作する入口。整合性を守る単位</span><span><span class="tag tag-brown">エンティティ</span>識別子で区別する</span><span><span class="tag tag-muted">値オブジェクト</span>値そのもので区別する</span></p>
-        <h3>集約と不変条件</h3>
+        <h3>集約の境界</h3>
+        <p>［集約ごとに、含むものと、常に守るルールの ID を書きます。ルールの文は 04 ビジネスルールにだけ書きます。］</p>
         <div class="cards two">
-          <article class="panel"><h3>［注文］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［注文・注文明細・配送先］</dd><dt>常に守る条件</dt><dd>［明細は1件以上。確定後は明細を変更できない。］</dd><dt>外部から参照するもの</dt><dd>［顧客・商品は識別子だけを持つ］</dd></dl></article>
-          <article class="panel"><h3>［集約名］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［概念］</dd><dt>常に守る条件</dt><dd>［条件］</dd><dt>外部から参照するもの</dt><dd>［識別子］</dd></dl></article>
+          <article class="panel"><h3>［注文］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［注文・注文明細・配送先］</dd><dt>常に守るルール</dt><dd>［RULE-002・RULE-003］</dd><dt>外部から参照するもの</dt><dd>［顧客・商品は識別子だけを持つ］</dd></dl></article>
+          <article class="panel"><h3>［集約名］集約</h3><dl class="spec"><dt>含むもの</dt><dd>［概念］</dd><dt>常に守るルール</dt><dd>［RULE-00x］</dd><dt>外部から参照するもの</dt><dd>［識別子］</dd></dl></article>
         </div>
       </section>
 
@@ -342,7 +343,8 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">ID</th><th scope="col">ルール</th><th scope="col">適用される場面</th><th scope="col">違反したときの扱い</th><th scope="col">根拠</th></tr></thead>
           <tbody>
             <tr><th scope="row"><span class="id">RULE-001</span></th><td>［例：注文の合計金額が［金額］以上のとき、承認者の承認を必要とする。］</td><td>［注文確定時］</td><td>［確定できない。承認待ちにする。］</td><td>［社内規程 第○条］</td></tr>
-            <tr><th scope="row"><span class="id">RULE-002</span></th><td>［ルール］</td><td>［場面］</td><td>［扱い］</td><td>［根拠］</td></tr>
+            <tr><th scope="row"><span class="id">RULE-002</span></th><td>［例：状態が「確定」の注文は、明細を変更できない。］</td><td>［明細の変更時］</td><td>［変更を受け付けない。］</td><td>［受注業務規程］</td></tr>
+            <tr><th scope="row"><span class="id">RULE-003</span></th><td>［例：注文の明細は1件以上とする。］</td><td>［明細の削除時・注文確定時］</td><td>［最後の1件は削除できない。］</td><td>［業務上の前提］</td></tr>
           </tbody>
         </table></div>
         <aside class="callout" aria-label="例外"><strong>例外・判断が必要なケース</strong>［ルールで決めきれず、人が判断する場面と、判断する人を記載します。］</aside>
@@ -350,7 +352,7 @@ button:disabled { cursor: default; }
 
       <section id="lifecycle" aria-labelledby="lifecycle-title">
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="lifecycle-title">状態とライフサイクル</h2></div>
-        <p>［主要な概念がどの状態を経るかを記載します。状態ごとに「次に進める状態」と「進むための条件・操作」を書くと、機能仕様書の前提やテストケースに展開できます。］</p>
+        <p>［主要な概念がどの状態を経るかを要約として記載します。状態ごとに「次に進める状態」と「進むための条件・操作」を書くと、機能仕様書の前提やテストケースに展開できます。誰がどの作業・帳票で状態を進めるかは、業務フロー図に書きます。］</p>
         <div class="table-wrap" role="region" aria-label="状態遷移" tabindex="0"><table>
           <thead><tr><th scope="col">状態</th><th scope="col">意味</th><th scope="col">遷移先</th><th scope="col">遷移する条件・操作</th><th scope="col">この状態でできること</th></tr></thead>
           <tbody>
@@ -359,12 +361,12 @@ button:disabled { cursor: default; }
             <tr><th scope="row">［取消］</th><td>［意味］</td><td>—</td><td>［条件・操作］</td><td>［参照のみ］</td></tr>
           </tbody>
         </table></div>
-        <p class="caption">状態の流れは<a href="business_sequence.html">業務シーケンス図</a>で、担当・帳票と合わせて整理できます。</p>
+        <p class="caption">誰がどの作業・帳票で状態を進めるかは、<a href="business_flow.html">業務フロー図</a>のこのコンテキストのタブに書きます。行のステータスには、この表の状態名をそのまま使います。</p>
       </section>
 
       <section id="events" aria-labelledby="events-title">
         <div class="section-heading"><span class="section-number">06 /</span><h2 id="events-title">ドメインイベント</h2></div>
-        <p>［このコンテキストで「起きたこと」を過去形で記載します。他のコンテキストに伝える必要がある出来事を中心に書きます。］</p>
+        <p>［このコンテキストで「起きたこと」を過去形で記載します。他のコンテキストに伝える必要がある出来事を中心に書きます。イベントの中身はここが正本で、07 連携からはイベント名で参照します。］</p>
         <div class="table-wrap" role="region" aria-label="ドメインイベント" tabindex="0"><table>
           <thead><tr><th scope="col">イベント</th><th scope="col">発生するとき</th><th scope="col">含む情報</th><th scope="col">受け取るコンテキスト・起きること</th></tr></thead>
           <tbody>
@@ -376,26 +378,26 @@ button:disabled { cursor: default; }
 
       <section id="interfaces" aria-labelledby="interfaces-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="interfaces-title">連携</h2></div>
-        <p>［このコンテキストが他のコンテキスト・外部システムに提供するもの、利用するものを記載します。関係パターンはドメイン定義書 05 と揃えます。変更するときに誰と調整するかも決めておきます。］</p>
+        <p>［このコンテキストが他のコンテキスト・外部システムに提供するもの、利用するものを、業務の言葉で記載します。関係パターンはドメイン定義書 05 を正本とし、ここには書きません。エンドポイントや入出力の定義は Catalog の API 定義に書き、ここからリンクします。変更するときに誰と調整するかも決めておきます。］</p>
         <div class="table-wrap" role="region" aria-label="連携" tabindex="0"><table>
-          <thead><tr><th scope="col">方向</th><th scope="col">相手</th><th scope="col">種類</th><th scope="col">名前・内容</th><th scope="col">関係パターン</th><th scope="col">変更時の調整</th></tr></thead>
+          <thead><tr><th scope="col">方向</th><th scope="col">相手</th><th scope="col">種類</th><th scope="col">名前・内容</th><th scope="col">変更時の調整</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td>［在庫・請求］</td><td>［イベント］</td><td>［注文が確定した：注文番号・明細・確定日時］</td><td>［顧客／供給者］</td><td>［項目の削除は利用先の合意を得る］</td></tr>
-            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［在庫］</td><td>［API］</td><td>［GET /stocks/{sku}：在庫数の照会］</td><td>［公開ホストサービス］</td><td>［在庫チームに版の変更予定を確認する］</td></tr>
-            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［認証（外部サービス）］</td><td>［API］</td><td>［トークンの検証］</td><td>［順応者］</td><td>［外部の仕様変更に合わせる］</td></tr>
+            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td>［在庫・請求］</td><td>［イベント］</td><td>［注文が確定した（中身は 06）］</td><td>［項目の削除は利用先の合意を得る］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［在庫］</td><td>［API］</td><td>［在庫数の照会：SKU ごとの販売可能数（定義は Catalog の API 定義）］</td><td>［在庫チームに版の変更予定を確認する］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td>［認証（外部サービス）］</td><td>［API］</td><td>［トークンの検証］</td><td>［外部の仕様変更に合わせる］</td></tr>
           </tbody>
         </table></div>
       </section>
 
       <section id="features" aria-labelledby="features-title">
         <div class="section-heading"><span class="section-number">08 /</span><h2 id="features-title">機能一覧</h2></div>
-        <p>［このコンテキストで作る機能を一覧にします。機能1つにつき<a href="specs.html">機能仕様書</a>を1つ作り、どの責務を実現する機能かを対応付けます。01 の責務が、どれかの機能で実現されていることを確認します。］</p>
+        <p>［このコンテキストで作る機能を一覧にします。機能1つにつき<a href="specs.html">機能仕様書</a>を1つ作り、どの責務を実現する機能かを対応付けます。01 の責務が、どれかの機能で実現されていることを確認します。ステータスや使うルール・状態は各仕様書に書き、ここには書き写しません。］</p>
         <div class="table-wrap" role="region" aria-label="機能一覧" tabindex="0"><table>
-          <thead><tr><th scope="col">仕様書 ID</th><th scope="col">機能名</th><th scope="col">実現する責務</th><th scope="col">使うルール・状態</th><th scope="col">ステータス</th></tr></thead>
+          <thead><tr><th scope="col">仕様書 ID</th><th scope="col">機能名</th><th scope="col">実現する責務</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0001</span></a></th><td>［注文明細を変更する］</td><td><span class="id">RESP-001</span></td><td>［RULE-002 ／ 下書き］</td><td><span class="tag tag-brown">下書き</span></td></tr>
-            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0002</span></a></th><td>［注文を確定する］</td><td><span class="id">RESP-001</span></td><td>［RULE-001 ／ 下書き → 確定］</td><td><span class="tag tag-green">確定</span></td></tr>
-            <tr><th scope="row"><span class="id">SPEC-000x</span></th><td>［機能名］</td><td><span class="id">RESP-00x</span></td><td>［ルール・状態］</td><td>［ステータス］</td></tr>
+            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0001</span></a></th><td>［注文明細を変更する］</td><td><span class="id">RESP-001</span></td></tr>
+            <tr><th scope="row"><a href="specs.html"><span class="id">SPEC-0002</span></a></th><td>［注文を確定する］</td><td><span class="id">RESP-001</span></td></tr>
+            <tr><th scope="row"><span class="id">SPEC-000x</span></th><td>［機能名］</td><td><span class="id">RESP-00x</span></td></tr>
           </tbody>
         </table></div>
       </section>

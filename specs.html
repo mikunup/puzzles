@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="機能仕様書：目的・要件・操作の流れ・振る舞い・データ・受け入れ基準を1つの機能ごとに記録する雛形。">
+  <meta name="description" content="機能仕様書：目的・要件・操作の流れ・振る舞い・データ・受け入れ基準（What）と、この機能の設計（How）を1つの機能ごとに記録する雛形。">
   <!-- 1つの機能につき1ファイル作成します。ファイル名は spec-0001-［機能名］.html のように番号を付けると一覧しやすくなります。 -->
   <title>SPEC-0001 ［機能名］｜SPEC NOTE</title>
   <style>
@@ -254,10 +254,11 @@ button:disabled { cursor: default; }
           <li><a href="#behavior"><span class="toc-number">05</span>振る舞いの仕様</a></li>
           <li><a href="#data"><span class="toc-number">06</span>データ・インターフェース</a></li>
           <li><a href="#acceptance"><span class="toc-number">07</span>受け入れ基準</a></li>
-          <li><a href="#open"><span class="toc-number">08</span>未決事項・変更履歴</a></li>
+          <li><a href="#design"><span class="toc-number">08</span>この機能の設計</a></li>
+          <li><a href="#open"><span class="toc-number">09</span>未決事項・変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note">この雛形の使い方<br>1つの機能につき1ファイル作成します。機能は1つの<a href="context.html">コンテキスト</a>に属し、そのコンテキストが担う責務（RESP）を実現します。「何を作るか」を書き、「どう作るか」は設計書・ADR に分けます。</div>
+      <div class="sidebar-note">この雛形の使い方<br>1つの機能につき1ファイル作成します。機能は1つの<a href="context.html">コンテキスト</a>に属し、そのコンテキストが担う責務（RESP）を実現します。01〜07 に「何を作るか」（What）を、08 に「この機能をどう作るか」（How）を書きます。08 で使う・足す・変える画面・API・テーブルは Catalog（実体の一覧）に反映し、全機能に共通するルールは Design に従います。判断の理由は ADR に残します。</div>
     </aside>
 
     <main id="main-content" tabindex="-1">
@@ -269,6 +270,7 @@ button:disabled { cursor: default; }
         <!-- ステータスは tag-brown（下書き）/ tag-muted（レビュー中）/ tag-green（確定）/ tag-red（取り下げ）から選びます。 -->
         <dl class="metadata">
           <div><dt>ステータス</dt><dd><span class="tag tag-brown">下書き</span></dd></div>
+          <div><dt>設計（08）</dt><dd><span class="tag tag-brown">下書き</span></dd></div>
           <div><dt>コンテキスト</dt><dd><a href="context.html">［コンテキスト名］</a></dd></div>
           <div><dt>実現する責務</dt><dd><span class="id">［RESP-001］</span></dd></div>
           <div><dt>対象リリース</dt><dd>［v1.2 / YYYY.MM］</dd></div>
@@ -277,6 +279,7 @@ button:disabled { cursor: default; }
           <div><dt>更新日</dt><dd>［YYYY.MM.DD］</dd></div>
         </dl>
         <p class="legend"><span><span class="tag tag-brown">下書き</span>作成中</span><span><span class="tag tag-muted">レビュー中</span>確認を依頼した</span><span><span class="tag tag-green">確定</span>この内容で作る</span><span><span class="tag tag-red">取り下げ</span>作らないことにした</span></p>
+        <p class="caption">「ステータス」は 01〜07 の仕様に付け、業務担当と合意したら確定にします。「設計（08）」は開発が別に付け、仕様のステータスを戻さずに更新してかまいません。</p>
       </header>
 
       <section id="overview" aria-labelledby="overview-title">
@@ -294,10 +297,10 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="terms-title">用語・前提</h2></div>
         <p>［この仕様で使う用語と、成り立つための前提を記載します。用語は、この機能が属する<a href="context.html">コンテキスト定義書</a>の「02 ユビキタス言語」と揃え、定義を書き写さずに参照します。］</p>
         <div class="table-wrap" role="region" aria-label="用語" tabindex="0"><table>
-          <thead><tr><th scope="col">用語</th><th scope="col">意味</th><th scope="col">参照</th></tr></thead>
+          <thead><tr><th scope="col">用語</th><th scope="col">定義（コンテキスト定義書 02）</th><th scope="col">この仕様での補足</th></tr></thead>
           <tbody>
-            <tr><th scope="row">［用語 A］</th><td>［意味］</td><td>［コンテキスト定義書 02 の用語名］</td></tr>
-            <tr><th scope="row">［用語 B］</th><td>［意味］</td><td>［参照］</td></tr>
+            <tr><th scope="row">［用語 A］</th><td><a href="context.html">［コンテキスト定義書 02 の用語名］</a></td><td>［この機能だけの使い方があれば。なければ —］</td></tr>
+            <tr><th scope="row">［用語 B］</th><td><a href="context.html">［参照］</a></td><td>［—］</td></tr>
           </tbody>
         </table></div>
         <h3>前提・制約</h3>
@@ -317,11 +320,12 @@ button:disabled { cursor: default; }
         </table></div>
         <p class="legend"><span><span class="tag tag-green">必須</span>なければリリースしない</span><span><span class="tag tag-brown">推奨</span>原則入れる。遅れる場合は相談</span><span><span class="tag tag-muted">任意</span>余裕があれば入れる</span></p>
         <h3>非機能要件</h3>
+        <p>［システム共通の非機能要件は Design に従います。ここには、この機能だけの要求や、共通より厳しい・緩い要求だけを書きます。］</p>
         <div class="table-wrap" role="region" aria-label="非機能要件" tabindex="0"><table>
           <thead><tr><th scope="col">項目</th><th scope="col">要求</th><th scope="col">測り方</th></tr></thead>
           <tbody>
             <tr><th scope="row">［性能］</th><td>［例：保存の応答は 2 秒以内］</td><td>［例：本番相当のデータで 95 パーセンタイルを計測］</td></tr>
-            <tr><th scope="row">［セキュリティ・権限］</th><td>［例：編集権限のない利用者には変更ボタンを表示しない］</td><td>［権限別のテストケース］</td></tr>
+            <tr><th scope="row">［セキュリティ・権限］</th><td>［例：明細を変更できるのは受注担当者だけ］</td><td>［権限別のテストケース］</td></tr>
             <tr><th scope="row">［記録・監査］</th><td>［例：変更前後の値と操作者を記録する］</td><td>［変更履歴の確認］</td></tr>
           </tbody>
         </table></div>
@@ -329,13 +333,13 @@ button:disabled { cursor: default; }
 
       <section id="flow" aria-labelledby="flow-title">
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="flow-title">操作の流れ</h2></div>
-        <p>［利用者の操作を順番に記載します。画面の詳細は<a href="screen_design_template.html">画面・機能設計書</a>に書き、ここでは流れと確認ポイントに絞ります。］</p>
+        <p>［利用者の操作を順番に記載します。元になる業務の流れは<a href="business_flow.html">業務フロー図</a>の作業を参照します。画面の要素や表示は「08 この機能の設計」に書き、ここでは流れと確認ポイントに絞ります。］</p>
         <ol class="steps">
-          <li><div><strong>［注文を開く］</strong><p>［注文一覧から対象の注文を選ぶ。状態が「下書き」のときだけ「明細を変更」ボタンが表示される。］</p></div></li>
+          <li><div><strong>［注文を開く］</strong><p>［注文一覧から対象の注文を選ぶ。状態が「下書き」のときだけ明細を変更できる。］</p></div></li>
           <li><div><strong>［明細を変更する］</strong><p>［数量・商品を変更する。入力のたびに合計金額を再計算して表示する。］</p></div></li>
           <li><div><strong>［保存する］</strong><p>［バリデーションを通れば保存し、変更内容を履歴に記録する。保存後は注文画面に戻る。］</p></div></li>
         </ol>
-        <div class="preview">画面の流れ・ワイヤーフレームをここに配置</div>
+        <div class="preview">操作の流れの図をここに配置（画面のワイヤーフレームは 08 に置く）</div>
         <p class="caption">図1：［図の説明・見てほしいポイント］</p>
       </section>
 
@@ -343,9 +347,11 @@ button:disabled { cursor: default; }
         <div class="section-heading"><span class="section-number">05 /</span><h2 id="behavior-title">振る舞いの仕様</h2></div>
         <p>［「前提 → 操作 → 結果」の形で、システムの振る舞いを記載します。正常な場合だけでなく、入力の誤り・権限なし・競合などの場合も書きます。この形はテストケースにそのまま展開できます。］</p>
         <div class="cards">
-          <article class="panel"><h3><span class="id">SPEC-001-01</span> 正常に変更できる</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「下書き」の注文を開いている］</dd><dt>操作</dt><dd>［数量を 1 から 3 に変更して保存する］</dd><dt>結果</dt><dd>［数量 3 で保存され、合計金額が更新される。履歴に変更前後の値が残る］</dd></dl></article>
-          <article class="panel"><h3><span class="id">SPEC-001-02</span> 確定後は変更できない</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「確定」の注文を開いている］</dd><dt>操作</dt><dd>［明細を変更しようとする］</dd><dt>結果</dt><dd>［変更ボタンが表示されない。直接 API を呼んでも拒否される］</dd></dl></article>
-          <article class="panel"><h3><span class="id">SPEC-001-03</span> ［ケース名］</h3><dl class="gwt"><dt>前提</dt><dd>［前提］</dd><dt>操作</dt><dd>［操作］</dd><dt>結果</dt><dd>［結果］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-0001-01</span> 正常に変更できる</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「下書き」の注文を開いている］</dd><dt>操作</dt><dd>［数量を 1 から 3 に変更して保存する］</dd><dt>結果</dt><dd>［数量 3 で保存され、合計金額が更新される。履歴に変更前後の値が残る］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-0001-02</span> 確定後は変更できない</h3><dl class="gwt"><dt>前提</dt><dd>［状態が「確定」の注文を開いている］</dd><dt>操作</dt><dd>［明細を変更しようとする］</dd><dt>結果</dt><dd>［明細を変更できない（画面の扱いは 08）。直接 API を呼んでも拒否される］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-0001-03</span> 価格が変わっていたら確認し直す</h3><dl class="gwt"><dt>前提</dt><dd>［明細を変更する画面を開いた後に、選んだ商品の価格が変更された］</dd><dt>操作</dt><dd>［保存する］</dd><dt>結果</dt><dd>［保存せず、最新の価格と合計金額を表示して確認を求める。確認した後にもう一度保存できる］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-0001-04</span> 同じ保存は1回だけ反映する</h3><dl class="gwt"><dt>前提</dt><dd>［保存の要求を送った］</dd><dt>操作</dt><dd>［保存を続けて押す。または同じ要求が再送される］</dd><dt>結果</dt><dd>［明細は1回だけ変わり、変更履歴も1件だけ残る。2回目以降は1回目と同じ結果を返す］</dd></dl></article>
+          <article class="panel"><h3><span class="id">SPEC-0001-05</span> ［ケース名］</h3><dl class="gwt"><dt>前提</dt><dd>［前提］</dd><dt>操作</dt><dd>［操作］</dd><dt>結果</dt><dd>［結果］</dd></dl></article>
         </div>
         <h3>入力項目とバリデーション</h3>
         <div class="table-wrap" role="region" aria-label="入力項目" tabindex="0"><table>
@@ -361,28 +367,30 @@ button:disabled { cursor: default; }
           <thead><tr><th scope="col">状況</th><th scope="col">システムの振る舞い</th><th scope="col">利用者への表示</th></tr></thead>
           <tbody>
             <tr><th scope="row">［他の利用者が先に変更していた］</th><td>［保存を拒否し、最新の内容を再表示する］</td><td>［「他の利用者が変更しました。内容を確認してください」］</td></tr>
-            <tr><th scope="row">［保存中に通信が切れた］</th><td>［保存は行わない。入力内容は画面に残す］</td><td>［「保存できませんでした。もう一度お試しください」］</td></tr>
+            <tr><th scope="row">［保存の応答が途切れた］</th><td>［失敗と決めつけず、注文の最新の状態を照会してから結果を表示する。保存されていなければ、入力内容を画面に残す］</td><td>［「保存結果を確認しています」→ 照会の結果に応じて表示］</td></tr>
+            <tr><th scope="row">［保存を続けて押した・同じ要求が再送された］</th><td>［明細は1回だけ更新し、同じ結果を返す（SPEC-0001-04）］</td><td>［1回目の結果だけを表示する］</td></tr>
+            <tr><th scope="row">［画面を開いた後に、商品の価格が変わった］</th><td>［保存せず、最新の価格で確認を求める（SPEC-0001-03）］</td><td>［「価格が変更されました。内容をご確認ください」］</td></tr>
           </tbody>
         </table></div>
       </section>
 
       <section id="data" aria-labelledby="data-title">
         <div class="section-heading"><span class="section-number">06 /</span><h2 id="data-title">データ・インターフェース</h2></div>
-        <p>［この機能で読み書きするデータと、呼び出す・提供する API を記載します。項目の意味はコンテキスト定義書の「03 ドメインモデル」と<a href="object_model.html">オブジェクト整理</a>に揃え、他のコンテキストとの連携はコンテキスト定義書の「07 連携」に載っているものを使います。］</p>
+        <p>［この機能で扱う情報と、他のコンテキストとやりとりする情報を、業務の言葉で記載します。項目の意味は<a href="object_model.html">オブジェクト整理</a>（Objects）とコンテキスト定義書の「02 ユビキタス言語」が正本なので書き写さず、項目名を揃えます。他のコンテキストとの連携はコンテキスト定義書の「06 イベント」「07 連携」に載っているものを使います。API のエンドポイントやテーブルは「08 この機能の設計」に書きます。］</p>
         <div class="table-wrap" role="region" aria-label="データ項目" tabindex="0"><table>
-          <thead><tr><th scope="col">項目</th><th scope="col">型</th><th scope="col">説明</th><th scope="col">保存先・取得元</th></tr></thead>
+          <thead><tr><th scope="col">項目</th><th scope="col">オブジェクト（Objects）</th><th scope="col">読む・書く</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><code>［orderId］</code></th><td>［文字列］</td><td>［注文番号］</td><td>［注文テーブル］</td></tr>
-            <tr><th scope="row"><code>［quantity］</code></th><td>［整数］</td><td>［数量］</td><td>［注文明細テーブル］</td></tr>
-            <tr><th scope="row"><code>［changedBy］</code></th><td>［文字列］</td><td>［変更した利用者］</td><td>［変更履歴テーブル］</td></tr>
+            <tr><th scope="row">［注文番号］</th><td>［注文［受注］］</td><td>［読む］</td></tr>
+            <tr><th scope="row">［数量］</th><td>［注文明細［受注］］</td><td>［書く］</td></tr>
+            <tr><th scope="row">［変更した利用者］</th><td>［明細の変更履歴［受注］］</td><td>［書く］</td></tr>
           </tbody>
         </table></div>
-        <h3>API・連携</h3>
-        <div class="table-wrap" role="region" aria-label="API" tabindex="0"><table>
-          <thead><tr><th scope="col">種類</th><th scope="col">名前</th><th scope="col">入力</th><th scope="col">出力・結果</th></tr></thead>
+        <h3>他のコンテキストとのやりとり</h3>
+        <div class="table-wrap" role="region" aria-label="他のコンテキストとのやりとり" tabindex="0"><table>
+          <thead><tr><th scope="col">方向</th><th scope="col">相手のコンテキスト</th><th scope="col">やりとりする情報</th><th scope="col">参照（コンテキスト定義書）</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td><code>［PUT /orders/{id}/lines］</code></td><td>［明細の配列］</td><td>［更新後の注文。確定済みなら 409］</td></tr>
-            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td><code>［GET /products/{sku}］</code></td><td>［SKU］</td><td>［商品情報。販売中かどうか］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">受け取る</span></th><td>［商品カタログ］</td><td>［商品が販売中かどうか］</td><td>［07 連携の行名］</td></tr>
+            <tr><th scope="row"><span class="tag tag-green">知らせる</span></th><td>［在庫］</td><td>［注文の明細が変わったこと］</td><td>［06 イベント「注文明細が変更された」］</td></tr>
           </tbody>
         </table></div>
       </section>
@@ -395,13 +403,63 @@ button:disabled { cursor: default; }
           <tbody>
             <tr><th scope="row"><span class="id">AC-001</span></th><td>［下書きの注文で数量を変更して保存すると、一覧の合計金額が更新されている］</td><td>［画面操作で確認］</td><td><span class="id">REQ-001</span></td><td>［未確認］</td></tr>
             <tr><th scope="row"><span class="id">AC-002</span></th><td>［確定済みの注文には変更ボタンが表示されない］</td><td>［画面操作で確認］</td><td><span class="id">REQ-001</span></td><td>［未確認］</td></tr>
-            <tr><th scope="row"><span class="id">AC-003</span></th><td>［条件］</td><td>［確認方法］</td><td><span class="id">REQ-00x</span></td><td>［未確認］</td></tr>
+            <tr><th scope="row"><span class="id">AC-003</span></th><td>［同じ保存を2回送っても、明細は1回だけ変わり、変更履歴も1件だけ残る］</td><td>［同じ要求を2回送る操作で確認］</td><td><span class="id">REQ-001</span></td><td>［未確認］</td></tr>
+            <tr><th scope="row"><span class="id">AC-004</span></th><td>［条件］</td><td>［確認方法］</td><td><span class="id">REQ-00x</span></td><td>［未確認］</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="design" aria-labelledby="design-title">
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="design-title">この機能の設計</h2></div>
+        <p>［この機能をどう作るかを記載します。01〜07 の仕様を変えずに、技術の都合で直してよい部分です。全機能に共通するルール（非機能要件の満たし方・API の共通規約・デザインシステムなど）は Design に従い、ここには書き写しません。画面一覧・API 定義・テーブル定義の実体は Catalog に置き、ここには「この機能が使う・足す・変える部分」だけを書いてリンクします。足した・変えたものは Catalog にも反映します。］</p>
+        <h3>画面</h3>
+        <div class="table-wrap" role="region" aria-label="画面" tabindex="0"><table>
+          <thead><tr><th scope="col">画面</th><th scope="col">新規・変更</th><th scope="col">画面要素・表示の条件</th><th scope="col">Catalog</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［注文詳細］</th><td><span class="tag tag-muted">変更</span></td><td>［「明細を変更」ボタンを追加。状態が「下書き」で、編集権限があるときだけ表示する］</td><td><a href="screen_design_template.html">［Catalog 画面一覧「注文詳細」］</a></td></tr>
+            <tr><th scope="row">［明細の変更］</th><td><span class="tag tag-green">新規</span></td><td>［数量・商品の入力欄、合計金額。入力のたびに合計を再計算する］</td><td><a href="screen_design_template.html">［Catalog 画面一覧に追加］</a></td></tr>
+          </tbody>
+        </table></div>
+        <div class="preview">画面の流れ・ワイヤーフレームをここに配置</div>
+        <p class="caption">図2：［図の説明・見てほしいポイント］</p>
+        <h3>API</h3>
+        <div class="table-wrap" role="region" aria-label="API" tabindex="0"><table>
+          <thead><tr><th scope="col">種類</th><th scope="col">operationId・エンドポイント</th><th scope="col">入力</th><th scope="col">出力・エラー時の扱い</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="tag tag-green">提供</span></th><td><code>［updateOrderLines］</code><br><code>［PATCH /orders/{orderId}/lines］</code></td><td>［明細の配列、注文の版番号、要求 ID（同じ要求の再送を見分ける）］</td><td>［更新後の注文。確定済み・版が古い・価格が変わったときは 409（共通のエラー形式）。同じ要求 ID なら保存済みの結果を返す］</td></tr>
+            <tr><th scope="row"><span class="tag tag-brown">利用</span></th><td><code>［getProduct］</code><br><code>［GET /products/{sku}］</code></td><td>［SKU］</td><td>［商品情報。販売中かどうか］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>データベース</h3>
+        <div class="table-wrap" role="region" aria-label="データベース" tabindex="0"><table>
+          <thead><tr><th scope="col">テーブル</th><th scope="col">読む・書く</th><th scope="col">使う列</th><th scope="col">備考</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>［orders］</code></th><td>［読む・版番号を更新］</td><td><code>［status, version］</code></td><td>［状態の確認と、同時変更の検出に使う］</td></tr>
+            <tr><th scope="row"><code>［order_lines］</code></th><td>［書く］</td><td><code>［sku, quantity］</code></td><td>［—］</td></tr>
+            <tr><th scope="row"><code>［order_line_histories］</code></th><td>［追加］</td><td><code>［before, after, changed_by］</code></td><td>［変更履歴］</td></tr>
+          </tbody>
+        </table></div>
+        <h3>処理の順序</h3>
+        <p>［画面・API・他のサービスの呼び出しが込み入るときだけ、順番を書きます。業務の流れ（業務フロー図）とは別のものです。図にする場合は、下の手順をシステムシーケンス図に差し替えます。］</p>
+        <ol class="steps">
+          <li><div><strong>［画面 → updateOrderLines］</strong><p>［明細・注文の版番号・要求 ID を送る。処理中は保存ボタンを押せなくする。］</p></div></li>
+          <li><div><strong>［検証する］</strong><p>［権限、注文の状態（下書きか）、版番号、商品の販売状態と価格を確かめる。どれかが合わなければ 409 を返し、何も変えない。］</p></div></li>
+          <li><div><strong>［同じ要求か確かめる］</strong><p>［同じ要求 ID がすでに処理済みなら、保存済みの結果を返す。明細も履歴も二重に変えない。］</p></div></li>
+          <li><div><strong>［まとめて確定する］</strong><p>［明細の更新、変更履歴の追加、版番号の更新を1つのトランザクションで確定する。どれかが失敗したら全体を確定しない。］</p></div></li>
+          <li><div><strong>［他のコンテキストへ知らせる］</strong><p>［確定したあとに、在庫へ「注文明細が変更された」を発行する。］</p></div></li>
+        </ol>
+        <p class="caption">［応答が途切れた場合、画面は同じ注文の状態を照会してから結果を表示します（05 異常系）。］</p>
+        <h3>共通ルールからの例外</h3>
+        <div class="table-wrap" role="region" aria-label="共通ルールからの例外" tabindex="0"><table>
+          <thead><tr><th scope="col">共通ルール</th><th scope="col">この機能での扱い</th><th scope="col">理由・ADR</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">［例：API の応答は 2 秒以内］</th><td>［なし。共通ルールどおり］</td><td>［ADR-000x］</td></tr>
           </tbody>
         </table></div>
       </section>
 
       <section id="open" aria-labelledby="open-title">
-        <div class="section-heading"><span class="section-number">08 /</span><h2 id="open-title">未決事項・変更履歴</h2></div>
+        <div class="section-heading"><span class="section-number">09 /</span><h2 id="open-title">未決事項・変更履歴</h2></div>
         <div class="table-wrap" role="region" aria-label="未決事項" tabindex="0"><table>
           <thead><tr><th scope="col">ID</th><th scope="col">決めること</th><th scope="col">選択肢・論点</th><th scope="col">決める人</th><th scope="col">期限</th></tr></thead>
           <tbody>
@@ -410,17 +468,22 @@ button:disabled { cursor: default; }
         </table></div>
         <h3>変更履歴</h3>
         <div class="table-wrap" role="region" aria-label="変更履歴" tabindex="0"><table>
-          <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
+          <thead><tr><th scope="col">日付</th><th scope="col">対象</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
           <tbody>
-            <tr><th scope="row">［YYYY.MM.DD］</th><td><span class="tag tag-brown">下書き</span></td><td>［初版を作成］</td><td>［氏名］</td></tr>
-            <tr><th scope="row">［YYYY.MM.DD］</th><td><span class="tag tag-green">確定</span></td><td>［レビューで合意］</td><td>［氏名］</td></tr>
+            <tr><th scope="row">［YYYY.MM.DD］</th><td>［仕様］</td><td><span class="tag tag-brown">下書き</span></td><td>［初版を作成］</td><td>［氏名］</td></tr>
+            <tr><th scope="row">［YYYY.MM.DD］</th><td>［仕様］</td><td><span class="tag tag-green">確定</span></td><td>［レビューで合意］</td><td>［氏名］</td></tr>
+            <tr><th scope="row">［YYYY.MM.DD］</th><td>［設計］</td><td><span class="tag tag-brown">下書き</span></td><td>［08 を作成。API の入出力を追加］</td><td>［氏名］</td></tr>
           </tbody>
         </table></div>
         <ul class="reference-list">
-          <li><a href="howtocontext.html">3つの雛形の使い方 ↗</a><small>ドメイン定義書・コンテキスト定義書・機能仕様書の関係と、作る順番。</small></li>
+          <li><a href="howtocontext.html">3つの雛形の使い方 ↗</a><small>Domain → Context → Model → Spec → Catalog と Design の関係と、作る順番。</small></li>
           <li><a href="context.html">コンテキスト定義書 ↗</a><small>この機能が属するコンテキストの用語・ルール・状態・連携。</small></li>
-          <li><a href="adr.html">ADR（アーキテクチャ決定レコード） ↗</a><small>この仕様に影響する技術判断の記録。</small></li>
-          <li><a href="#">［関連する設計書・議事録］</a><small>［関係］</small></li>
+          <li><a href="business_flow.html">［業務フロー図「業務名」］ ↗</a><small>Model ／ Flows。この機能の元になった作業。</small></li>
+          <li><a href="object_model.html">［オブジェクト整理「モデル名」］ ↗</a><small>Model ／ Objects。この機能が扱うオブジェクト。</small></li>
+          <li><a href="#">［Catalog：画面一覧・API 定義・テーブル定義］</a><small>この機能が使う・足す・変える画面・API・テーブルの実体。</small></li>
+          <li><a href="#">［Design：非機能要件・共通ルール］</a><small>この機能が従うルール。</small></li>
+          <li><a href="adr.html">ADR（アーキテクチャ決定レコード） ↗</a><small>この仕様・設計に影響する判断の記録。</small></li>
+          <li><a href="#">［議事録など］</a><small>［関係］</small></li>
         </ul>
       </section>
       <footer><span>SPEC NOTE / SPEC-0001 ［作成者］</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>

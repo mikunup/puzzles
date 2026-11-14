@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="業務シーケンス図で整理した作業を月・週のタスクに落とし込み、担当・完了予定日・実績を可視化する業務整理ツール。">
+  <meta name="description" content="業務フロー図で整理した作業を月・週のタスクに落とし込み、担当・完了予定日・実績を可視化する業務整理ツール。">
   <title>業務タスクの完了予定｜カレンダースケジュール</title>
   <style>
     :root {
@@ -341,7 +341,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
 <body data-layout="workspace">
   <header>
     <div class="header-heading"><div class="brand"><span class="mark" aria-hidden="true"></span>PUZZLES / BUSINESS TASKS</div><h1>業務タスクの完了予定</h1></div>
-    <a href="business_sequence.html">業務シーケンス図へ ↗</a><a href="README.html">資料一覧へ ↗</a>
+    <a href="business_flow.html">業務フロー図へ ↗</a><a href="README.html">資料一覧へ ↗</a>
   </header>
   <main>
     <section class="workspace" id="workspace" aria-label="業務タスクの計画">
@@ -374,7 +374,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
     <form method="dialog" id="event-form">
       <div class="dlg-head"><h2 id="dialog-title">タスクを追加</h2><button class="btn icon" value="cancel" formnovalidate aria-label="閉じる">×</button></div>
       <div class="dlg-body">
-        <label class="field">作業名<input class="title-input" name="title" required placeholder="業務シーケンス図で整理した作業名"></label>
+        <label class="field">作業名<input class="title-input" name="title" required placeholder="業務フロー図で整理した作業名"></label>
         <div class="row">
           <label class="field">開始日<input type="date" name="date" required></label>
           <label class="field">完了予定日<input type="date" name="endDate" required></label>
@@ -405,7 +405,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
   </dialog>
 
     </section>
-    <details class="help"><summary>使い方・キーボード操作</summary><p>業務シーケンス図で作業の流れを整理した後、作業名・担当・前工程をここに登録し、開始日と完了予定日を割り当てます。月で全体を見渡し、週で直近の完了予定を確認します。</p><p>入力欄から抜けた状態で、j / k：次／前のタスク、h / l：前／次の月・週、t / Shift+t：表示タブの切り替え、i：追加、e：選択タスクを編集、o：選択タスクに集中／解除、f：全画面。Escは入力中ならダイアログを閉じ、通常時は集中・全画面を解除します。タブ上では左右矢印・Home・Endも使えます。</p><p>参考となる月の作業期間・完了予定日・担当・前工程を並べ、業務フローを可視化するために使います。件数の集計や、現在日による予定日超過の判定は表示しません。予定はこのブラウザに保存されます。</p></details>
+    <details class="help"><summary>使い方・キーボード操作</summary><p>業務フロー図で作業の流れを整理した後、作業名・担当・前工程をここに登録し、開始日と完了予定日を割り当てます。月で全体を見渡し、週で直近の完了予定を確認します。</p><p>入力欄から抜けた状態で、j / k：次／前のタスク、h / l：前／次の月・週、t / Shift+t：表示タブの切り替え、i：追加、e：選択タスクを編集、o：選択タスクに集中／解除、f：全画面。Escは入力中ならダイアログを閉じ、通常時は集中・全画面を解除します。タブ上では左右矢印・Home・Endも使えます。</p><p>参考となる月の作業期間・完了予定日・担当・前工程を並べ、業務フローを可視化するために使います。件数の集計や、現在日による予定日超過の判定は表示しません。予定はこのブラウザに保存されます。</p></details>
   </main>
   <footer><span>業務の流れを整理 → 月・週のタスクに日付を割り当て → 完了予定と実績を確認</span><span>日曜始まり・祝日表示なし</span></footer>
 

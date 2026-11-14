@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ドメイン定義書・コンテキスト定義書・機能仕様書の3つの雛形が、責務でどうつながり、どの順番で書くかを説明する資料。">
+  <meta name="description" content="Domain → Context → Model（業務フロー・オブジェクト）→ Spec → Catalog の層と、システム共通のルール Design で、ドメイン定義書・コンテキスト定義書・機能仕様書の3つの雛形と業務モデル・実体の一覧・共通ルールが責務でどうつながり、どの順番で書くかを説明する資料。">
     <title>3つの雛形の使い方｜HOW TO</title>
   <style>
     :root {
@@ -153,7 +153,16 @@
     .diagram .edge-dim { stroke:#b8c4b9; stroke-dasharray:3 3; }
     .diagram .arrow-head { fill:var(--green); }
     .diagram .edge-label { font-size:10px; fill:var(--muted); }
+    .diagram .box-tech { fill:#eaece3; stroke:#b8c4b9; }
+    .diagram .box-model { fill:#e3ece2; stroke:var(--green); }
     .cards { margin-top:20px; }
+    .tag-tech { color:var(--ink); background:#eaece3; border-color:#b8c4b9; }
+    .tag-model { color:var(--green); background:#e3ece2; }
+    td.area { white-space:nowrap; min-width:0; }
+    .tree, .tree code { font-family:Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono","Courier New",monospace; }
+    .tree .tree-layer { color:var(--brown); font-weight:700; }
+    .tree .tree-note { color:var(--muted); }
+    .layer { display:block; font:11px ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--brown); letter-spacing:.06em; }
   </style>
 <!-- bases:styles:start -->
 <style>
@@ -264,18 +273,20 @@ button:disabled { cursor: default; }
       <nav aria-labelledby="toc-title">
         <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
         <ol class="toc">
-          <li><a href="#roles"><span class="toc-number">01</span>3つの資料の役割</a></li>
+          <li><a href="#roles"><span class="toc-number">01</span>資料の役割と層</a></li>
           <li><a href="#map"><span class="toc-number">02</span>関係の全体図</a></li>
           <li><a href="#trace"><span class="toc-number">03</span>責務でつなぐ</a></li>
           <li><a href="#split"><span class="toc-number">04</span>コンテキストの分け方</a></li>
-          <li><a href="#where"><span class="toc-number">05</span>どこに何を書くか</a></li>
-          <li><a href="#order"><span class="toc-number">06</span>作る順番</a></li>
-          <li><a href="#terms"><span class="toc-number">07</span>用語を揃える流れ</a></li>
-          <li><a href="#update"><span class="toc-number">08</span>更新のルール</a></li>
-          <li><a href="#related"><span class="toc-number">09</span>関連資料</a></li>
+          <li><a href="#model"><span class="toc-number">05</span>Model：業務フローとオブジェクト</a></li>
+          <li><a href="#design"><span class="toc-number">06</span>Catalog と Design：実体とルール</a></li>
+          <li><a href="#where"><span class="toc-number">07</span>どこに何を書くか</a></li>
+          <li><a href="#order"><span class="toc-number">08</span>作る順番</a></li>
+          <li><a href="#terms"><span class="toc-number">09</span>用語を揃える流れ</a></li>
+          <li><a href="#update"><span class="toc-number">10</span>更新のルール</a></li>
+          <li><a href="#related"><span class="toc-number">11</span>関連資料</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note">雛形はこちら<br><a href="domain.html">domain.html</a> · <a href="context.html">context.html</a> · <a href="specs.html">specs.html</a></div>
+      <div class="sidebar-note">雛形はこちら<br><a href="domain.html">domain.html</a> · <a href="context.html">context.html</a> · <a href="specs.html">specs.html</a><br>業務モデル<br><a href="business_flow.html">business_flow.html</a> · <a href="object_model.html">object_model.html</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
@@ -283,38 +294,45 @@ button:disabled { cursor: default; }
         <p class="breadcrumb">使い方 / 設計資料</p>
         <p class="eyebrow">HOW TO USE THE TEMPLATES</p>
         <h1>ドメイン定義書・コンテキスト定義書・機能仕様書の<span>関係と使い方</span></h1>
-        <p class="lead">3つの雛形は、システム全体（複数のドメインとサブドメイン）→ コンテキスト → 1つの機能、と粒度を下げながら「システムが何をするか」を記録するための組み合わせです。ドメイン定義書でシステムがまたがるドメイン・サブドメインと責務を洗い出し、コンテキスト定義書で責務をサブドメインごとに分けて解決し、機能仕様書でその責務を実現する機能を1つずつ定義します。</p>
-        <dl class="metadata"><div><dt>対象</dt><dd>設計資料を書く人・読む人</dd></div><div><dt>関係する雛形</dt><dd>domain.html / context.html / specs.html</dd></div></dl>
+        <p class="lead">3つの雛形を軸に、Domain → Context → Model → Spec → Catalog と粒度を下げながら、システムを形にしていきます。ドメイン定義書でシステムがまたがるドメイン・サブドメインと責務を洗い出し、コンテキスト定義書で責務をサブドメインごとに分けて解決します。業務の流れ（Flows）と扱う「もの」（Objects）は、システムで1つにまとめた業務モデルに描き、機能仕様書で責務を実現する機能を1つずつ、その機能の作り方まで含めて定義します。仕様書で決めた画面・API・テーブルの実体は Catalog に集め、全機能に共通するルール（非機能要件の満たし方・共通ルール）は Design にまとめます。</p>
+        <dl class="metadata"><div><dt>対象</dt><dd>設計資料を書く人・読む人</dd></div><div><dt>雛形</dt><dd>domain.html / context.html / specs.html</dd></div><div><dt>業務モデル</dt><dd>business_flow.html / object_model.html（<a href="#model">05</a>）</dd></div><div><dt>設計</dt><dd>機能ごとは仕様書 08、実体は Catalog、ルールは Design（<a href="#design">06</a>）</dd></div></dl>
       </header>
 
       <section id="roles" aria-labelledby="roles-title">
-        <div class="section-heading"><span class="section-number">01 /</span><h2 id="roles-title">3つの資料の役割</h2></div>
-        <p>それぞれの資料は、扱う範囲（単位）と答える問いが違います。1つの資料に全部を書かず、粒度ごとに分けるのが基本です。</p>
-        <div class="table-wrap" role="region" aria-label="3つの資料の役割" tabindex="0"><table>
-          <thead><tr><th scope="col">資料</th><th scope="col">1ファイルの単位</th><th scope="col">答える問い</th><th scope="col">主な読者</th><th scope="col">作るタイミング</th></tr></thead>
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="roles-title">資料の役割と層</h2></div>
+        <p>資料は層に分かれ、層ごとに扱う範囲（単位）と答える問いが違います。1つの資料に全部を書かず、層ごとに分けるのが基本です。</p>
+        <div class="table-wrap" role="region" aria-label="資料の役割と層" tabindex="0"><table>
+          <thead><tr><th scope="col">層・資料</th><th scope="col">1ファイルの単位</th><th scope="col">答える問い</th><th scope="col">主な読者</th><th scope="col">作るタイミング</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><a href="domain.html">ドメイン定義書</a><br><code>domain.html</code></th><td><span class="tag tag-green">システムで1つ</span></td><td>このシステムは、どのドメイン・サブドメインにまたがり、どんな責務を担うか。責務をどのコンテキストで解決し、コンテキスト同士はどう関係するか</td><td>事業・業務の責任者、全チームのリーダー、アーキテクト</td><td>最初に1回。責務や分け方が変わったら更新</td></tr>
-            <tr><th scope="row"><a href="context.html">コンテキスト定義書</a><br><code>context.html</code></th><td><span class="tag tag-brown">サブドメインごとに1つ</span></td><td>このサブドメインを解決する領域では、どの責務を、どんな言葉・モデル・ルール・状態で実現するか。どの機能を作るか</td><td>そのサブドメインの業務担当者と開発チーム</td><td>サブドメインが決まったら。用語・ルール・機能が増えたら更新</td></tr>
-            <tr><th scope="row"><a href="specs.html">機能仕様書</a><br><code>specs.html</code></th><td><span class="tag tag-muted">機能ごとに1つ</span></td><td>この機能で、誰が、何をできるようになるか。どう振る舞えば責務を果たしたと言えるか</td><td>その機能を作る開発者・テスト担当・業務担当</td><td>機能を作る前。確定後は変更履歴に残す</td></tr>
+            <tr><th scope="row"><span class="layer">Domain</span><a href="domain.html">ドメイン定義書</a><br><code>domain.html</code></th><td><span class="tag tag-green">システムで1つ</span></td><td>このシステムは、どのドメイン・サブドメインにまたがり、どんな責務を担うか。責務をどのコンテキストで解決し、コンテキスト同士はどう関係するか</td><td>事業・業務の責任者、全チームのリーダー、アーキテクト</td><td>最初に1回。責務や分け方が変わったら更新</td></tr>
+            <tr><th scope="row"><span class="layer">Context</span><a href="context.html">コンテキスト定義書</a><br><code>context.html</code></th><td><span class="tag tag-brown">サブドメインごとに1つ</span></td><td>このサブドメインを解決する領域では、どの責務を、どんな言葉・モデル・ルール・状態で実現するか。どの機能を作るか</td><td>そのサブドメインの業務担当者と開発チーム</td><td>サブドメインが決まったら。用語・ルール・機能が増えたら更新</td></tr>
+            <tr><th scope="row"><span class="layer">Model</span>業務モデル<br><a href="business_flow.html">業務フロー図</a>（Flows）<br><a href="object_model.html">オブジェクト整理</a>（Objects）</th><td><span class="tag tag-model">システムで1つ</span><br>Flows はコンテキストごとのタブ</td><td>各コンテキストで、誰が、どの順に、どの作業・帳票で業務を進めるか。コンテキストをまたぐと全体はどう流れるか（Flows）。システムでどんな「もの」を扱い、それぞれが何を持ち、何ができるか（Objects）</td><td>そのコンテキストの業務担当者と開発チーム</td><td>コンテキスト定義書の用語・状態が見えてきたら。業務の流れや項目が変わったら更新</td></tr>
+            <tr><th scope="row"><span class="layer">Spec</span><a href="specs.html">機能仕様書</a><br><code>specs.html</code></th><td><span class="tag tag-muted">機能ごとに1つ</span></td><td>この機能で、誰が、何をできるようになるか。どう振る舞えば責務を果たしたと言えるか（01〜07）。この機能をどう作るか。使う画面・API・テーブル（08）</td><td>01〜07 は業務担当・開発・テスト担当、08 は開発者</td><td>機能を作る前。01〜07 の確定後は変更履歴に残す。08 は開発しながら更新</td></tr>
+            <tr><th scope="row"><span class="layer">Catalog</span>実体の一覧<br>画面・API・テーブル</th><td><span class="tag tag-tech">システムで1つ</span></td><td>システムに今どんな画面・API・テーブルがあり、それぞれがどう定義されているか（実体）</td><td>開発者・テスト担当</td><td>仕様書の 08 を書いたら、追加・変更を反映する</td></tr>
+            <tr><th scope="row"><span class="layer">Design</span>システム共通のルール<br>非機能要件・共通ルール</th><td><span class="tag tag-tech">システムで1つ</span></td><td>全機能に共通して、どう作るか。非機能要件をどう満たすか。Frontend・IF・DB・Infra の共通ルール</td><td>開発者・アーキテクト・運用担当</td><td>最初の仕様書の前に粗く作り、開発しながら育てる</td></tr>
           </tbody>
         </table></div>
         <aside class="callout" aria-label="問題と解決"><strong>ドメインは「問題」、コンテキストは「解決」</strong>ドメイン定義書はシステムで1つ作り、システムがまたがるドメインと、その中で解く問題（サブドメイン・責務）を書く資料です。含む順は システム ⊃ ドメイン ⊃ サブドメイン で、1つのシステムが複数のドメインにまたがることもあります。コンテキスト定義書は、1つのサブドメインをシステムでどう解決するか（用語・モデル・ルール）を書く資料です。基本は「1つのサブドメイン ＝ 1つのコンテキスト」で対応させます。分割・統合してよい場合は「<a href="#split">04 コンテキストの分け方</a>」を参照してください。</aside>
+        <aside class="callout" aria-label="What と How"><strong>What と How の分かれ目</strong>Domain・Context・Model は、業務を理解して整理する工程（業務モデリング）です。仕様書の 01〜07 でシステムに求めることを確定します。ここまでには、実装の技術を変えても変わらないこと（What）を書きます。「どう作るか」（How）は、機能ごとのことを仕様書の 08 に書き、その結果の画面・API・テーブルの実体を Catalog に集めます。全機能に共通するルールは Design に書きます。</aside>
       </section>
 
       <section id="map" aria-labelledby="map-title">
         <div class="section-heading"><span class="section-number">02 /</span><h2 id="map-title">関係の全体図</h2></div>
-        <p>上から下へ、1対多で枝分かれします。ドメイン定義書はシステムで1つで、その中でシステムがまたがるドメインを、さらにサブドメインに分けます。サブドメイン1つに、基本はコンテキスト定義書が1つ対応し（分割・統合する場合は 04 を参照）、そのコンテキストの中で作る機能ごとに仕様書ができます。</p>
+        <p>上から下へ枝分かれします。ドメイン定義書はシステムで1つで、サブドメイン1つに、基本はコンテキスト定義書が1つ対応します（分割・統合する場合は 04 を参照）。業務モデルはシステムで1つにまとめ、Flows はコンテキストごとに、Objects はシステム全体で描きます。そこから作る機能ごとに仕様書ができます。仕様書には、その機能の作り方（08）まで書きます。08 で使う・足す・変える画面・API・テーブルは、システムで1つの Catalog（実体）に反映します。最下段の Design（ルール）には、仕様書の 08 と Catalog が従う共通ルールを置きます。</p>
         <figure class="diagram">
-          <svg viewBox="0 0 760 400" role="img" aria-labelledby="diagram-title diagram-desc">
-            <title id="diagram-title">3つの資料の関係図</title>
-            <desc id="diagram-desc">最上段にドメイン定義書が1つ。その下にサブドメインごとのコンテキスト定義書が3つ。最下段に機能ごとの仕様書が複数。各段は1対多の矢印でつながる。右側にADRが横から関係している。</desc>
+          <svg viewBox="0 0 760 732" role="img" aria-labelledby="diagram-title diagram-desc">
+            <title id="diagram-title">層の関係図</title>
+            <desc id="diagram-desc">最上段にドメイン定義書が1つ。その下にサブドメインごとのコンテキスト定義書が3つ。その下に、システムで1つにまとめて管理する業務モデルがあり、中にコンテキストごとの Flows（受注・在庫・請求）と、システムで1つの Objects がある。受注の業務モデルから、機能ごとの仕様書が複数。仕様書は What と、その機能の How を持つ。仕様書の下に、システムで1つの Catalog（画面・API・テーブルの実体）があり、その下に、仕様書と Catalog が従う Design（非機能要件・共通ルール）がある。右側にADRが横から関係している。</desc>
             <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow-head"/></marker></defs>
-            <text x="10" y="44" class="lane">システム全体</text>
-            <text x="10" y="184" class="lane">サブドメイン</text>
-            <text x="10" y="324" class="lane">1つの機能</text>
+            <text x="10" y="44" class="lane">Domain</text>
+            <text x="10" y="184" class="lane">Context</text>
+            <text x="10" y="306" class="lane">Model</text>
+            <text x="10" y="474" class="lane">Spec</text>
+            <text x="10" y="598" class="lane">Catalog</text>
+            <text x="10" y="690" class="lane">Design</text>
             <rect x="230" y="20" width="300" height="56" rx="10" class="box box-green"/>
             <text x="380" y="43" class="box-title box-title-light">ドメイン定義書</text>
-            <text x="380" y="63" class="box-sub box-sub-light">domain.html ／ システムで1つ（ドメイン・サブドメイン・責務）</text>
+            <text x="380" y="63" class="box-sub box-sub-light">domain.html ／ ドメイン・責務・コンテキストの関係</text>
             <path d="M380 76 V110 H200 V150" class="edge" marker-end="url(#arrow)"/>
             <path d="M380 76 V150" class="edge" marker-end="url(#arrow)"/>
             <path d="M380 76 V110 H560 V150" class="edge" marker-end="url(#arrow)"/>
@@ -328,51 +346,114 @@ button:disabled { cursor: default; }
             <rect x="475" y="152" width="170" height="56" rx="10" class="box box-brown"/>
             <text x="560" y="175" class="box-title">コンテキスト定義書</text>
             <text x="560" y="195" class="box-sub">context.html ／ 請求</text>
-            <path d="M200 208 V245 H130 V290" class="edge" marker-end="url(#arrow)"/>
-            <path d="M200 208 V290" class="edge" marker-end="url(#arrow)"/>
-            <path d="M200 208 V245 H270 V290" class="edge" marker-end="url(#arrow)"/>
-            <path d="M380 208 V245" class="edge edge-dim"/>
-            <path d="M560 208 V245" class="edge edge-dim"/>
-            <text x="283" y="240" class="edge-label">1つの機能＝1つの仕様書</text>
-            <rect x="95" y="292" width="70" height="56" rx="10" class="box box-paper"/>
-            <text x="130" y="315" class="box-title box-title-small">仕様書</text>
-            <text x="130" y="335" class="box-sub">SPEC-0001</text>
-            <rect x="165" y="292" width="70" height="56" rx="10" class="box box-paper"/>
-            <text x="200" y="315" class="box-title box-title-small">仕様書</text>
-            <text x="200" y="335" class="box-sub">SPEC-0002</text>
-            <rect x="235" y="292" width="70" height="56" rx="10" class="box box-paper"/>
-            <text x="270" y="315" class="box-title box-title-small">仕様書</text>
-            <text x="270" y="335" class="box-sub">SPEC-0003</text>
-            <text x="200" y="376" class="box-sub">specs.html ／ 機能ごとに1つ</text>
-            <text x="380" y="315" class="box-sub">…</text>
-            <text x="560" y="315" class="box-sub">…</text>
-            <rect x="660" y="130" width="90" height="100" rx="10" class="box box-dashed"/>
-            <text x="705" y="165" class="box-title box-title-small">ADR</text>
-            <text x="705" y="185" class="box-sub">adr.html</text>
-            <text x="705" y="203" class="box-sub">決めた理由</text>
+            <rect x="105" y="236" width="550" height="138" rx="12" class="box box-model"/>
+            <path d="M200 208 V266" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 208 V266" class="edge" marker-end="url(#arrow)"/>
+            <path d="M560 208 V266" class="edge" marker-end="url(#arrow)"/>
+            <rect x="135" y="268" width="130" height="36" rx="8" class="box box-paper"/>
+            <text x="200" y="291" class="box-title box-title-small">Flows：受注</text>
+            <rect x="315" y="268" width="130" height="36" rx="8" class="box box-paper"/>
+            <text x="380" y="291" class="box-title box-title-small">Flows：在庫</text>
+            <rect x="495" y="268" width="130" height="36" rx="8" class="box box-paper"/>
+            <text x="560" y="291" class="box-title box-title-small">Flows：請求</text>
+            <rect x="135" y="314" width="490" height="36" rx="8" class="box box-paper"/>
+            <text x="380" y="337" class="box-title box-title-small">Objects：システムで1つ（オブジェクト・コレクション・参照関係）</text>
+            <text x="380" y="366" class="box-sub">業務モデル（Model）／ システムで1つにまとめて管理</text>
+            <path d="M200 374 V404 H130 V440" class="edge" marker-end="url(#arrow)"/>
+            <path d="M200 374 V440" class="edge" marker-end="url(#arrow)"/>
+            <path d="M200 374 V404 H270 V440" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 374 V384" class="edge edge-dim"/>
+            <path d="M560 374 V384" class="edge edge-dim"/>
+            <text x="283" y="399" class="edge-label">システムで行う作業 → 1つの機能＝1つの仕様書</text>
+            <rect x="95" y="442" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="130" y="465" class="box-title box-title-small">仕様書</text>
+            <text x="130" y="485" class="box-sub">SPEC-0001</text>
+            <rect x="165" y="442" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="200" y="465" class="box-title box-title-small">仕様書</text>
+            <text x="200" y="485" class="box-sub">SPEC-0002</text>
+            <rect x="235" y="442" width="70" height="56" rx="10" class="box box-paper"/>
+            <text x="270" y="465" class="box-title box-title-small">仕様書</text>
+            <text x="270" y="485" class="box-sub">SPEC-0003</text>
+            <text x="200" y="524" class="box-sub">specs.html ／ 機能ごとに1つ（What ＋ この機能の How）</text>
+            <text x="380" y="472" class="box-sub">…</text>
+            <text x="560" y="472" class="box-sub">…</text>
+            <path d="M200 530 V562" class="edge" marker-end="url(#arrow)"/>
+            <path d="M380 485 V562" class="edge edge-dim"/>
+            <path d="M560 485 V562" class="edge edge-dim"/>
+            <text x="212" y="550" class="edge-label">08 で使う・足す・変える実体を反映する</text>
+            <rect x="95" y="564" width="550" height="56" rx="10" class="box box-paper"/>
+            <text x="370" y="587" class="box-title">Catalog ／ システムで1つ（実体）</text>
+            <text x="370" y="607" class="box-sub">画面一覧と遷移 ・ API 定義（OpenAPI）・ テーブル定義（スキーマ・ER図）</text>
+            <path d="M370 620 V654" class="edge" marker-end="url(#arrow)"/>
+            <text x="382" y="642" class="edge-label">ルールに従う（仕様書の 08 も同じ）</text>
+            <rect x="95" y="656" width="550" height="56" rx="10" class="box box-tech"/>
+            <text x="370" y="679" class="box-title">Design ／ システムで1つ（ルール）</text>
+            <text x="370" y="699" class="box-sub">非機能要件（目標と満たし方）・ 共通ルール（Frontend / IF / DB / Infra）</text>
+            <rect x="660" y="150" width="90" height="100" rx="10" class="box box-dashed"/>
+            <text x="705" y="185" class="box-title box-title-small">ADR</text>
+            <text x="705" y="205" class="box-sub">adr.html</text>
+            <text x="705" y="223" class="box-sub">決めた理由</text>
             <path d="M660 180 H645" class="edge edge-dim"/>
-            <path d="M705 130 V48 H530" class="edge edge-dim"/>
+            <path d="M705 150 V48 H530" class="edge edge-dim"/>
+            <path d="M705 250 V684 H647" class="edge edge-dim"/>
           </svg>
-          <figcaption class="caption">図1：ドメイン定義書（1）→ コンテキスト定義書（サブドメインごと）→ 機能仕様書（機能ごと）。ADR は、責務の分け方や連携方式など「なぜそう決めたか」をどの段からも参照する。</figcaption>
+          <figcaption class="caption">図1：Domain（システムで1つ）→ Context（サブドメインごと）→ Model（システムで1つにまとめて管理）→ Spec（機能ごと）→ Catalog（システムで1つ。実体）、そして全体のルールの Design（システムで1つ）。仕様書は「何をするか」と「この機能をどう作るか」を持ち、その結果の画面・API・テーブルを Catalog に反映する。仕様書の 08 と Catalog は Design のルールに従う。業務モデルは1つにまとめ、Flows はコンテキストごとのタブと、コンテキストをまたぐ「全体」のタブで描き、Objects はシステムで1つにする。ADR は、責務の分け方・連携方式・技術選定など「なぜそう決めたか」をどの段からも参照する。</figcaption>
         </figure>
         <div class="cards">
-          <article class="panel"><h3>上から下へ：責務を分ける</h3><p class="muted">ドメイン定義書で、システムがまたがるドメイン・サブドメインと「システムが担う責務」を洗い出して割り当て、コンテキスト定義書でそのサブドメインの解決のしかたを決め、仕様書で責務を実現する機能を1つずつ定義します。</p></article>
-          <article class="panel"><h3>下から上へ：ずれを戻す</h3><p class="muted">仕様書を書いていて「この責務はどのコンテキストにもない」「この用語はコンテキスト定義書にない」と気づいたら、上の資料を直します。下の資料だけで辻褄を合わせないのが大切です。</p></article>
-          <article class="panel"><h3>横から：ADR で理由を残す</h3><p class="muted">責務をどのサブドメインに入れたか、連携を API にしたかイベントにしたか、といった判断は <a href="adr.html">ADR</a> に記録します。3つの資料には結果だけを書き、理由は ADR へのリンクにします。</p></article>
+          <article class="panel"><h3>上から下へ：責務を分ける</h3><p class="muted">ドメイン定義書で責務を洗い出して割り当て、コンテキスト定義書でそのサブドメインの解決のしかたを決めます。業務モデルで業務の流れと扱う「もの」を具体化し、仕様書で責務を実現する機能を1つずつ、作り方まで定義し、その実体を Catalog に反映します。作り方は Design の共通ルールに従います。</p></article>
+          <article class="panel"><h3>下から上へ：ずれを戻す</h3><p class="muted">業務フローを描いていて「この作業を担う責務がない」、仕様書を書いていて「この用語はコンテキスト定義書にない」と気づいたら、上の資料を直します。設計の途中で「この仕様は技術の制約で満たせない」と気づいたときも同じです。下の資料だけで辻褄を合わせないのが大切です。</p></article>
+          <article class="panel"><h3>横から：ADR で理由を残す</h3><p class="muted">責務をどのサブドメインに入れたか、連携を API にしたかイベントにしたか、どの技術を採用したか、といった判断は <a href="adr.html">ADR</a> に記録します。各資料には結果だけを書き、理由は ADR へのリンクにします。</p></article>
         </div>
+
+        <h3>ディレクトリで見た全体</h3>
+        <p>同じ関係を、資料を置くフォルダの構成で表すと次のようになります。Spec はコンテキストのフォルダの中に、Domain・Model・Catalog・Design・ADR はコンテキストの外（システムで1つ）に置きます。実体（Catalog）とルール（Design）は別のフォルダに分けます。Flows はコンテキストごとに描きますが、1つのファイルのタブでまとめて管理します。</p>
+        <pre class="tree" aria-label="資料のディレクトリ構成の例"><code>project/
+├── domain/                            <span class="tree-layer">Domain</span>  <span class="tree-note">システムで1つ</span>
+│   └── domain.html                    <span class="tree-note">ドメイン定義書（ドメイン・責務・コンテキストとの対応と関係）</span>
+├── model/                             <span class="tree-layer">Model</span>  <span class="tree-note">システムで1つにまとめて管理</span>
+│   ├── flows.json                     <span class="tree-note">Flows：業務フロー図。タブ＝コンテキスト（受注・在庫・請求）＋全体</span>
+│   └── objects.json                   <span class="tree-note">Objects：オブジェクト整理。システムで1つ</span>
+├── contexts/                          <span class="tree-layer">Context</span>  <span class="tree-note">サブドメインごとに1フォルダ</span>
+│   ├── order/                         <span class="tree-note">受注</span>
+│   │   ├── context.html               <span class="tree-note">コンテキスト定義書（用語・ルール、モデルと状態の要約）</span>
+│   │   └── specs/                     <span class="tree-layer">Spec</span>  <span class="tree-note">機能ごとに1ファイル</span>
+│   │       ├── SPEC-0001.html         <span class="tree-note">注文明細を変更する（01〜07 What ＋ 08 この機能の設計）</span>
+│   │       └── SPEC-0002.html         <span class="tree-note">注文を確定する</span>
+│   ├── inventory/                     <span class="tree-note">在庫（中身は order/ と同じ形）</span>
+│   └── billing/                       <span class="tree-note">請求（中身は order/ と同じ形）</span>
+├── catalog/                           <span class="tree-layer">Catalog</span>  <span class="tree-note">システムで1つ。実体の一覧（コンテキストごとに分ける）</span>
+│   ├── screens.html                   <span class="tree-note">画面一覧と遷移（画面・機能設計書）</span>
+│   ├── api/
+│   │   ├── order.yaml                 <span class="tree-note">API 定義（OpenAPI）：受注</span>
+│   │   └── inventory.yaml             <span class="tree-note">API 定義（OpenAPI）：在庫</span>
+│   └── db/
+│       ├── order.md                   <span class="tree-note">テーブル定義・ER 図：受注</span>
+│       └── inventory.md               <span class="tree-note">テーブル定義・ER 図：在庫</span>
+├── design/                            <span class="tree-layer">Design</span>  <span class="tree-note">システムで1つ。ルールだけを書く</span>
+│   ├── nfr.html                       <span class="tree-note">非機能要件（目標と満たし方の表）</span>
+│   └── rules/                         <span class="tree-note">共通ルール</span>
+│       ├── frontend.html              <span class="tree-note">デザインシステム・画面の共通ルール（bases/ を参照）</span>
+│       ├── if.html                    <span class="tree-note">API の共通規約（認証・エラー形式・ページング）</span>
+│       ├── db.html                    <span class="tree-note">命名・共通カラム・ロックの方針</span>
+│       └── infra.html                 <span class="tree-note">構成・環境・監視</span>
+└── adr/                               <span class="tree-layer">ADR</span>  <span class="tree-note">決定ごとに1ファイル。すべての層から参照</span>
+    ├── ADR-0001-split-inventory.html
+    └── ADR-0003-optimistic-lock.html</code></pre>
+        <p class="caption">例：フォルダ名・ファイル名は一例です。業務フロー図とオブジェクト整理は、各ツールの「全タブをJSON保存」で書き出したファイルを置きます。</p>
       </section>
 
       <section id="trace" aria-labelledby="trace-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="trace-title">責務でつなぐ</h2></div>
-        <p>3つの資料は、責務の ID（RESP-xxx）でつながります。1つの責務が、どの資料のどこに現れるかを例で示します。仕様書は「コンテキストの中で、責務を実現する機能」として定義します。</p>
+        <p>各層の資料は、責務の ID（RESP-xxx）でつながります。1つの責務が、どの資料のどこに現れるかを例で示します。仕様書は「コンテキストの中で、責務を実現する機能」として定義します。</p>
         <ol class="steps">
           <li><div><strong>ドメイン定義書 03 システムの責務：責務を定義する</strong><p><span class="id">RESP-001</span>「顧客からの注文を受け付け、内容を確定する」。きっかけは「顧客が注文を送信する」、結果は「確定した注文」。</p></div></li>
           <li><div><strong>ドメイン定義書 04 サブドメインとコンテキスト：担うサブドメインと、解決するコンテキストを決める</strong><p><span class="id">RESP-001</span> は「販売」ドメインの「受注」サブドメインが担い、1対1で「受注」コンテキストが解決する。受注のコンテキスト定義書は <code>context-order.html</code>。</p></div></li>
           <li><div><strong>コンテキスト定義書（受注）01 解決する領域：責務を引き受ける</strong><p>「担う責務」の表に <span class="id">RESP-001</span> を載せ、このコンテキストでの実現のしかた（注文集約を作り、確定時に RULE-001 を検査する）を書く。</p></div></li>
+          <li><div><strong>業務モデル（Flows の受注タブ・Objects）：責務を業務の流れと「もの」に落とす</strong><p>業務フロー図の「受注」タブで <span class="id">RESP-001</span> を「顧客が注文を送信 → 受注担当が明細を確認・変更 → 注文を確定」と描く。システムで行う作業「明細を変更する」「注文を確定する」が機能の候補になる。システムで1つのオブジェクト整理に、「注文」「注文明細」のプロパティと操作を書く。</p></div></li>
           <li><div><strong>コンテキスト定義書（受注）08 機能一覧：機能に分ける</strong><p><span class="id">RESP-001</span> を実現する機能として、<span class="id">SPEC-0001</span>「注文明細を変更する」と <span class="id">SPEC-0002</span>「注文を確定する」を載せる。</p></div></li>
-          <li><div><strong>機能仕様書（SPEC-0001）：機能を定義する</strong><p>見出しの「コンテキスト」に受注、「実現する責務」に <span class="id">RESP-001</span> を書く。要件の根拠には、受注コンテキストのルール（RULE-002）を挙げる。</p></div></li>
+          <li><div><strong>機能仕様書（SPEC-0001）：機能を定義する</strong><p>見出しの「コンテキスト」に受注、「実現する責務」に <span class="id">RESP-001</span> を書く。要件の根拠には、受注コンテキストのルール（RULE-002）を挙げる。08 この機能の設計には、使う画面「注文詳細」、提供する API <code>updateOrderLines</code>、書き込むテーブル <code>order_lines</code> を書き、Catalog の実体へリンクする。</p></div></li>
         </ol>
-        <aside class="callout" aria-label="抜け漏れの確認"><strong>抜け漏れの確認</strong>ドメイン定義書のすべての RESP が、どれか1つのコンテキストの「担う責務」に載っていること。コンテキストのすべての RESP が、「機能一覧」のどれかの仕様書で実現されていること。この2つを確認すると、作り忘れと、担当のはっきりしない機能を防げます。</aside>
+        <aside class="callout" aria-label="抜け漏れの確認"><strong>抜け漏れの確認</strong>ドメイン定義書のすべての RESP が、どれか1つのコンテキストの「担う責務」に載っていること。コンテキストのすべての RESP が、「機能一覧」のどれかの仕様書で実現されていること。業務フローのうちシステムで行う作業が、どれかの機能に対応していること。この3つを確認すると、作り忘れと、担当のはっきりしない機能を防げます。</aside>
       </section>
 
       <section id="split" aria-labelledby="split-title">
@@ -410,7 +491,7 @@ button:disabled { cursor: default; }
         <div class="cards two">
           <article class="panel"><h3>エンティティ（CRUD）単位</h3><p class="muted">「顧客サービス」「商品サービス」のような分け方。ルールが散らばり、どの操作も複数のサービスを呼ぶことになります。</p></article>
           <article class="panel"><h3>技術のレイヤー単位</h3><p class="muted">画面・API・データベースで分けても、言葉の境界にはなりません。</p></article>
-          <article class="panel"><h3>画面単位</h3><p class="muted">画面は機能仕様書の単位であり、コンテキストの単位ではありません。</p></article>
+          <article class="panel"><h3>画面単位</h3><p class="muted">画面は Catalog で管理する実体で、複数の機能から使われます。コンテキストの単位ではありません。</p></article>
           <article class="panel"><h3>組織図だけ</h3><p class="muted">言葉もモデルも同じなのに、部署が違うという理由だけで分けることです。</p></article>
         </div>
 
@@ -435,8 +516,121 @@ button:disabled { cursor: default; }
         </ol>
       </section>
 
+      <section id="model" aria-labelledby="model-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="model-title">Model：業務フローとオブジェクト</h2></div>
+        <p>業務モデル（Model）は、業務を具体的に描く層です。開発に入る前に、業務の流れ（Flows）と、業務で扱う「もの」（Objects）を、業務担当者と一緒に整理します。どちらもシステムで1つのファイルにまとめて管理します。Flows はコンテキストごとにタブを分けて描き、Objects はシステム全体で1つにします。ここで描いた作業と項目が、仕様書（01〜07 と 08 この機能の設計）の元になります。</p>
+        <div class="table-wrap" role="region" aria-label="業務モデルの2つの資料" tabindex="0"><table>
+          <thead><tr><th scope="col">業務モデル</th><th scope="col">単位</th><th scope="col">答える問い</th><th scope="col">書くこと</th><th scope="col">次につながる先</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="layer">Flows</span>業務フロー<br><a href="business_flow.html">業務フロー図</a></th><td>1つのファイル。タブ＝コンテキスト ＋「全体」</td><td>誰が、どの順に、どの作業・帳票で業務を進めるか</td><td>行に情報項目・ステータス、列にみるもの（担当・外部）を置き、マスに作業と帳票を並べ、矢印で流れと情報の受け渡しをつなぐ</td><td>システムで行う作業 → コンテキスト定義書 08 機能一覧・仕様書 04 操作の流れ</td></tr>
+            <tr><th scope="row"><span class="layer">Objects</span>オブジェクト<br><a href="object_model.html">オブジェクト整理</a></th><td>システムで1つ</td><td>どんな「もの」を扱い、何を持ち、何ができるか</td><td>オブジェクトごとのプロパティ・型・候補値（Enum）・操作、コレクション（一覧）の表示項目と操作、参照関係</td><td>仕様書 06 データ項目、仕様書 08 の画面（オブジェクト → 詳細、コレクション → 一覧）・API の型・テーブル</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>コンテキスト定義書との役割分担</h3>
+        <p>コンテキスト定義書の 03 ドメインモデルと 05 状態とライフサイクルは要約として残し、詳しい内容は業務モデルに書きます。同じことを2か所に書かないためです。</p>
+        <div class="table-wrap" role="region" aria-label="要約と詳細の分担" tabindex="0"><table>
+          <thead><tr><th scope="col">内容</th><th scope="col">コンテキスト定義書（要約）</th><th scope="col">業務モデル（詳細）</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">扱う「もの」</th><td>03 ドメインモデル：概念の名前、集約・エンティティ・値オブジェクトの区分、集約の境界</td><td>Objects：プロパティ・型・候補値・操作、コレクション、参照関係</td></tr>
+            <tr><th scope="row">状態と業務の流れ</th><td>05 状態とライフサイクル：状態の一覧と、どの状態からどの状態へ移れるか</td><td>Flows：その遷移を、誰が、どの作業・帳票で起こすか。行のステータスは 05 の状態名をそのまま使う</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="cards">
+          <article class="panel"><h3>コンテキストをまたぐ流れは「全体」タブへ</h3><p class="muted">「受注 → 在庫の引き当て → 請求」のように複数のコンテキストをまたぐ業務の流れは、業務フロー図に「全体」タブを作って描き、ドメイン定義書 05 コンテキスト間の関係からリンクします。各コンテキストのタブは、その中の自分の部分を詳しく描きます。境界をまたぐ受け渡しは、コンテキスト定義書 06 イベント・07 連携に現れます。</p></article>
+          <article class="panel"><h3>Objects をシステムで1つにするときの注意</h3><p class="muted">同じ名前でもコンテキストによって意味が違うもの（受注の「商品」＝販売単位、在庫の「商品」＝保管単位）は、別のオブジェクトにして名前にコンテキストを添えます（例：商品［受注］・商品［在庫］）。説明欄には意味を書き写さず、コンテキスト定義書 02 の用語へのリンクを書きます。意味の正本は 02 です。1つにまとめると、コンテキストをまたぐ参照関係が1か所で見えます。</p></article>
+          <article class="panel"><h3>Flows → Objects の順に描く</h3><p class="muted">先に業務フロー図で作業と帳票を並べると、帳票や情報項目から扱う「もの」が見つかります。それをオブジェクト整理でオブジェクトにし、プロパティと操作を書き出します。名前はコンテキスト定義書 02 ユビキタス言語に揃え、新しい言葉が出てきたら 02 に追加します。</p></article>
+        </div>
+        <aside class="callout" aria-label="DDD での呼び方"><strong>DDD での呼び方</strong>Model の層は、DDD のドメインモデリングに当たります。Flows はドメインストーリーテリング（アクター・ワークオブジェクト・アクティビティ）や Event Storming のプロセスモデリングに近く、Objects のプロパティ・操作はエンティティ・値オブジェクトの詳細です。コレクション（一覧）は、DDD ではなく OOUI（オブジェクト指向 UI）の考え方です。</aside>
+      </section>
+
+      <section id="design" aria-labelledby="design-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="design-title">Catalog と Design：実体とルール</h2></div>
+        <p>「どう作るか（How）」は3か所に分けて書きます。1つの機能の作り方は、その機能の仕様書の「08 この機能の設計」に書きます。その結果できる画面・API・テーブルの実体は、システムで1つの Catalog に集めます。全機能に共通するルール（非機能要件の満たし方・共通ルール）は、システムで1つの Design に書きます。Catalog は「今あるもの」、Design は「どう作るかの決まり」です。</p>
+        <div class="table-wrap" role="region" aria-label="問いと資料の対応" tabindex="0"><table>
+          <thead><tr><th scope="col">問い</th><th scope="col">書く資料</th><th scope="col">変わるきっかけ</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Why：なぜ必要か（課題・責務）</th><td><span class="tag tag-green">ドメイン定義書</span> 01〜03</td><td>事業・業務の目的が変わったとき</td></tr>
+            <tr><th scope="row">What：何をするか（用語・ルール・状態・業務の流れ・扱うもの・機能の振る舞い）</th><td><span class="tag tag-brown">コンテキスト定義書</span> <span class="tag tag-model">業務モデル</span> <span class="tag tag-muted">機能仕様書</span> 01〜07</td><td>業務のやり方・ルールが変わったとき</td></tr>
+            <tr><th scope="row">How（機能ごと）：この機能をどう作るか</th><td><span class="tag tag-muted">機能仕様書</span> 08 この機能の設計</td><td>その機能の作り方を変えたとき</td></tr>
+            <tr><th scope="row">実体：今どんな画面・API・テーブルがあるか</th><td><span class="tag tag-tech">Catalog</span> システムで1つ</td><td>仕様書の 08 で画面・API・テーブルを足した・変えたとき</td></tr>
+            <tr><th scope="row">ルール：全機能でどう作るか</th><td><span class="tag tag-tech">Design</span> システムで1つ</td><td>技術・構成・非機能要件が変わったとき</td></tr>
+            <tr><th scope="row">Why this design：なぜその設計か</th><td><a href="adr.html">ADR</a></td><td>規模・チーム・技術などの前提が変わったとき</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="仕様と設計の境目"><strong>仕様と設計の境目</strong>「実装の技術を変えても変わらないか」で分けます。変わらないなら仕様（仕様書 01〜07）、変わるなら設計（仕様書 08・Catalog・Design）です。たとえば「確定済みの注文は明細を変更できない」はルール（コンテキスト定義書 04）と振る舞い（仕様書 05）です。「そのとき API は 409 を返す」は仕様書 08 と Catalog の API 定義、「エラーはすべて共通の形式で返す」は Design です。</aside>
+
+        <h3>Catalog：実体の一覧</h3>
+        <p>Catalog には、システムに今ある画面・API・テーブルを、それぞれ1か所にまとめます。仕様書の 08 で足したり変えたりしたものを、ここに反映します。中はコンテキストごとに分けます。</p>
+        <div class="table-wrap" role="region" aria-label="Catalog に書くこと" tabindex="0"><table>
+          <thead><tr><th scope="col">実体</th><th scope="col">書くこと</th><th scope="col">形式・参照</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">画面</th><td>画面一覧と遷移、画面ごとの要素の全体</td><td><a href="screen_design_template.html">画面・機能設計書</a></td></tr>
+            <tr><th scope="row">API</th><td>すべての API の定義（エンドポイント・入出力・エラー）</td><td>OpenAPI などの定義ファイル</td></tr>
+            <tr><th scope="row">テーブル</th><td>すべてのテーブルの定義と関係</td><td>スキーマ定義・ER 図</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Design：ルール</h3>
+        <p>Design には、非機能要件と、Frontend・IF・DB・Infra の共通ルールだけを書きます。個々の画面・API・テーブルの定義は書かず、それらが従う決まりを書きます。雛形はまだないため、まずは1つの資料に下の表の見出しで書き始めます。</p>
+        <div class="table-wrap" role="region" aria-label="Design に書くこと" tabindex="0"><table>
+          <thead><tr><th scope="col">区分</th><th scope="col">領域</th><th scope="col">書くこと</th><th scope="col">形式・参照</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">非機能要件</th><td class="area">共通</td><td>目標（性能・可用性・セキュリティ・運用・保守・移行）と、それを領域ごとにどう満たすか</td><td>下の「満たし方の表」。分類は IPA の非機能要求グレードが使える</td></tr>
+            <tr><th scope="row" rowspan="4">共通ルール</th><td class="area">Frontend</td><td>デザインシステム（色・文字・余白・部品）、画面構成と操作の共通ルール、エラー表示、アクセシビリティ、対応ブラウザ</td><td><a href="bases/atomic_component.html">デザイン要素の説明資料</a>・<a href="bases/color.html">カラーコードの説明</a>・<a href="bases/display.html">画面構成と操作の考え方</a></td></tr>
+            <tr><td class="area">IF</td><td>API の共通規約（認証・認可、エラーの形式、ページング、バージョン管理）、イベントの形式、タイムアウト・リトライ・冪等性（同じ要求が2回届いても結果が変わらないこと）</td><td>規約の文書</td></tr>
+            <tr><td class="area">DB</td><td>命名規約、共通カラム（作成日時など）、論理削除、ロックの方針、マイグレーション、バックアップ。コンテキストをまたいでテーブルを共有しない</td><td>規約の文書</td></tr>
+            <tr><td class="area">Infra</td><td>構成、環境（開発・検証・本番）、デプロイ、監視・ログ、冗長化、セキュリティ</td><td>構成図</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>非機能要件の満たし方の表</h3>
+        <p>行に非機能要件の目標、列に領域を置き、マスに満たし方を書きます。どの要件をどこで担保しているかが一目でわかり、抜けている領域も見つかります。</p>
+        <div class="table-wrap" role="region" aria-label="非機能要件の満たし方の例" tabindex="0"><table>
+          <thead><tr><th scope="col">目標</th><th scope="col">Frontend</th><th scope="col">IF</th><th scope="col">DB</th><th scope="col">Infra</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">性能：画面は 3 秒以内に表示する</th><td>一覧は分けて読み込む</td><td>一覧の API はページング必須</td><td>検索条件にインデックス</td><td>CDN、自動スケール</td></tr>
+            <tr><th scope="row">可用性：稼働率 99.9%</th><td>通信に失敗しても入力内容を残す</td><td>リトライと冪等キー</td><td>複数拠点に複製、自動バックアップ</td><td>冗長構成、ヘルスチェック</td></tr>
+            <tr><th scope="row">セキュリティ：権限のない操作を防ぐ</th><td>権限のない操作のボタンを出さない</td><td>すべての API で認可を検査する</td><td>個人情報の列を暗号化</td><td>通信の暗号化、WAF</td></tr>
+            <tr><th scope="row">運用：障害にすぐ気づける</th><td>画面のエラーを収集する</td><td>相関 ID をログに出す</td><td>遅いクエリを記録する</td><td>監視とアラート</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">例：値と満たし方はプロジェクトで決めます。決済だけ基準が厳しいなど、コンテキストごとの違いも、この表に行を分けて書きます。それがコンテキストを分ける理由になったときは、ドメイン定義書 04 の「1対1にしない理由」から ADR へリンクします。</p>
+
+        <h3>仕様書 08・Catalog・Design の分担</h3>
+        <div class="table-wrap" role="region" aria-label="仕様書 08・Catalog・Design の分担" tabindex="0"><table>
+          <thead><tr><th scope="col">内容</th><th scope="col">仕様書 08（機能ごと）</th><th scope="col">Catalog（実体）</th><th scope="col">Design（ルール）</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">画面</th><td>この機能で使う・足す・変える画面と画面要素、表示の条件</td><td>画面一覧と遷移、画面ごとの要素の全体</td><td>デザインシステム、画面構成・操作の共通ルール</td></tr>
+            <tr><th scope="row">API</th><td>この機能が提供・利用する API（operationId）、入出力、エラー時の扱い</td><td>すべての API の定義</td><td>API の共通規約（認証・エラー形式・ページング）</td></tr>
+            <tr><th scope="row">データベース</th><td>この機能が読み書きするテーブルと列</td><td>すべてのテーブルの定義と関係</td><td>命名・共通カラム・ロックの方針</td></tr>
+            <tr><th scope="row">処理の順序</th><td>込み入るときだけ、この機能のシステムシーケンス</td><td>—</td><td>共通の方式（同期・非同期の使い分けなど）</td></tr>
+            <tr><th scope="row">非機能要件</th><td>共通と違う満たし方（理由は ADR）。この機能だけの要求は仕様書 03</td><td>—</td><td>システム共通の目標と満たし方</td></tr>
+          </tbody>
+        </table></div>
+        <aside class="callout" aria-label="業務フローとシステムシーケンス"><strong>業務フロー（Flows）とシステムシーケンスは別のもの</strong>業務フローに登場するのは人・部署・外部・帳票で、「誰がどの順に何の作業をするか」を描きます（Model）。システムシーケンスに登場するのは画面・API・サービス・データベースで、「システムの中でどの順に呼び出すか」を描きます（仕様書 08）。</aside>
+
+        <div class="cards">
+          <article class="panel"><h3>ルールは書き写さない</h3><p class="muted">仕様書の 08 と Catalog には、Design のルールを書き写しません。ルールと違う作り方をするときだけ、仕様書の 08 に例外として書き、理由を <a href="adr.html">ADR</a> に残します。</p></article>
+          <article class="panel"><h3>仕様書と Catalog を両方向にたどる</h3><p class="muted">仕様書の 08 から、Catalog の画面名・operationId・テーブル名へリンクします。Catalog の側にも、使っている SPEC 番号を書きます。両方向にたどれると、変更の影響範囲がわかります。</p></article>
+          <article class="panel"><h3>Catalog の中はコンテキストで整理する</h3><p class="muted">API とテーブルは、コンテキストごとに分けます。テーブルはコンテキストをまたいで共有しません。04 の「技術のレイヤー単位で分けない」はコンテキストの分け方の話で、Catalog の整理のしかたとは別です。</p></article>
+        </div>
+        <pre aria-label="仕様書から業務モデル・Catalog への参照の例"><code>SPEC-0001 注文明細を変更する（コンテキスト：受注 ／ 責務：RESP-001）
+  Model（関連資料）
+    Flows   ：業務フロー図「受注」タブの作業「明細を変更する」
+    Objects ：オブジェクト整理「注文［受注］」「注文明細［受注］」、コレクション「注文明細一覧」
+  08 この機能の設計
+    画面    ：注文詳細に「明細を変更」ボタンを追加（→ Catalog 画面一覧「注文詳細」）
+    API     ：提供 updateOrderLines。確定済み・版が古いときは 409（→ Catalog API 定義 order.yaml）
+    DB      ：order_lines を更新、order_line_histories に追加（→ Catalog テーブル定義 order.md）
+    例外    ：なし（Design のルールどおり）
+  ADR       ：ADR-0003 明細の同時変更を楽観ロックで防ぐ</code></pre>
+        <p class="caption">例：仕様書から業務モデル・Catalog へのつながり。</p>
+      </section>
+
       <section id="where" aria-labelledby="where-title">
-        <div class="section-heading"><span class="section-number">05 /</span><h2 id="where-title">どこに何を書くか</h2></div>
+        <div class="section-heading"><span class="section-number">07 /</span><h2 id="where-title">どこに何を書くか</h2></div>
         <p>同じ情報を複数の資料に書くと、更新のたびにずれます。書く場所を1つに決め、他の資料からは ID やリンクで参照します。</p>
         <div class="table-wrap" role="region" aria-label="情報の書き場所" tabindex="0"><table>
           <thead><tr><th scope="col">書きたいこと</th><th scope="col">書く場所</th><th scope="col">他の資料ではどうするか</th></tr></thead>
@@ -444,83 +638,104 @@ button:disabled { cursor: default; }
             <tr><th scope="row">システムがまたがるドメインと、業務の責任者</th><td><span class="tag tag-green">ドメイン定義書</span> 02 ドメイン一覧</td><td>コンテキスト定義書の見出しに、属するドメイン名を書く</td></tr>
             <tr><th scope="row">システムが担う責務</th><td><span class="tag tag-green">ドメイン定義書</span> 03 システムの責務</td><td>コンテキスト定義書 01 と仕様書の見出しには RESP 番号だけを書く</td></tr>
             <tr><th scope="row">サブドメインの分け方と種別、コンテキストとの対応（1対1・分割・統合）、担当チーム</th><td><span class="tag tag-green">ドメイン定義書</span> 04 サブドメインとコンテキスト</td><td>コンテキスト定義書の見出しに、解決するサブドメイン・対応・種別・担当チームを揃えて書く。1対1でない理由は ADR</td></tr>
-            <tr><th scope="row">サブドメイン同士の関係パターン</th><td><span class="tag tag-green">ドメイン定義書</span> 05 コンテキスト間の関係</td><td>コンテキスト定義書 07 連携の「関係パターン」列を揃える</td></tr>
-            <tr><th scope="row">同じ言葉が別の意味になる用語</th><td><span class="tag tag-green">ドメイン定義書</span> 06 境界をまたぐ用語</td><td>各コンテキスト定義書の用語集には、自分のコンテキストでの意味だけを書く</td></tr>
-            <tr><th scope="row">用語の定義、使わない言い方</th><td><span class="tag tag-brown">コンテキスト定義書</span> 02 ユビキタス言語</td><td>仕様書 02 用語・前提は、定義を書き写さず参照する</td></tr>
-            <tr><th scope="row">概念（集約・エンティティ・値オブジェクト）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 03 ドメインモデル</td><td>項目の詳細は <a href="object_model.html">オブジェクト整理</a>。仕様書のデータ項目は同じ名前を使う</td></tr>
+            <tr><th scope="row">サブドメイン同士の関係パターン</th><td><span class="tag tag-green">ドメイン定義書</span> 05 コンテキスト間の関係</td><td>ここが正本。コンテキスト定義書 07 連携には書かない</td></tr>
+            <tr><th scope="row">コンテキストをまたぐ業務の流れ（例：受注 → 在庫 → 請求）</th><td><span class="tag tag-model">業務モデル</span> Flows の「全体」タブ</td><td>ドメイン定義書 05 からリンクする。各コンテキストのタブは自分の部分だけを詳しく描く</td></tr>
+            <tr><th scope="row">同じ言葉が、どのコンテキストで別の意味になるか、連携のときの変換</th><td><span class="tag tag-green">ドメイン定義書</span> 06 境界をまたぐ用語</td><td>意味そのものは書き写さず、各コンテキスト定義書 02 へリンクする</td></tr>
+            <tr><th scope="row">用語の定義（意味の正本）、使わない言い方</th><td><span class="tag tag-brown">コンテキスト定義書</span> 02 ユビキタス言語</td><td>ドメイン定義書 06、Objects の説明欄、仕様書 02 用語・前提は、定義を書き写さず参照する。業務モデル・仕様書 08・Catalog の名前もここに揃える</td></tr>
+            <tr><th scope="row">概念の名前と区分、集約の境界（要約）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 03 ドメインモデル</td><td>プロパティ・操作・一覧の詳細は Objects に書く</td></tr>
             <tr><th scope="row">業務上の決まりごと（RULE-xxx）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 04 ビジネスルール</td><td>仕様書の要件の「根拠」列に RULE 番号を書く</td></tr>
-            <tr><th scope="row">状態と遷移</th><td><span class="tag tag-brown">コンテキスト定義書</span> 05 状態とライフサイクル</td><td>仕様書の「前提」で状態名を使う。例：状態が「下書き」のとき</td></tr>
-            <tr><th scope="row">他のコンテキストとの API・イベント</th><td><span class="tag tag-brown">コンテキスト定義書</span> 06 イベント・07 連携</td><td>仕様書 06 データ・インターフェースは、07 に載っているものを使う</td></tr>
-            <tr><th scope="row">どの機能を作るか</th><td><span class="tag tag-brown">コンテキスト定義書</span> 08 機能一覧</td><td>機能ごとに仕様書を1つ作り、一覧から仕様書へリンクする</td></tr>
-            <tr><th scope="row">1つの機能の要件・画面の流れ・振る舞い</th><td><span class="tag tag-muted">機能仕様書</span> 03〜05</td><td>コンテキスト定義書には書かない。画面の詳細は <a href="screen_design_template.html">画面・機能設計書</a></td></tr>
+            <tr><th scope="row">状態の一覧と遷移（要約）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 05 状態とライフサイクル</td><td>誰がどの作業で状態を進めるかは Flows に書く。仕様書の「前提」で状態名を使う。例：状態が「下書き」のとき</td></tr>
+            <tr><th scope="row">他のコンテキストとのやりとり（イベント・API）</th><td><span class="tag tag-brown">コンテキスト定義書</span> 06 イベント・07 連携</td><td>イベントの中身は 06 が正本で、07 はイベント名で参照する。仕様書 06 データ・インターフェースは、07 に載っているものを使う。この機能で使う API の入出力は仕様書 08 に、API 全体の定義は Catalog に書く</td></tr>
+            <tr><th scope="row">どの機能を作るか</th><td><span class="tag tag-brown">コンテキスト定義書</span> 08 機能一覧</td><td>機能ごとに仕様書を1つ作り、一覧から仕様書へリンクする。ステータスや使うルール・状態は仕様書にだけ書く</td></tr>
+            <tr><th scope="row">コンテキストの中の業務の流れ（誰が、どの順に、どの作業・帳票で進めるか）</th><td><span class="tag tag-model">業務モデル</span> Flows（業務フロー図のコンテキストのタブ）</td><td>仕様書 04 操作の流れは、業務の流れのうちシステムで行う1つの作業として書く</td></tr>
+            <tr><th scope="row">オブジェクトのプロパティ・型・操作、一覧（コレクション）の表示項目</th><td><span class="tag tag-model">業務モデル</span> Objects（オブジェクト整理。システムで1つ）</td><td>仕様書 06・08、Catalog の API 定義・テーブル定義の項目は同じ名前を使う</td></tr>
+            <tr><th scope="row">1つの機能の要件・操作の流れ・振る舞い</th><td><span class="tag tag-muted">機能仕様書</span> 03〜05</td><td>コンテキスト定義書には書かない。画面の要素や表示は仕様書 08 に書く</td></tr>
             <tr><th scope="row">完成の条件</th><td><span class="tag tag-muted">機能仕様書</span> 07 受け入れ基準</td><td>テストは <a href="screen_unit_test.html">画面単体テストケース</a> に展開する</td></tr>
-            <tr><th scope="row">なぜそう決めたか（選択肢と理由）</th><td><a href="adr.html">ADR</a></td><td>3つの資料には結果だけを書き、ADR へリンクする</td></tr>
+            <tr><th scope="row">この機能の作り方（使う画面と要素・API・テーブル、込み入るときのシステムシーケンス）</th><td><span class="tag tag-muted">機能仕様書</span> 08 この機能の設計</td><td>仕様書の 01〜07 には書かない。共通ルールは書き写さず、Catalog の実体へリンクする</td></tr>
+            <tr><th scope="row">システム共通の非機能要件（目標と満たし方）</th><td><span class="tag tag-tech">Design</span> 非機能要件</td><td>仕様書 03 にはこの機能だけの要求を書く。コンテキストごとの違いも Design に書く</td></tr>
+            <tr><th scope="row">Frontend・IF・DB・Infra の共通ルール（デザインシステム、API の共通規約など）</th><td><span class="tag tag-tech">Design</span> 共通ルール</td><td>仕様書 08 には書き写さず、例外だけ書く。例外の理由は ADR</td></tr>
+            <tr><th scope="row">画面一覧と遷移、すべての API の定義、すべてのテーブルの定義（実体）</th><td><span class="tag tag-tech">Catalog</span></td><td>仕様書 08 には、この機能が使う部分だけを書いてリンクする</td></tr>
+            <tr><th scope="row">なぜそう決めたか（選択肢と理由）</th><td><a href="adr.html">ADR</a></td><td>各資料には結果だけを書き、ADR へリンクする</td></tr>
           </tbody>
         </table></div>
-        <aside class="callout" aria-label="迷ったとき"><strong>迷ったとき</strong>「この情報が変わったら、誰が困るか」で決めます。システム全体（複数のドメイン・チーム）が困るならドメイン定義書、そのサブドメインの担当者が困るならコンテキスト定義書、その機能を作る人だけが困るなら機能仕様書です。</aside>
+        <aside class="callout" aria-label="迷ったとき"><strong>迷ったとき</strong>「この情報が変わったら、誰が困るか」で決めます。システム全体（複数のドメイン・チーム）が困るならドメイン定義書、そのサブドメインの担当者が困るならコンテキスト定義書か業務モデル（名前と境界だけなら定義書、項目や作業の細部なら業務モデル）、その機能を作る人だけが困るなら機能仕様書です。実装の技術を入れ替えたら変わる情報のうち、その機能だけのことは仕様書 08、画面・API・テーブルそのものの定義は Catalog、全機能に共通する決まりは Design です。</aside>
       </section>
 
       <section id="order" aria-labelledby="order-title">
-        <div class="section-heading"><span class="section-number">06 /</span><h2 id="order-title">作る順番</h2></div>
-        <p>新しいシステムなら上から順に、既存システムに機能を足すなら仕様書から始めて、必要なところだけ上を直します。</p>
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="order-title">作る順番</h2></div>
+        <p>新しいシステムなら Domain → Context → Model → Spec の順に書き、最初の仕様書の前に Design の土台を粗く作ります。既存システムに機能を足すなら、該当するコンテキストの業務モデルと仕様書から始めて、必要なところだけ上の資料と Design を直します。</p>
         <h3>新しいシステムを設計するとき</h3>
         <ol class="steps">
           <li><div><strong>ドメイン定義書でドメインと責務を洗い出す</strong><p>システムにつき <a href="domain.html">domain.html</a> を1つ作り、01 概要、02 ドメイン一覧、03 システムの責務を書きます。先に、システムがまたがるドメインと業務の責任者を確認します。責務は、人が行う業務と分けて書きます。</p></div></li>
-          <li><div><strong>ドメインをサブドメインに分け、コンテキストを決める</strong><p>04 で、各ドメインをサブドメインに分けて責務を割り当て、まず1対1でコンテキストを置きます。そのうえで「<a href="#split">04 コンテキストの分け方</a>」のルールで、分割・統合が必要かを確認します。ドメイン定義書 05 で関係を粗く描きます。</p></div></li>
-          <li><div><strong>サブドメインごとにコンテキスト定義書を作る</strong><p><a href="context.html">context.html</a> を、サブドメイン1つにつき1ファイル複製します。01 で担う責務を引き受け、業務担当者と一緒に 02 用語・03 モデル・04 ルール・05 状態を書きます。</p></div></li>
+          <li><div><strong>ドメインをサブドメインに分け、コンテキストを決める</strong><p>04 で、各ドメインをサブドメインに分けて責務を割り当て、まず1対1でコンテキストを置きます。そのうえで「<a href="#split">04 コンテキストの分け方</a>」のルールで、分割・統合が必要かを確認します。ドメイン定義書 05 で関係を粗く描き、業務フロー図の「全体」タブに、コンテキストをまたぐ業務の流れを粗く描きます。</p></div></li>
+          <li><div><strong>サブドメインごとにコンテキスト定義書を作る</strong><p><a href="context.html">context.html</a> を、サブドメイン1つにつき1ファイル複製します。01 で担う責務を引き受け、業務担当者と一緒に 02 用語・04 ルールを書き、03 モデル・05 状態は要約を書きます。</p></div></li>
+          <li><div><strong>業務モデルを描く（Flows → Objects）</strong><p><a href="business_flow.html">業務フロー図</a>にコンテキストごとのタブを作り、コンテキスト定義書 05 の状態を行にして、誰がどの作業・帳票で状態を進めるかを整理します。帳票や情報項目から、システムで1つの<a href="object_model.html">オブジェクト整理</a>にプロパティ・操作・コレクションを書きます（<a href="#model">05</a>）。新しい用語・状態が出てきたら、コンテキスト定義書に戻して追記します。</p></div></li>
           <li><div><strong>分け方や連携の判断を ADR に残す</strong><p>「なぜこの責務をこのサブドメインに入れたか」「なぜイベント連携にしたか」を <a href="adr.html">adr.html</a> に記録し、該当箇所からリンクします。</p></div></li>
-          <li><div><strong>機能一覧を作り、機能ごとに仕様書を書く</strong><p>コンテキスト定義書の 08 機能一覧に機能を並べ、<a href="specs.html">specs.html</a> を機能につき1ファイル複製します。見出しにコンテキストと実現する責務を書きます。</p></div></li>
-          <li><div><strong>画面設計とテストへ展開する</strong><p>仕様書の 04 操作の流れを<a href="screen_design_template.html">画面・機能設計書</a>に、05 振る舞いと 07 受け入れ基準を<a href="screen_unit_test.html">画面単体テストケース</a>に展開します。</p></div></li>
+          <li><div><strong>Design の土台を作る</strong><p>最初の仕様書を書く前に、非機能要件の目標と満たし方、Frontend・IF・DB・Infra の共通ルールを粗く書きます（<a href="#design">06</a>）。技術選定の理由は ADR に残します。土台は開発しながら育てます。</p></div></li>
+          <li><div><strong>機能一覧を作り、仕様書の 01〜07 を書く</strong><p>業務フローのうちシステムで行う作業を、コンテキスト定義書の 08 機能一覧に並べ、<a href="specs.html">specs.html</a> を機能につき1ファイル複製します。見出しにコンテキストと実現する責務を、関連資料に元になった業務モデルを書きます。業務担当とレビューして確定します。</p></div></li>
+          <li><div><strong>仕様書の 08 にこの機能の設計を書く</strong><p>仕様書の 04・05 と Objects から使う画面と画面要素を、06 とコンテキスト定義書 07 から API の入出力を、Objects と 03 の集約の境界から読み書きするテーブルを書きます。新しく作る画面・API・テーブルは、Catalog にも追加します。</p></div></li>
+          <li><div><strong>テストへ展開する</strong><p>仕様書の 05 振る舞いと 07 受け入れ基準を<a href="screen_unit_test.html">画面単体テストケース</a>に展開し、設計どおりに作ったものが受け入れ基準を満たすかを確認します。</p></div></li>
         </ol>
         <h3>既存のシステムに機能を足すとき</h3>
         <ol class="steps">
           <li><div><strong>どのコンテキストのどの責務か決める</strong><p>足したい機能が、どのコンテキストのどの RESP を実現するかを決めます。当てはまる責務がなければ、ドメイン定義書 03 に責務を追加し、04 で担うサブドメインと解決するコンテキストを決めます。</p></div></li>
+          <li><div><strong>業務モデルを直す</strong><p>業務フロー図の、そのコンテキストのタブに作業を足し、必要ならオブジェクト整理にプロパティ・操作を足します。コンテキストをまたぐ流れが変わるなら、「全体」タブも直します。</p></div></li>
           <li><div><strong>仕様書を書き、機能一覧に載せる</strong><p>specs.html を書き、コンテキスト定義書の 08 機能一覧に追加します。新しい用語・ルール・状態が出てきたら、コンテキスト定義書の該当箇所に追記します。</p></div></li>
+          <li><div><strong>この機能の設計を書き、Catalog を直す</strong><p>仕様書の 08 に使う画面・API・テーブルを書き、Catalog（画面・API・テーブルの実体）に追加・変更を反映します。共通ルールで足りないときは、例外として 08 に書き、理由を ADR に残します。</p></div></li>
         </ol>
       </section>
 
       <section id="terms" aria-labelledby="terms-title">
-        <div class="section-heading"><span class="section-number">07 /</span><h2 id="terms-title">用語を揃える流れ</h2></div>
-        <p>責務と並んで、3つの資料をつなぐのが用語です。「商品」という言葉を例に、どの資料にどう現れるかを示します。</p>
+        <div class="section-heading"><span class="section-number">09 /</span><h2 id="terms-title">用語を揃える流れ</h2></div>
+        <p>責務と並んで、各層の資料をつなぐのが用語です。「商品」という言葉を例に、どの資料にどう現れるかを示します。</p>
         <div class="table-wrap" role="region" aria-label="用語の流れの例" tabindex="0"><table>
           <thead><tr><th scope="col">資料</th><th scope="col">書き方の例</th><th scope="col">役割</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><span class="tag tag-green">ドメイン定義書</span><br>05 境界をまたぐ用語</th><td>受注：「商品」＝販売単位（SKU）<br>在庫：「商品」＝保管単位（ロット）</td><td>同じ言葉がサブドメインをまたぐと意味が変わることを示す。連携時に変換が必要な根拠になる</td></tr>
+            <tr><th scope="row"><span class="tag tag-green">ドメイン定義書</span><br>06 境界をまたぐ用語</th><td>商品 ／ 受注 02・在庫 02・請求 02 で意味が違う ／ 受注 → 在庫は SKU からロットへ変換</td><td>同じ言葉がコンテキストをまたぐと意味が変わることと、連携時の変換を示す。意味そのものは書き写さない</td></tr>
             <tr><th scope="row"><span class="tag tag-brown">コンテキスト定義書（受注）</span><br>02 ユビキタス言語</th><td>商品 ／ <code>Product</code> ／ 顧客が注文できる販売単位。SKU で識別する ／ 「品目」とは呼ばない</td><td>そのコンテキストでの定義を1か所に置く。コード・画面・会話で同じ名前を使う</td></tr>
-            <tr><th scope="row"><span class="tag tag-muted">機能仕様書（明細の変更）</span><br>02 用語・前提</th><td>商品 ／ 注文できる販売単位 ／ 参照：コンテキスト定義書（受注）02</td><td>定義を書き写さず参照する。入力項目・API の名前は <code>Product</code>・<code>sku</code> に揃える</td></tr>
+            <tr><th scope="row"><span class="tag tag-model">業務モデル</span><br>Flows・Objects</th><td>業務フロー図「受注」タブの帳票「注文書」の明細に「商品」。オブジェクト「商品［受注］」のプロパティ <code>sku</code></td><td>業務の流れとオブジェクトでも、ユビキタス言語の名前をそのまま使う</td></tr>
+            <tr><th scope="row"><span class="tag tag-muted">機能仕様書（明細の変更）</span><br>02 用語・前提</th><td>商品 ／ 定義：コンテキスト定義書（受注）02 ／ 補足：なし</td><td>定義を書き写さず参照する。入力項目の名前は <code>Product</code>・<code>sku</code> に揃える</td></tr>
+            <tr><th scope="row"><span class="tag tag-tech">仕様書 08・Catalog</span></th><td>画面のラベル「商品」、API の項目 <code>sku</code>、テーブルの列 <code>order_lines.sku</code></td><td>設計の都合で別の名前を作らない</td></tr>
           </tbody>
         </table></div>
         <aside class="callout" aria-label="名前の付け方"><strong>ID で結びつける</strong>ドメイン定義書の責務は <span class="id">RESP-001</span>・課題は <span class="id">SYS-001</span>、コンテキスト定義書のルールは <span class="id">RULE-001</span>、仕様書は <span class="id">SPEC-0001</span>・要件は <span class="id">REQ-001</span>・受け入れ基準は <span class="id">AC-001</span> のように番号を付けると、資料をまたいで「どれの話か」を指せます。</aside>
       </section>
 
       <section id="update" aria-labelledby="update-title">
-        <div class="section-heading"><span class="section-number">08 /</span><h2 id="update-title">更新のルール</h2></div>
+        <div class="section-heading"><span class="section-number">10 /</span><h2 id="update-title">更新のルール</h2></div>
         <p>1つの資料を変えたら、つながっている資料のどこを見直すかを決めておきます。</p>
         <div class="table-wrap" role="region" aria-label="更新時の確認" tabindex="0"><table>
           <thead><tr><th scope="col">変えたこと</th><th scope="col">見直す資料</th><th scope="col">記録する場所</th></tr></thead>
           <tbody>
-            <tr><th scope="row">ドメインを追加した（システムの範囲が広がった）</th><td>ドメイン定義書 02 にドメインを、04 にサブドメインとコンテキストを追加する。05 でドメインをまたぐ連携を確認する</td><td>ドメイン定義書の変更履歴。範囲の判断は ADR</td></tr>
-            <tr><th scope="row">責務を追加・削除した</th><td>担うコンテキスト定義書の 01 担う責務と 08 機能一覧。削除なら、その責務を実現していた仕様書</td><td>ドメイン定義書の変更履歴</td></tr>
-            <tr><th scope="row">責務を別のサブドメインに移した</th><td>移す前と後のコンテキスト定義書の 01・08。関係する仕様書の「コンテキスト」と 02 用語・06 データの参照先</td><td>ADR に決定を残し、ドメイン定義書の版数を上げる</td></tr>
-            <tr><th scope="row">コンテキストを分割・統合した</th><td>ドメイン定義書 04 の対応表。コンテキスト定義書を分割・統合し、01 担う責務・08 機能一覧を振り分ける。関係する仕様書の「コンテキスト」を直す</td><td>ADR、ドメイン定義書の変更履歴</td></tr>
+            <tr><th scope="row">ドメインを追加した（システムの範囲が広がった）</th><td>ドメイン定義書 02 にドメインを、04 にサブドメインとコンテキストを追加する。05 でドメインをまたぐ連携を、業務フロー図の「全体」タブで流れを確認する</td><td>ドメイン定義書の変更履歴。範囲の判断は ADR</td></tr>
+            <tr><th scope="row">責務を追加・削除した</th><td>担うコンテキスト定義書の 01 担う責務と 08 機能一覧、業務モデル。削除なら、その責務を実現していた仕様書</td><td>ドメイン定義書の変更履歴</td></tr>
+            <tr><th scope="row">責務を別のサブドメインに移した</th><td>移す前と後のコンテキスト定義書の 01・08 と業務モデル。関係する仕様書の「コンテキスト」と 02 用語・06 データの参照先</td><td>ADR に決定を残し、ドメイン定義書の版数を上げる</td></tr>
+            <tr><th scope="row">コンテキストを分割・統合した</th><td>ドメイン定義書 04 の対応表。コンテキスト定義書を分割・統合し、01 担う責務・08 機能一覧を振り分ける。業務フロー図のタブと、オブジェクトの所属（名前に添えたコンテキスト）を振り分ける。関係する仕様書の「コンテキスト」を直す</td><td>ADR、ドメイン定義書の変更履歴</td></tr>
             <tr><th scope="row">チーム構成・規模が変わった</th><td>1対1でない対応の ADR を読み直し、分割・統合の理由がまだ成り立つかを確認する</td><td>見直した結果を ADR に追記する。変える場合は新しい ADR</td></tr>
-            <tr><th scope="row">連携方式を変えた（API → イベントなど）</th><td>ドメイン定義書 05、両側のコンテキスト定義書 07、利用側の仕様書 06</td><td>ADR</td></tr>
-            <tr><th scope="row">用語の定義・ルールを変えた</th><td>その用語・ルールを使う仕様書の 02 用語、要件・振る舞い・受け入れ基準</td><td>コンテキスト定義書の変更履歴</td></tr>
-            <tr><th scope="row">機能の要件を変えた</th><td>その仕様書の受け入れ基準と、展開したテストケース。上の資料は通常そのまま</td><td>仕様書の変更履歴（確定後はステータスを戻さず、履歴に残す）</td></tr>
+            <tr><th scope="row">連携方式を変えた（API → イベントなど）</th><td>ドメイン定義書 05、両側のコンテキスト定義書 07、利用側の仕様書 06・08、Catalog の API 定義</td><td>ADR</td></tr>
+            <tr><th scope="row">用語の定義・ルール・状態を変えた</th><td>その用語・ルール・状態を使う業務モデル（業務フロー図の行、オブジェクト整理の名前）、仕様書の 02 用語・要件・振る舞い・受け入れ基準、仕様書 08 と Catalog の項目名・ラベル</td><td>コンテキスト定義書の変更履歴</td></tr>
+            <tr><th scope="row">業務の流れを変えた（作業・担当・帳票・順番）</th><td>作業が増減したらコンテキスト定義書 08 機能一覧と仕様書。コンテキストをまたぐ流れが変わるなら、業務フロー図の「全体」タブ</td><td>コンテキスト定義書の変更履歴</td></tr>
+            <tr><th scope="row">オブジェクトを変えた（プロパティ・操作・一覧）</th><td>仕様書 06 データ項目と 08、Catalog の API 定義・テーブル定義。概念の名前や集約の境界が変わるなら、コンテキスト定義書 03 の要約</td><td>コンテキスト定義書の変更履歴</td></tr>
+            <tr><th scope="row">機能の要件を変えた</th><td>その仕様書の受け入れ基準・08 この機能の設計と、展開したテストケース。上の資料は通常そのまま</td><td>仕様書の変更履歴（確定後はステータスを戻さず、履歴に残す）</td></tr>
+            <tr><th scope="row">この機能の設計を変えた（使う画面・API の形・テーブル・呼び出し順など）</th><td>仕様書 08 と Catalog。受け入れ基準を満たし続けるかを確認する。仕様書の 01〜07 は通常そのまま</td><td>仕様書の変更履歴（対象：設計）。仕様のステータスは戻さない。重要な判断は ADR</td></tr>
+            <tr><th scope="row">共通ルール・非機能要件の満たし方を変えた</th><td>影響する仕様書の 08 と Catalog。例外として書いていた作り方が、共通ルールに吸収できないかも確認する</td><td>Design の変更履歴、ADR</td></tr>
+            <tr><th scope="row">設計の途中で、技術の制約により仕様を満たせないとわかった</th><td>仕様書の要件・受け入れ基準を、業務担当と見直す。仕様書 08 や Catalog・Design だけで辻褄を合わせない</td><td>仕様書の変更履歴。判断の理由は ADR</td></tr>
           </tbody>
         </table></div>
       </section>
 
       <section id="related" aria-labelledby="related-title">
-        <div class="section-heading"><span class="section-number">09 /</span><h2 id="related-title">関連資料</h2></div>
+        <div class="section-heading"><span class="section-number">11 /</span><h2 id="related-title">関連資料</h2></div>
         <ul class="reference-list">
-          <li><a href="domain.html">ドメイン定義書の雛形 ↗</a><small>システムで1つ。ドメイン・サブドメインの一覧、システムの責務、コンテキストとの対応と関係。</small></li>
-          <li><a href="context.html">コンテキスト定義書の雛形 ↗</a><small>サブドメインごとに1つ。担う責務・用語・モデル・ルール・状態・連携・機能一覧。</small></li>
-          <li><a href="specs.html">機能仕様書の雛形 ↗</a><small>機能ごとに1つ。実現する責務、要件・振る舞い・受け入れ基準。</small></li>
-          <li><a href="adr.html">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><small>判断の理由を残す。3つの資料から参照する。</small></li>
-          <li><a href="object_model.html">オブジェクト整理 ↗</a><small>ドメインモデルの項目・操作を設計する。</small></li>
-          <li><a href="business_sequence.html">業務シーケンス図 ↗</a><small>業務の流れと状態を、担当・帳票と合わせて整理する。</small></li>
-          <li><a href="screen_design_template.html">画面・機能設計書 ↗</a> · <a href="screen_unit_test.html">画面単体テストケース ↗</a><small>仕様書の下流。画面とテストに展開する。</small></li>
+          <li><a href="domain.html">ドメイン定義書の雛形 ↗</a><small>Domain。システムで1つ。ドメイン・サブドメインの一覧、システムの責務、コンテキストとの対応と関係。全体の業務フローへのリンク。</small></li>
+          <li><a href="context.html">コンテキスト定義書の雛形 ↗</a><small>Context。サブドメインごとに1つ。担う責務・用語・モデルと状態の要約・ルール・イベント・連携・機能一覧。</small></li>
+          <li><a href="business_flow.html">業務フロー図 ↗</a><small>Model ／ Flows。システムで1つのファイルに、コンテキストごとのタブと「全体」タブで業務の流れを描く。</small></li>
+          <li><a href="object_model.html">オブジェクト整理 ↗</a><small>Model ／ Objects。システムで1つ。オブジェクトのプロパティ・操作と、コレクション（一覧）の表示項目を整理する。</small></li>
+          <li><a href="specs.html">機能仕様書の雛形 ↗</a><small>Spec。機能ごとに1つ。実現する責務、要件・振る舞い・受け入れ基準（01〜07）と、この機能の設計（08）。</small></li>
+          <li><a href="screen_design_template.html">画面・機能設計書 ↗</a><small>Catalog ／ 画面。画面一覧と遷移、画面ごとの要素の全体（実体）。</small></li>
+          <li><a href="bases/atomic_component.html">デザイン要素の説明資料 ↗</a> · <a href="bases/color.html">カラーコードの説明 ↗</a> · <a href="bases/display.html">画面構成と操作の考え方 ↗</a><small>Design ／ 共通ルール（Frontend）。全画面に共通する色・文字・余白・部品と、画面構成・操作のルール。</small></li>
+          <li><a href="screen_unit_test.html">画面単体テストケース ↗</a><small>仕様書の振る舞い・受け入れ基準から展開するテスト。</small></li>
+          <li><a href="adr.html">ADR（アーキテクチャ決定レコード）の雛形 ↗</a><small>判断の理由を残す。すべての層から参照する。</small></li>
         </ul>
       </section>
       <footer><span>HOW TO / 3つの雛形の使い方</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
