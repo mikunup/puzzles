@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="ja">
 <head>
+  <!-- このファイルは adr/adr-0001-share-agent-rules-with-agents-md.md から node adr/build_index.mjs で生成しています。直接編集せず、Markdownを編集してください。 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む決定の記録。">
-  <title>ADR-0001 AGENTS.mdでルールを共有｜DECISION RECORD</title>
+  <meta name="description" content="ADR-0001：AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む">
+  <title>ADR-0001 AIエージェント向けルールをAGENTS.mdに置き、CLAUDE.mdから取り込む｜DECISION RECORD</title>
   <style>
     :root {
       color-scheme:light;
@@ -261,7 +262,7 @@ button:disabled { cursor: default; }
           <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
         </ol>
       </nav>
-      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>同じ内容のMarkdown版：<br><a href="adr-0001-share-agent-rules-with-agents-md.md">adr-0001-share-agent-rules-with-agents-md.md</a></div>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>このページの元データ（Markdown）：<br><a href="adr-0001-share-agent-rules-with-agents-md.md">adr-0001-share-agent-rules-with-agents-md.md</a></div>
     </aside>
 
     <main id="main-content" tabindex="-1">
@@ -297,7 +298,7 @@ button:disabled { cursor: default; }
           <article class="panel"><h3>現状</h3><ul><li>ルールは <code>CLAUDE.md</code> にだけ書かれている。</li><li>Claude Codeは <code>CLAUDE.md</code> を読むが、Codexは読まない。</li></ul></article>
           <article class="panel"><h3>制約・前提</h3><ul><li>リポジトリをクローンした別の環境でも、追加の設定なしでルールが効くこと。</li><li>ルールを書く場所は1か所にし、ツールごとに内容がずれないようにすること。</li><li>主にmacOSで使うが、Windowsでも壊れない構成にすること。</li></ul></article>
         </div>
-        <aside class="callout" aria-label="決めること"><strong>この ADR で決めること</strong>Claude CodeとCodexの両方に同じルールを読ませるには、ルールをどのファイルに置き、どうつなげるか。</aside>
+        <aside class="callout" aria-label="この ADR で決めること"><strong>この ADR で決めること</strong>Claude CodeとCodexの両方に同じルールを読ませるには、ルールをどのファイルに置き、どうつなげるか。</aside>
       </section>
 
       <section id="drivers" aria-labelledby="drivers-title">
@@ -311,7 +312,7 @@ button:disabled { cursor: default; }
 
       <section id="options" aria-labelledby="options-title">
         <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
-        <div class="table-wrap" role="region" aria-label="選択肢の比較" tabindex="0"><table>
+        <div class="table-wrap" role="region" aria-label="検討した選択肢" tabindex="0"><table>
           <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：AGENTS.mdに本体、CLAUDE.mdから取り込む<span class="chosen">採用</span></th><th scope="col">選択肢 B：シンボリックリンク</th><th scope="col">選択肢 C：Codexの設定でCLAUDE.mdを読ませる</th><th scope="col">選択肢 D：現状維持</th></tr></thead>
           <tbody>
             <tr><th scope="row">両ツールで読まれる</th><td><span class="score good">◎</span>どちらも標準の仕組みで読む</td><td><span class="score good">◎</span>同じ内容が2つの名前で見える</td><td><span class="score fair">○</span>設定したPCでだけ読まれる</td><td><span class="score poor">×</span>Codexでは読まれない</td></tr>
@@ -337,13 +338,7 @@ button:disabled { cursor: default; }
         </div>
         <h3>決定の理由</h3>
         <p>判断基準の3つすべてを満たすのは選択肢 Aだけだった。</p>
-        <ul>
-          <li>基準 1：Claude CodeとCodexの両方が、それぞれ標準の仕組みで同じルールを読む。</li>
-          <li>基準 2・3：ルールの本体は <code>AGENTS.md</code> の1か所で、リポジトリ内で完結する。</li>
-          <li>選択肢 Bは、Windowsでリンクが壊れる可能性があるため選ばなかった。</li>
-          <li>選択肢 Cは、PCごとの設定が必要でクローンした環境に効かないため選ばなかった。</li>
-          <li>選択肢 Dは、Codexでルールが適用されないため選ばなかった。</li>
-        </ul>
+        <ul><li>基準 1：Claude CodeとCodexの両方が、それぞれ標準の仕組みで同じルールを読む。</li><li>基準 2・3：ルールの本体は <code>AGENTS.md</code> の1か所で、リポジトリ内で完結する。</li><li>選択肢 Bは、Windowsでリンクが壊れる可能性があるため選ばなかった。</li><li>選択肢 Cは、PCごとの設定が必要でクローンした環境に効かないため選ばなかった。</li><li>選択肢 Dは、Codexでルールが適用されないため選ばなかった。</li></ul>
       </section>
 
       <section id="consequences" aria-labelledby="consequences-title">
@@ -357,7 +352,7 @@ button:disabled { cursor: default; }
 
       <section id="follow-up" aria-labelledby="follow-up-title">
         <div class="section-heading"><span class="section-number">06 /</span><h2 id="follow-up-title">実施と見直し</h2></div>
-        <div class="table-wrap" role="region" aria-label="実施する作業" tabindex="0"><table>
+        <div class="table-wrap" role="region" aria-label="実施と見直し" tabindex="0"><table>
           <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
           <tbody>
             <tr><th scope="row"><code>CLAUDE.md</code> のルールを <code>AGENTS.md</code> に移す</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
@@ -375,10 +370,10 @@ button:disabled { cursor: default; }
       <section id="related" aria-labelledby="related-title">
         <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
         <ul class="reference-list">
-          <li>関連ADR：なし<small>最初のADR</small></li>
+          <li>関連ADR：なし（最初のADR）</li>
           <li><a href="../AGENTS.md">AGENTS.md</a><small>ルールの本体</small></li>
           <li><a href="../CLAUDE.md">CLAUDE.md</a><small>Claude Code用の取り込み</small></li>
-          <li><a href="../adr.html">adr.html</a>・<a href="../adr.md">adr.md</a><small>このADRの元にした雛形</small></li>
+          <li><a href="../adr.md">adr.md</a>・<a href="../adr.html">adr.html</a><small>このADRの元にした雛形</small></li>
         </ul>
       </section>
 
