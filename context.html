@@ -338,13 +338,15 @@ button:disabled { cursor: default; }
 
       <section id="rules" aria-labelledby="rules-title">
         <div class="section-heading"><span class="section-number">04 /</span><h2 id="rules-title">ビジネスルール</h2></div>
-        <p>［このコンテキストで守る業務上の決まりごとを、1行に1つずつ記載します。「いつ」「何が」「どうなる」が読み取れる文にし、根拠（法令・社内規程・経営判断）を添えます。］</p>
+        <p>［このコンテキストで守る業務上の決まりごとを、1行に1つずつ記載します。入力できる値の範囲や、選べるものの条件など、業務担当者が説明できるバリデーションもここに書きます。ここが正本で、Objects・仕様書・Catalog は RULE 番号で参照します。「いつ」「何が」「どうなる」が読み取れる文にし、根拠（法令・社内規程・経営判断）を添えます。］</p>
         <div class="table-wrap" role="region" aria-label="ビジネスルール" tabindex="0"><table>
           <thead><tr><th scope="col">ID</th><th scope="col">ルール</th><th scope="col">適用される場面</th><th scope="col">違反したときの扱い</th><th scope="col">根拠</th></tr></thead>
           <tbody>
             <tr><th scope="row"><span class="id">RULE-001</span></th><td>［例：注文の合計金額が［金額］以上のとき、承認者の承認を必要とする。］</td><td>［注文確定時］</td><td>［確定できない。承認待ちにする。］</td><td>［社内規程 第○条］</td></tr>
             <tr><th scope="row"><span class="id">RULE-002</span></th><td>［例：状態が「確定」の注文は、明細を変更できない。］</td><td>［明細の変更時］</td><td>［変更を受け付けない。］</td><td>［受注業務規程］</td></tr>
             <tr><th scope="row"><span class="id">RULE-003</span></th><td>［例：注文の明細は1件以上とする。］</td><td>［明細の削除時・注文確定時］</td><td>［最後の1件は削除できない。］</td><td>［業務上の前提］</td></tr>
+            <tr><th scope="row"><span class="id">RULE-004</span></th><td>［例：注文明細の数量は 1 以上 999 以下とする。］</td><td>［明細の追加・変更時］</td><td>［受け付けない。］</td><td>［受注業務規程（1回の注文の上限）］</td></tr>
+            <tr><th scope="row"><span class="id">RULE-005</span></th><td>［例：注文明細に選べる商品は、販売中の商品に限る。］</td><td>［明細の追加・変更時］</td><td>［受け付けない。］</td><td>［販売方針］</td></tr>
           </tbody>
         </table></div>
         <aside class="callout" aria-label="例外"><strong>例外・判断が必要なケース</strong>［ルールで決めきれず、人が判断する場面と、判断する人を記載します。］</aside>

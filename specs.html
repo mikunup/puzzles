@@ -354,12 +354,13 @@ button:disabled { cursor: default; }
           <article class="panel"><h3><span class="id">SPEC-0001-05</span> ［ケース名］</h3><dl class="gwt"><dt>前提</dt><dd>［前提］</dd><dt>操作</dt><dd>［操作］</dd><dt>結果</dt><dd>［結果］</dd></dl></article>
         </div>
         <h3>入力項目とバリデーション</h3>
+        <p>［業務のルール（値の範囲・選べるものの条件など）はコンテキスト定義書の「04 ビジネスルール」が正本なので、中身を書き写さず RULE 番号で参照します。型・候補値は<a href="object_model.html">オブジェクト整理</a>（Objects）が正本です。ここには、この機能での必須・任意と、エラー時の表示文言を書きます。エラーの出し方（項目の直下に出すなど）は Design の共通ルールに従います。］</p>
         <div class="table-wrap" role="region" aria-label="入力項目" tabindex="0"><table>
-          <thead><tr><th scope="col">項目</th><th scope="col">型・形式</th><th scope="col">必須</th><th scope="col">制約</th><th scope="col">エラー時の表示</th></tr></thead>
+          <thead><tr><th scope="col">項目</th><th scope="col">Objects の項目</th><th scope="col">この機能での必須</th><th scope="col">ルール</th><th scope="col">エラー時の表示</th></tr></thead>
           <tbody>
-            <tr><th scope="row">［数量］</th><td>［整数］</td><td>必須</td><td>［1 以上 999 以下］</td><td>［「数量は 1〜999 で入力してください」］</td></tr>
-            <tr><th scope="row">［商品］</th><td>［選択］</td><td>必須</td><td>［販売中の商品のみ］</td><td>［「この商品は選択できません」］</td></tr>
-            <tr><th scope="row">［項目］</th><td>［型］</td><td>［必須 / 任意］</td><td>［制約］</td><td>［表示］</td></tr>
+            <tr><th scope="row">［数量］</th><td>［注文明細［受注］.quantity］</td><td>必須</td><td><span class="id">［RULE-004］</span></td><td>［「数量は 1〜999 で入力してください」］</td></tr>
+            <tr><th scope="row">［商品］</th><td>［注文明細［受注］.sku］</td><td>必須</td><td><span class="id">［RULE-005］</span></td><td>［「この商品は選択できません」］</td></tr>
+            <tr><th scope="row">［項目］</th><td>［オブジェクト.プロパティ］</td><td>［必須 / 任意］</td><td><span class="id">［RULE-00x］</span>（ルールがなければ —）</td><td>［表示］</td></tr>
           </tbody>
         </table></div>
         <h3>異常系・例外</h3>
