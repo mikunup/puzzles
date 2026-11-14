@@ -183,20 +183,17 @@ button:disabled { cursor: default; }
   box-shadow: 5px -5px 0 var(--brown);
 }
 
-/* 選択は塗り・太字で示す。横スクロール内でもフォーカスを見せる。 */
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
 [role="tab"][aria-selected="true"] {
   background: var(--green);
   color: #fff;
   border-bottom-color: var(--green);
   font-weight: 700;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 [role="tab"][aria-selected="true"] .num,
 [role="tab"][aria-selected="true"] .number { color: inherit; }
-.page-tab[role="tab"][aria-selected="true"] .num { color:var(--brown); }
-.sheet-tab:has([aria-selected="true"]) { background:var(--green); border-color:var(--green); color:#fff; }
-.sheet-tab .page-tab[aria-selected="true"] { background:transparent; color:inherit; }
-.sheet-tab:has([aria-selected="true"]) .delete-tab:hover { background:rgba(255,255,255,.18); color:#fff; }
 [role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
 [role="tablist"] { min-width: 0; }
 [role="tabpanel"] { min-width: 0; }

@@ -46,8 +46,6 @@ button:disabled { cursor: default; }
   box-shadow: 5px -5px 0 var(--brown);
 }
 
-.tabs [role="tab"] .tab-number { color:var(--brown); }
-
 /* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
 [role="tab"][aria-selected="true"] {
   background: var(--green);
@@ -80,7 +78,7 @@ button:disabled { cursor: default; }
   body[data-layout="workspace"] .workspace-head,
   body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
   body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
-  body[data-layout="workspace"] .tabsbar > .tabs { flex: 0 1 auto; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
   body[data-layout="workspace"] .editor { min-width: 0; }
   body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
   body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
