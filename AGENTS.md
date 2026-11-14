@@ -19,4 +19,5 @@ AIエージェント向けのルールです。Codexはこのファイルを直�
 リポジトリで使うスクリプトはNode.js（標準モジュールのみ、拡張子 `.mjs`）で書き、Pythonは使いません（ADR-0003）。外部パッケージが必要になる場合は、先に利用者へ確認します。
 
 - **共通CSSの反映**：`bases/base.css` を変更したら `node bases/sync_styles.mjs` を実行します。確認だけなら `--check`、保存時の自動反映は `--watch` です。
+- **共通CSSの範囲は直接編集しない**：各HTMLの `<!-- bases:styles:start -->`〜`<!-- bases:styles:end -->` の中は同期で上書きされます。ページ固有のCSSは範囲外の `<style>` に書き、共通の変更は `bases/base.css` に書きます。HTMLを変更した作業の最後に `node bases/sync_styles.mjs --check` を実行し、「すべてのHTMLに反映済みです。」になることを確認します（ADR-0004）。
 - **ADR一覧の更新**：`node adr/build_index.mjs`（確認だけなら `--check`）。

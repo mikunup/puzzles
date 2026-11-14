@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ADR-0004：業務定義シートとアウトラインの共通CSSを、共通デザインに揃える提案。">
+  <title>ADR-0004 タブのCSSを共通デザインに揃える｜DECISION RECORD</title>
+  <style>
+    :root {
+      color-scheme:light;
+      --surface:#ffffff;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif; line-height:1.85; overflow-wrap:anywhere; }
+    a { color:var(--green); text-underline-offset:4px; }
+    :focus-visible { outline:3px solid #b07854; outline-offset:4px; }
+    .skip-link { position:fixed; top:12px; left:12px; padding:8px 16px; background:var(--surface); transform:translateY(-160%); z-index:10; }
+    .skip-link:focus { transform:translateY(0); }
+    .layout { width:min(1240px,calc(100% - 64px)); margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:64px; align-items:start; }
+    .sidebar { position:sticky; top:0; max-height:100dvh; overflow-y:auto; padding:40px 24px 32px 0; border-right:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.08em; }
+    .mark { flex-shrink:0; width:15px; height:15px; margin-right:5px; background:var(--green); border-radius:3px; box-shadow:5px -5px 0 var(--brown); }
+    .sidebar-description { color:var(--muted); font-size:12px; margin:16px 0 35px; }
+    .toc-label { color:var(--brown); font-size:10px; font-weight:700; letter-spacing:.18em; margin:0 0 12px; }
+    .toc { list-style:none; margin:0; padding:0; }
+    .toc li { margin:5px 0; }
+    .toc a { display:flex; align-items:baseline; gap:12px; padding:9px 12px; text-decoration:none; border-radius:6px; font-size:13px; }
+    .toc a:hover,.toc a:focus-visible { background:#eaf0e8; }
+    .toc-number { font:11px ui-monospace,monospace; color:var(--brown); }
+    .sidebar-note { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:11px; color:var(--muted); }
+    main { min-width:0; padding-top:36px; }
+    .document-header { padding:0 0 38px; }
+    .breadcrumb { font-size:11px; color:var(--muted); margin:0 0 36px; }
+    .eyebrow { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 14px; }
+    h1 { font-size:clamp(30px,3.5vw,44px); line-height:1.5; letter-spacing:.025em; margin:0 0 20px; }
+    .lead { max-width:650px; color:var(--muted); font-size:15px; margin:0 0 24px; }
+    .metadata { display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; font-size:12px; }
+    .metadata div { display:flex; gap:10px; }
+    .metadata dt { color:var(--muted); }
+    .metadata dd { margin:0; }
+    section { border-top:1px solid var(--line); padding:36px 0 40px; scroll-margin-top:24px; }
+    .section-heading { display:flex; align-items:baseline; gap:14px; margin-bottom:20px; }
+    .section-number { font:13px ui-monospace,monospace; color:var(--brown); }
+    h2 { font-size:23px; letter-spacing:.03em; margin:0; }
+    h3 { font-size:16px; margin:24px 0 12px; }
+    p { margin:0 0 16px; font-size:14px; }
+    .muted { color:var(--muted); }
+    .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .panel h3 { margin-top:0; }
+    .panel > :last-child { margin-bottom:0; }
+    .two-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .callout { padding:18px 22px; border-left:3px solid var(--brown); border-radius:0 8px 8px 0; background:#eaece3; font-size:13px; margin:20px 0 0; }
+    .callout strong { display:block; margin-bottom:4px; }
+    ul,ol { padding-left:22px; font-size:14px; }
+    li + li { margin-top:8px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th,td { padding:13px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+    thead { background:#eaece3; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:500; }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    code { font-size:.92em; }
+    pre { overflow:auto; margin:16px 0 0; background:#eaece3; border:1px solid var(--line); border-radius:8px; padding:20px; font-size:12px; line-height:1.75; overflow-wrap:normal; }
+    .preview { min-height:140px; border:1px dashed #b8c4b9; border-radius:8px; padding:24px; background:var(--surface); display:grid; place-items:center; text-align:center; color:var(--muted); font-size:13px; }
+    .caption { color:var(--muted); font-size:12px; margin-top:10px; }
+    .steps { list-style:none; padding:0; margin:0; counter-reset:step; }
+    .steps li { display:grid; grid-template-columns:30px 1fr; gap:14px; margin:0; padding:16px 0; border-bottom:1px solid var(--line); counter-increment:step; }
+    .steps li::before { content:counter(step,decimal-leading-zero); font:12px/30px ui-monospace,monospace; color:var(--brown); }
+    .steps li:last-child { border:0; }
+    .steps strong { display:block; font-size:14px; }
+    .steps p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .reference-list { list-style:none; padding:0; margin:0; }
+    .reference-list li { border-bottom:1px solid var(--line); padding:14px 0; margin:0; }
+    .reference-list small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:24px 0 36px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    @media(max-width:900px) {
+      .layout { width:calc(100% - 40px); grid-template-columns:190px minmax(0,1fr); gap:32px; }
+      .sidebar { padding-right:16px; }
+      .brand { font-size:11px; }
+      .two-columns { grid-template-columns:1fr; }
+    }
+    @media(max-width:680px) {
+      .layout { width:calc(100% - 36px); grid-template-columns:1fr; gap:0; }
+      .sidebar { position:static; max-height:none; overflow:visible; padding:28px 0 24px; border-right:0; border-bottom:1px solid var(--line); }
+      .sidebar-description { margin:12px 0 20px; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 8px; }
+      .toc li { margin:0; }
+      .toc a { padding:7px 8px; font-size:12px; gap:8px; }
+      .sidebar-note { display:none; }
+      main { padding-top:24px; }
+      .breadcrumb { margin-bottom:24px; }
+      h2 { font-size:20px; }
+      .panel { padding:20px; }
+      section { padding:28px 0 32px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .layout { display:block; width:100%; }
+      .sidebar,.skip-link,.back-to-top { display:none; }
+      main { padding:0; }
+      .panel,.callout,pre,tr { break-inside:avoid; }
+      pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+    }
+    /* ADR 固有の部品 */
+    h1 span { color:var(--brown); }
+    .toc-number { flex-shrink:0; white-space:nowrap; }
+    .table-wrap table { min-width:680px; }
+    .table-wrap td { min-width:6em; }
+    tbody th[scope="row"] { min-width:150px; }
+    th code, td code { white-space:nowrap; }
+    .metadata { gap:10px 28px; }
+    .metadata div { align-items:center; }
+    .status { display:inline-block; padding:1px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.06em; border:1px solid currentColor; white-space:nowrap; }
+    .status-proposed { color:var(--brown); background:#f3ebe5; }
+    .status-accepted { color:#fff; background:var(--green); border-color:var(--green); }
+    .status-rejected { color:#8a3b2e; background:#f6e8e4; }
+    .status-deprecated { color:var(--muted); background:#eceee8; }
+    .status-superseded { color:var(--muted); background:#eceee8; text-decoration:line-through; }
+    .status-guide { border:1px dashed #b8c4b9; border-radius:10px; padding:16px 20px; margin:0 0 36px; background:var(--surface); }
+    .status-guide ul { list-style:none; padding:0; margin:0; display:grid; gap:8px; font-size:13px; }
+    .status-guide li { margin:0; display:flex; align-items:center; gap:12px; }
+    .status-guide .status { min-width:64px; text-align:center; }
+    .chosen { display:inline-block; margin-left:8px; padding:0 8px; border-radius:999px; background:var(--green); color:#fff; font-size:10px; letter-spacing:.06em; vertical-align:middle; }
+    .score { display:inline-block; width:22px; font-weight:700; }
+    .score.good { color:var(--green); }
+    .score.fair { color:#4c6b57; }
+    .score.poor { color:var(--brown); }
+    .options,.consequences { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .pros-cons { margin:0; font-size:13px; }
+    .pros-cons dt { color:var(--brown); font-size:11px; font-weight:700; letter-spacing:.1em; margin-top:10px; }
+    .pros-cons dd { margin:2px 0 0; }
+    .decision { border:2px solid var(--green); border-radius:12px; padding:22px 26px; background:var(--surface); }
+    .decision-label { color:var(--green); font-size:11px; font-weight:700; letter-spacing:.2em; margin:0 0 6px; }
+    .decision-text { font-size:17px; font-weight:700; line-height:1.7; margin:0; }
+    .consequence-good { border-top:3px solid var(--green); }
+    .consequence-bad { border-top:3px solid var(--brown); }
+    .review { margin-top:20px; }
+    @media(max-width:1100px) { .options,.consequences { grid-template-columns:1fr; } }
+    @media(max-width:680px) { .status-guide li { align-items:flex-start; flex-direction:column; gap:4px; } }
+    @media print { .status-guide { display:none; } .decision,.status { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+  </style>
+<!-- bases:styles:start -->
+<style>
+/* puzzles共通基準。sync_styles.mjsで各HTMLに埋め込む。実行時の読み込みは不要。 */
+:root {
+  color-scheme: light;
+  --green: #044523;
+  --brown: #7e513c;
+  --paper: #f6f5ef;
+  --ink: #203a2c;
+  --muted: #627067;
+  --line: #dce2d9;
+  --focus: #b07854;
+  --hover: #eaf0e8;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--paper); color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+a { color: var(--green); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:disabled { cursor: default; }
+.mark {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  box-shadow: 5px -5px 0 var(--brown);
+}
+
+/* 選択は塗り・太字・下線で示す。横スクロール内でもフォーカスを見せる。 */
+[role="tab"][aria-selected="true"] {
+  background: var(--green);
+  color: #fff;
+  border-bottom-color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+[role="tab"][aria-selected="true"] .num,
+[role="tab"][aria-selected="true"] .number { color: inherit; }
+[role="tablist"] [role="tab"]:focus-visible { outline-offset: -3px; }
+[role="tablist"] { min-width: 0; }
+[role="tabpanel"] { min-width: 0; }
+
+/* 画面全体の幅を編集に使う。既存の全幅エディターには余白を重ねない。 */
+@media screen {
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer {
+    width: calc(100% - 48px);
+    margin-inline: auto;
+  }
+  body[data-layout="document"] .layout {
+    width: min(1440px, calc(100% - 64px));
+    gap: 40px;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  body[data-layout="document"] main > section > p { max-width: 76ch; }
+  body[data-layout="workspace"] .workspace-head,
+  body[data-layout="workspace"] .doc-head { flex-wrap: wrap; }
+  body[data-layout="workspace"] .focus-bar { flex-wrap: wrap; }
+  body[data-layout="workspace"] .tabsbar > .tabs { flex: 1 1 auto; }
+  body[data-layout="workspace"] .editor { min-width: 0; }
+  body[data-layout="workspace"] .doc-title { flex: 1 1 240px; width: auto; }
+  body[data-layout="workspace"] #panel { font-size: 12px; white-space: nowrap; }
+  body[data-layout="workspace"] :is(.doc-title, #model-title, .workspace-title input):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+@media screen and (max-width: 900px) {
+  body[data-layout="document"] .layout {
+    width: calc(100% - 40px);
+    gap: 24px;
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+@media screen and (max-width: 760px) {
+  body > header { flex-wrap: wrap; }
+  body[data-layout="sheet"] > header,
+  body[data-layout="sheet"] > main,
+  body[data-layout="sheet"] > footer { width: calc(100% - 36px); }
+  body[data-layout="document"] .layout {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  body[data-layout="document"] .sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<!-- bases:styles:end -->
+</head>
+<body data-layout="document" id="top">
+  <a class="skip-link" href="#main-content">本文へスキップ</a>
+  <div class="layout">
+    <aside class="sidebar" aria-label="ADRのナビゲーション">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>DECISION RECORD</div>
+      <p class="sidebar-description">ADR-0004<br>アーキテクチャ決定レコード</p>
+      <nav aria-labelledby="toc-title">
+        <p class="toc-label" id="toc-title">CONTENTS / 目次</p>
+        <ol class="toc">
+          <li><a href="#context"><span class="toc-number">01</span>背景・課題</a></li>
+          <li><a href="#drivers"><span class="toc-number">02</span>判断基準</a></li>
+          <li><a href="#options"><span class="toc-number">03</span>検討した選択肢</a></li>
+          <li><a href="#decision"><span class="toc-number">04</span>決定</a></li>
+          <li><a href="#consequences"><span class="toc-number">05</span>結果・影響</a></li>
+          <li><a href="#follow-up"><span class="toc-number">06</span>実施と見直し</a></li>
+          <li><a href="#related"><span class="toc-number">07</span>関連ADR・参考資料</a></li>
+          <li><a href="#history"><span class="toc-number">08</span>変更履歴</a></li>
+        </ol>
+      </nav>
+      <div class="sidebar-note"><a href="index.html">ADR一覧へ戻る</a><br><br>同じ内容のMarkdown版：<br><a href="adr-0004-unify-tab-design.md">adr-0004-unify-tab-design.md</a></div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <header class="document-header">
+        <p class="breadcrumb"><a href="index.html">ADR</a> / puzzles・共通デザイン</p>
+        <p class="eyebrow">ARCHITECTURE DECISION RECORD</p>
+        <h1>ADR-0004：<span>業務定義シートとアウトラインの共通CSSを、共通デザインに揃える</span></h1>
+        <p class="lead"><code>business_definition_sheet.html</code> と <code>outline.html</code> の共通CSSの範囲に残っている独自の書き換えを取り除き、<code>node bases/sync_styles.mjs</code> で <code>base.css</code> と一致させる。タブの見た目は、範囲外のページ固有CSS（<code>.work-tabs</code>）がすでに決めているため変わらない。</p>
+        <dl class="metadata">
+          <div><dt>ステータス</dt><dd><span class="status status-accepted">承認</span></dd></div>
+          <div><dt>決定日</dt><dd>2026.11.14</dd></div>
+          <div><dt>決定者</dt><dd>mikunup（リポジトリ管理者）</dd></div>
+          <div><dt>関係者</dt><dd>Claude Code（調査・提案）</dd></div>
+          <div><dt>対象範囲</dt><dd><code>business_definition_sheet.html</code>・<code>outline.html</code> の共通CSSの範囲</dd></div>
+        </dl>
+      </header>
+
+      <div class="status-guide" role="region" aria-label="ステータスの意味">
+        <p class="toc-label">STATUS / ステータスの意味</p>
+        <ul>
+          <li><span class="status status-proposed">提案中</span>レビュー・合意を待っている状態。</li>
+          <li><span class="status status-accepted">承認</span>合意され、この決定に従って進める状態。</li>
+          <li><span class="status status-rejected">却下</span>検討したが採用しなかった状態。理由を残します。</li>
+          <li><span class="status status-deprecated">廃止</span>前提が変わり、もう従わない状態。</li>
+          <li><span class="status status-superseded">置換</span>別のADRで置き換えた状態。「関連ADR」に後継を記載します。</li>
+        </ul>
+      </div>
+
+      <section id="context" aria-labelledby="context-title">
+        <div class="section-heading"><span class="section-number">01 /</span><h2 id="context-title">背景・課題</h2></div>
+        <p><a href="https://github.com/mikunup/puzzles/issues/2">Issue #2</a> のとおり、<code>business_definition_sheet.html</code> と <code>outline.html</code> は共通CSSの範囲（<code>&lt;!-- bases:styles:start --&gt;</code>〜<code>&lt;!-- bases:styles:end --&gt;</code>）の中身が直接書き換えられており、デザインの共通化ができていない。<code>base.css</code> を変えてもこの2ページには反映できず、<code>node bases/sync_styles.mjs --check</code> では2ページが常に「未反映」と表示される。</p>
+        <p>調べたところ、書き換えはコミット <code>79ead33</code>（2026.11.08「タブ情報の位置を調整」）で入ったものだった。同じコミットで、作業画面の下段タブの見た目（<code>.work-tabs</code>）が各ページの範囲外のCSSに追加されている。<code>business_flow.html</code>・<code>calenderschedule.html</code>・<code>object_model.html</code> は範囲外だけを変えており、この2ページだけが範囲内も書き換えていた。</p>
+        <div class="two-columns">
+          <article class="panel"><h3>現状</h3><ul><li><code>business_definition_sheet.html</code>：選択中のタブの下線をなくす指定と、シートタブ（<code>.sheet-tab</code>）を選択時に緑で塗る指定が範囲内にある。</li><li><code>outline.html</code>：タブ番号（<code>.tab-number</code>）を茶色にする指定と、タブ列を伸ばさない指定（<code>flex: 0 1 auto</code>）が範囲内にある。</li><li>2ページとも、範囲外に <code>.work-tabs</code> の指定（下線で選択を示す・番号を茶色・タブ列を伸ばさない）があり、範囲内の指定より優先度が同じか高く、後ろに書かれている。</li></ul></article>
+          <article class="panel"><h3>制約・前提</h3><ul><li>各HTMLは1ファイルで動き、共通部分は <code>base.css</code> から同期する（<code>README.md</code>「共通デザインの適用」）。</li><li>共通CSSの範囲は同期で上書きされるため、ページ固有のCSSは範囲外に書く。</li><li>利用者が見ているタブの見た目は変えない。</li></ul></article>
+        </div>
+        <aside class="callout" aria-label="決めること"><strong>この ADR で決めること</strong>2ページの共通CSSの範囲に残る独自の書き換えをどう扱い、共通デザインに揃えるか。</aside>
+      </section>
+
+      <section id="drivers" aria-labelledby="drivers-title">
+        <div class="section-heading"><span class="section-number">02 /</span><h2 id="drivers-title">判断基準</h2></div>
+        <ol class="steps">
+          <li><div><strong>共通デザインの仕組みに沿うこと</strong><p>範囲内を <code>base.css</code> と一致させ、<code>base.css</code> の変更が全ページに届くようにするため。</p></div></li>
+          <li><div><strong>今のタブの見た目を変えないこと</strong><p>作業画面のタブは利用者が毎日触る部分で、意図しない見た目の変化を避けるため。</p></div></li>
+          <li><div><strong>変更が小さく、確認しやすいこと</strong><p>変更の範囲を2ページの範囲内に限り、影響を確かめやすくするため。</p></div></li>
+        </ol>
+      </section>
+
+      <section id="options" aria-labelledby="options-title">
+        <div class="section-heading"><span class="section-number">03 /</span><h2 id="options-title">検討した選択肢</h2></div>
+        <div class="table-wrap" role="region" aria-label="選択肢の比較" tabindex="0"><table>
+          <thead><tr><th scope="col">判断基準</th><th scope="col">選択肢 A：同期して共通デザインに揃える<span class="chosen">採用</span></th><th scope="col">選択肢 B：下段タブの見た目を <code>base.css</code> に取り込む</th><th scope="col">選択肢 C：独自の指定を範囲外へ移す</th><th scope="col">選択肢 D：現状維持</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">共通デザインの仕組みに沿う</th><td><span class="score good">◎</span>範囲内が <code>base.css</code> と一致する</td><td><span class="score good">◎</span>下段タブも共通の基準になる</td><td><span class="score fair">○</span>範囲内は一致するが、効いていない指定が範囲外に残る</td><td><span class="score poor">×</span>2ページに <code>base.css</code> の変更が届かない</td></tr>
+            <tr><th scope="row">今の見た目を変えない</th><td><span class="score good">◎</span>同期の前後で表示が同じことを確認した</td><td><span class="score poor">△</span>6ページのCSSを動かすため、確認の範囲が広い</td><td><span class="score good">◎</span>指定の場所が変わるだけ</td><td><span class="score good">◎</span>変更なし</td></tr>
+            <tr><th scope="row">変更が小さい</th><td><span class="score good">◎</span>2ページの範囲内だけ。スクリプトの実行で済む</td><td><span class="score poor">×</span><code>base.css</code> と6ページのCSSを書き換える</td><td><span class="score fair">○</span>2ページだが、手で移す作業が必要</td><td><span class="score good">◎</span>変更なし</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">◎：基準を十分に満たす　○：満たす　△：課題がある　×：満たさない</p>
+        <h3>選択肢ごとの詳細</h3>
+        <div class="options">
+          <article class="panel"><h3>選択肢 A：同期して共通デザインに揃える</h3><p class="muted"><code>node bases/sync_styles.mjs</code> を実行し、2ページの範囲内を <code>base.css</code> で上書きする。範囲内の独自の指定は、範囲外の <code>.work-tabs</code> の指定に上書きされていて効いていないため、取り除く。</p><dl class="pros-cons"><dt>良い点</dt><dd>範囲内が <code>base.css</code> と一致し、<code>--check</code> が通る。タブの見た目は変わらない。手作業がない。</dd><dt>懸念点</dt><dd>下段タブの見た目が各ページの範囲外に重複して書かれている状態は残る。</dd></dl></article>
+          <article class="panel"><h3>選択肢 B：下段タブの見た目を <code>base.css</code> に取り込む</h3><p class="muted"><code>.work-tabs</code> の指定を <code>base.css</code> に移し、全ページの共通デザインにする。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業画面の下段タブの見た目が1か所にまとまる。</dd><dt>懸念点</dt><dd><code>.work-tabs</code> は <code>business_definition_sheet.html</code>・<code>business_flow.html</code>・<code>calenderschedule.html</code>・<code>object_model.html</code>・<code>outline.html</code>・<code>data_transition.html</code> の6ページにあり、<code>data_transition.html</code> は書き方が少し違う。Issue #2 より範囲が大きい。</dd></dl></article>
+          <article class="panel"><h3>選択肢 C：独自の指定を範囲外へ移す</h3><p class="muted">範囲内の独自の指定を、そのままページ固有のCSSへ移す。</p><dl class="pros-cons"><dt>良い点</dt><dd>指定を消さずに残せる。</dd><dt>懸念点</dt><dd>移した指定は <code>.work-tabs</code> の指定に上書きされて効いていないため、意味のないCSSが残る。</dd></dl></article>
+          <article class="panel"><h3>選択肢 D：現状維持</h3><p class="muted">2ページは同期の対象外として扱う。</p><dl class="pros-cons"><dt>良い点</dt><dd>作業が発生しない。</dd><dt>懸念点</dt><dd><code>base.css</code> の変更が2ページに届かず、<code>--check</code> が常に失敗する。</dd></dl></article>
+        </div>
+      </section>
+
+      <section id="decision" aria-labelledby="decision-title">
+        <div class="section-heading"><span class="section-number">04 /</span><h2 id="decision-title">決定</h2></div>
+        <div class="decision">
+          <p class="decision-label">DECISION</p>
+          <p class="decision-text">2ページの共通CSSの範囲にある独自の書き換えは取り除き、<code>node bases/sync_styles.mjs</code> で <code>base.css</code> と一致させる（選択肢 A）。タブの見た目は、範囲外のページ固有CSS（<code>.work-tabs</code>）で決める。</p>
+        </div>
+        <h3>決定の理由</h3>
+        <ul>
+          <li>基準 1：範囲内が <code>base.css</code> と一致し、今後の <code>base.css</code> の変更も2ページに届く。</li>
+          <li>基準 2：同期の前後で、タブの表示が変わらないことを確認した（下記「確認した内容」）。</li>
+          <li>基準 3：変更は2ページの範囲内だけで、スクリプトの実行で済む。</li>
+          <li>選択肢 Bは、6ページにまたがる別の共通化で、Issue #2 の範囲を超えるため、ここでは選ばない（「見直しの条件」に記載）。</li>
+          <li>選択肢 Cは、効いていない指定を残すことになるため選ばない。</li>
+          <li>選択肢 Dは、共通デザインの仕組みから外れたままになるため選ばない。</li>
+        </ul>
+        <h3>確認した内容</h3>
+        <p>リポジトリのコピーで2ページを同期し、同期前と同期後をヘッドレスのGoogle Chromeで描画して、スクリーンショットを比べた。</p>
+        <div class="table-wrap" role="region" aria-label="表示の比較結果" tabindex="0"><table>
+          <thead><tr><th scope="col">ページ</th><th scope="col">状態</th><th scope="col">画面幅</th><th scope="col">結果</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>business_definition_sheet.html</code></th><td>初期表示（整理項目タブを選択）</td><td>1440px・700px</td><td>完全に同じ</td></tr>
+            <tr><th scope="row"><code>business_definition_sheet.html</code></th><td>シートのタブを選択</td><td>1440px</td><td>完全に同じ</td></tr>
+            <tr><th scope="row"><code>outline.html</code></th><td>初期表示（タブ1つ）</td><td>1440px・700px</td><td>完全に同じ</td></tr>
+            <tr><th scope="row"><code>outline.html</code></th><td>タブを追加して2つ目を選択</td><td>1440px</td><td>完全に同じ</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">選択中のシートタブの「×」にマウスを乗せたときの色は、スクリーンショットでは比べられないため、CSSの優先順位で確認した。範囲内の <code>.sheet-tab:has([aria-selected="true"]) .delete-tab:hover</code> と範囲外の <code>.work-tabs .work-tab-item .work-tab-delete:hover</code> は詳細度が同じで、範囲外のほうが後ろにあるため、範囲外の指定が使われる。</p>
+      </section>
+
+      <section id="consequences" aria-labelledby="consequences-title">
+        <div class="section-heading"><span class="section-number">05 /</span><h2 id="consequences-title">結果・影響</h2></div>
+        <div class="consequences">
+          <article class="panel consequence-good"><h3>良い影響</h3><ul><li>2ページにも <code>base.css</code> の変更が届き、デザインの共通化ができる。</li><li><code>node bases/sync_styles.mjs --check</code> が「すべてのHTMLに反映済みです。」になり、反映漏れの確認に使える。</li></ul></article>
+          <article class="panel consequence-bad"><h3>受け入れる不利益</h3><ul><li>作業画面の下段タブの見た目（<code>.work-tabs</code>）は、6ページの範囲外に重複して書かれたまま残る。</li></ul></article>
+          <article class="panel"><h3>その他の影響</h3><ul><li>再発を防ぐため、<code>AGENTS.md</code> に「共通CSSの範囲は直接編集せず、作業の最後に <code>node bases/sync_styles.mjs --check</code> を実行する」ルールを追加した。</li></ul></article>
+        </div>
+      </section>
+
+      <section id="follow-up" aria-labelledby="follow-up-title">
+        <div class="section-heading"><span class="section-number">06 /</span><h2 id="follow-up-title">実施と見直し</h2></div>
+        <div class="table-wrap" role="region" aria-label="実施する作業" tabindex="0"><table>
+          <thead><tr><th scope="col">作業</th><th scope="col">担当</th><th scope="col">期限</th><th scope="col">状態</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>node bases/sync_styles.mjs</code> を実行し、2ページの範囲内を <code>base.css</code> と一致させる</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>node bases/sync_styles.mjs --check</code> が通ることを確認する（実際のファイルでも、同期前と表示が同じことを再確認）</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row"><code>AGENTS.md</code> に共通CSSの範囲を直接編集しないルールを追加する</th><td>Claude Code</td><td>2026.11.14</td><td>完了</td></tr>
+            <tr><th scope="row">2ページのタブ（選択・追加・削除・×のホバー）をブラウザで確認する</th><td>mikunup</td><td>［YYYY.MM.DD］</td><td>未着手</td></tr>
+            <tr><th scope="row">Issue #2 を閉じる（このADRを含むPRのマージ時）</th><td>mikunup</td><td>［YYYY.MM.DD］</td><td>未着手</td></tr>
+          </tbody>
+        </table></div>
+        <div class="two-columns review">
+          <article class="panel"><h3>確認する指標</h3><p class="muted"><code>node bases/sync_styles.mjs --check</code> が常に「すべてのHTMLに反映済みです。」になること。</p></article>
+          <article class="panel"><h3>見直しの条件・時期</h3><p class="muted">作業画面の下段タブの見た目を変えたくなった場合や、<code>.work-tabs</code> の重複がずれ始めた場合は、選択肢 B（<code>base.css</code> への取り込み）を別のADRで検討する。</p></article>
+        </div>
+      </section>
+
+      <section id="related" aria-labelledby="related-title">
+        <div class="section-heading"><span class="section-number">07 /</span><h2 id="related-title">関連ADR・参考資料</h2></div>
+        <ul class="reference-list">
+          <li><a href="https://github.com/mikunup/puzzles/issues/2">Issue #2：business_definition_sheet.html・outline.html のタブのデザインが共通化できていない</a><small>このADRで扱う課題</small></li>
+          <li><a href="adr-0003-use-nodejs-for-scripts.html">ADR-0003：リポジトリのスクリプトをNode.jsに統一し、Pythonを使わない</a><small>関連する（同期に使う <code>bases/sync_styles.mjs</code>）</small></li>
+          <li>コミット <code>79ead33</code>（2026.11.08「タブ情報の位置を調整」）<small>範囲内の書き換えと <code>.work-tabs</code> の指定が入ったコミット</small></li>
+          <li><a href="../README.md">README.md「共通デザインの適用」</a><small>共通CSSの範囲は同期で上書きされ、ページ固有のCSSは範囲外に書くというルール</small></li>
+        </ul>
+      </section>
+
+      <section id="history" aria-labelledby="history-title">
+        <div class="section-heading"><span class="section-number">08 /</span><h2 id="history-title">変更履歴</h2></div>
+        <div class="table-wrap" role="region" aria-label="変更履歴" tabindex="0"><table>
+          <thead><tr><th scope="col">日付</th><th scope="col">ステータス</th><th scope="col">内容</th><th scope="col">記入者</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-proposed">提案中</span></td><td>初版を作成（Issue #2 の調査結果をもとに提案）</td><td>Claude Code</td></tr>
+            <tr><th scope="row">2026.11.14</th><td><span class="status status-accepted">承認</span></td><td>利用者がADR-0004を承認。2ページを同期し、<code>AGENTS.md</code> にルールを追加</td><td>mikunup</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+      <footer><span>DECISION RECORD / ADR-0004 Claude Code</span><a class="back-to-top" href="#top">ページの先頭へ ↑</a></footer>
+    </main>
+  </div>
+</body>
+</html>
