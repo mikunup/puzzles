@@ -9,3 +9,9 @@ contextBridge.exposeInMainWorld('puzzlesFile', {
   // 変更のたびに保存する（成功で true、失敗でエラーメッセージを返す Promise）
   save: (json) => ipcRenderer.invoke('outline:save', json),
 });
+
+// 「今日のタスク」：claude -p "/today <引数>" を実行する（{ ok, text } または { ok: false, error } を返す Promise）
+contextBridge.exposeInMainWorld('puzzlesToday', {
+  run: (args) => ipcRenderer.invoke('today:run', String(args ?? '')),
+  cancel: () => ipcRenderer.invoke('today:cancel'),
+});

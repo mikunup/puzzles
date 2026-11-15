@@ -15,6 +15,12 @@
 .logic-forest{display:flex;flex-direction:column;align-items:flex-start;gap:24px;width:max-content;min-width:100%}.logic-branch{display:flex;align-items:flex-start;position:relative;flex-shrink:0}.logic-children{display:flex;flex-direction:column;padding-left:48px}.logic-children>.logic-branch{padding:0 0 20px}.logic-children>.logic-branch:last-child{padding-bottom:0}.logic-children>.logic-branch::before{content:"";position:absolute;left:-24px;top:var(--logic-anchor);width:24px;border-top:1px solid #9fb39a}.logic-children>.logic-branch::after{content:"";position:absolute;left:-24px;top:0;bottom:0;border-left:1px solid #9fb39a}.logic-children>.logic-branch:first-child::after{top:var(--logic-anchor)}.logic-children>.logic-branch:last-child::after{bottom:calc(100% - var(--logic-anchor))}.logic-children>.logic-branch:only-child::after{display:none}
 .logic-mode .row{height:var(--logic-card-height);width:380px;min-width:380px;flex-shrink:0;margin:0;background:white;border:1px solid var(--line);border-radius:8px;padding:12px 8px}.logic-mode .row.selected{background:var(--tint);border-color:var(--green);box-shadow:0 0 0 1px var(--green)}.logic-mode .row[data-depth="0"] input{font-size:15px}.logic-branch.has-children>.row::after{content:"";position:absolute;right:-25px;top:calc(var(--logic-anchor) - 1px);width:24px;border-top:1px solid #9fb39a;pointer-events:none}.logic-mode .row[data-drop=inside]{background:#dbe9d5;outline:2px dashed var(--green)}.logic-mode .row[data-drop=before]{border-top:3px solid var(--brown)}.logic-mode .row[data-drop=after]{border-bottom:3px solid var(--brown)}
 .fullscreen-button{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;padding:0;background:transparent;border:0;border-radius:5px}.fullscreen-button:hover{background:var(--tint)}body.editor-fullscreen{overflow:hidden}.editor.is-fullscreen{position:fixed;inset:0;z-index:100;width:100%;height:100dvh;padding:20px 24px;background:white;overflow:auto;overscroll-behavior:contain}.editor.is-fullscreen .tree{min-height:60dvh}.editor.is-fullscreen .tree.logic-mode{max-height:calc(100dvh - 160px)}
+.icon-button{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;padding:0;background:transparent;border:0;border-radius:5px;color:var(--green)}.icon-button:hover{background:var(--tint)}
+.row .ai-mark{flex-shrink:0;min-width:22px;padding:2px 4px;color:var(--brown);font-size:14px;line-height:1}
+#today-dialog,#review-dialog{width:min(720px,calc(100% - 32px))}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-head h2{margin:0}.dialog-close{border:0;background:transparent;padding:4px 8px;font-size:20px;line-height:1}
+.today-form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}.today-form input{flex:1 1 220px;min-width:0;border:1px solid var(--line);border-radius:5px;padding:7px 10px}.today-meta{min-height:20px;margin:0;font-size:12px;color:var(--muted)}
+.today-result{max-height:50dvh;overflow:auto;margin:12px 0;padding:4px 18px;border:1px solid var(--line);border-radius:12px;background:#fcfcf9}.today-result h3,.today-result h4{margin:14px 0 6px;font-size:15px}.today-result ul,.today-result ol{margin:6px 0;padding-left:22px}.today-result pre{overflow:auto;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:white}.today-result code{font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+.review-count{margin:8px 0 4px;font-size:13px;color:var(--brown)}.review-section{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}.review-section h3{margin:0 0 6px;font-size:13px}.review-list{max-height:30dvh;overflow:auto;margin:0;padding:0;list-style:none}.review-list li{padding:5px 0;border-bottom:1px solid #edf0e9;font-size:13px}.review-path{margin-left:8px;font-size:12px;color:var(--muted)}.review-empty{font-size:12px;color:var(--muted)}
 @media(max-width:760px){header{padding:12px 16px;flex-wrap:wrap}.header-content{gap:6px 18px}.header-heading{gap:2px 10px}main{padding:12px 16px}.workspace{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line);max-height:200px;overflow:auto}.editor{padding:14px}.row{margin-left:calc(var(--depth)*18px)}.doc-head{flex-wrap:wrap}.row input{font-size:14px}.row[data-depth="0"] input{font-size:16px}h1{font-size:16px}}
 </style>
 <!-- bases:styles:start -->
@@ -143,7 +149,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
 <div class="tabsbar work-tabsbar"><div id="tabs" class="tabs work-tabs" role="tablist" aria-label="アウトライン"></div><button class="work-tab-add" id="add-tab" aria-label="タブを追加" title="タブを追加">＋</button></div>
 <div id="workspace" class="workspace"><aside id="outline-panel" aria-label="アウトラインパネル"><div class="panel-head" id="panel-head"><h2>OUTLINE / 見取り図</h2><button id="panel" aria-expanded="true" aria-controls="outline-panel" aria-label="パネルを閉じる" title="パネルを閉じる">☰ 閉じる</button></div><nav id="navigation" aria-label="項目へ移動"></nav><p class="help">項目を選ぶと、本文とメモを編集できます。</p></aside>
 <section class="editor" id="editor" role="tabpanel" aria-label="アウトライン編集">
-<div class="doc-head"><input id="tab-title" class="doc-title" aria-label="アウトラインの名前"><div class="view-switch" role="group" aria-label="表示モード"><button id="view-outline" aria-pressed="true" aria-controls="tree">アウトライン</button><button id="view-logic" aria-pressed="false" aria-controls="tree">ロジックツリー</button></div><span id="panel-slot" hidden></span><button id="fullscreen" class="fullscreen-button" aria-label="全画面表示" title="全画面表示" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
+<div class="doc-head"><input id="tab-title" class="doc-title" aria-label="アウトラインの名前"><div class="view-switch" role="group" aria-label="表示モード"><button id="view-outline" aria-pressed="true" aria-controls="tree">アウトライン</button><button id="view-logic" aria-pressed="false" aria-controls="tree">ロジックツリー</button></div><span id="panel-slot" hidden></span><button id="open-today" class="icon-button" aria-label="今日のタスク（AIで提案）" title="今日のタスク（AIで提案）" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button><button id="open-review" class="icon-button" aria-label="今日のふりかえり" title="今日のふりかえり"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h12l-2.5 4 2.5 4H5"/></svg></button><button id="fullscreen" class="fullscreen-button" aria-label="全画面表示" title="全画面表示" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="fullscreen-icon" d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></div>
 <div class="toolbar tools" hidden><button id="add-root" class="primary">＋ 見出し</button><button id="add-sibling">＋ 同じ階層</button><button id="add-child">＋ 子項目</button><button id="up" aria-label="上に移動">↑</button><button id="down" aria-label="下に移動">↓</button><button id="outdent" aria-label="左に移動（階層を上げる）">←</button><button id="indent" aria-label="右に移動（階層を下げる）">→</button><button id="focus">この項目に集中</button><button id="delete-node">項目を削除</button></div>
 <div class="toolbar" hidden><button id="expand-all">すべて展開</button><button id="collapse-all">すべて折りたたむ</button><span id="count" class="muted"></span></div>
 <div id="focus-bar" class="focus-bar" hidden><span id="focus-label"></span><button id="exit-focus">集中を解除</button></div>
@@ -154,13 +160,15 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
 <p>h：親へ · j：下へ · k：上へ · l：展開／子へ<br>
 Shift+j：同階層の次のタスクへフォーカス · Shift+k：同階層の前のタスクへフォーカス · Shift+l：階層を1つ下げる<br>
 Tab：階層を1つ下げる · Shift+Tab：階層を1つ上げる<br>
-i：同じ階層に追加 · Shift+i：子階層に追加 · a：末尾から編集 · d：削除 · m：完了／未完了を切り替え<br>
+i：同じ階層に追加 · Shift+i：子階層に追加 · a：末尾から編集 · d：削除 · m：完了／未完了を切り替え · Shift+a：完了した項目をアーカイブ<br>
 z：折りたたみ開閉 · f：全画面ON／OFF · o：タスクの集中ON／OFF · Shift+o：マーク（✓）付きタスクの集中ON／OFF<br>
 t：次のタブ · Shift+t：前のタブ<br>
 gg：表示中の先頭へ · Shift+g：表示中の末尾へ · u：元に戻す · Ctrl+r：やり直す</p>
 <p>見出しの入力中：Enterで確定して入力終了（日本語変換中は変換の確定）。Tab / Shift+Tabで階層変更、Alt+矢印キーで項目を上下左右に移動。</p>
 <p>タイトル横の全画面アイコンで編集エリアを拡大／解除できます。入力終了後のEscでも解除できます。</p>
 <p>空白部分をダブルクリックすると、最上位にタスクを追加して入力を開始します。</p>
+<p>アーカイブ（Shift+a）：完了した項目を「アーカイブ」タブの今日の日付の下へ、元の親の階層ごと移します。子がある項目は子孫がすべて ✓ のとき、子がない項目は自分が ✓ のときに移せます。親が空になったら親も移します。元の場所へ戻すには u（元に戻す）を使います。</p>
+<p>旗のアイコンで「今日のふりかえり」を開き、やりきったことの確認とまとめてアーカイブができます。デスクトップ版（Electron）では、カレンダーのアイコンからAIに今日のタスクを提案させ、提案した項目に ✦ を付けます。✦ をクリックするとその項目のマークだけ外れます。</p>
 <p>⠿ をドラッグして移動。行の上端／下端で前後へ、中央で子項目へ。左右に動かすと階層を変更できます。</p>
 </details>
 </section></div>
@@ -168,6 +176,8 @@ gg：表示中の先頭へ · Shift+g：表示中の末尾へ · u：元に戻�
 <p id="status" class="status" role="status" aria-live="polite"></p><footer>保存先はこのブラウザです。別の端末へ移す場合はJSONを書き出してください。Markdownは現在のタブの全項目・メモを書き出します。</footer>
 </main>
 <dialog id="import-dialog"><h2>アウトラインを読み込む</h2><p>JSONは全タブ・折りたたみ状態を復元。Markdown / テキストは新しいタブに追加します。</p><p class="muted"># 見出し、インデントした - 項目、またはタブ字下げに対応します。</p><label>ファイルを選ぶ <input id="import-file" type="file" accept=".json,.md,.txt,.markdown,application/json,text/plain,text/markdown"></label><textarea id="import-text" aria-label="読み込むアウトライン" placeholder="アウトラインの内容&#10;&#10;# アウトラインの見出し&#10;  - アウトラインの見出し&#10;    - アウトラインの見出し&#10;# アウトラインの見出し"></textarea><p id="import-error" role="alert"></p><div class="dialog-actions"><button id="cancel-import">キャンセル</button><button id="apply-import" class="primary">読み込む</button></div></dialog>
+<dialog id="today-dialog" aria-labelledby="today-title"><div class="dialog-head"><h2 id="today-title">今日のタスク</h2><button class="dialog-close" data-close aria-label="今日のタスクを閉じる" title="閉じる">×</button></div><p class="muted">Claude Code の <code>/today</code> で未完了タスクから今日の作業を提案し、提案した項目に ✦ を付けます。保存データは読むだけで変更しません。</p><div class="today-form"><input id="today-args" maxlength="100" aria-label="件数とタブ名" placeholder="例：3 タスク整理（省略時は5件・全タブ）"><button id="today-current">現在のタブ</button><button id="today-run" class="primary">実行</button><button id="today-cancel" hidden>中止</button></div><p id="today-meta" class="today-meta" role="status" aria-live="polite"></p><div id="today-result" class="today-result" hidden></div><div class="dialog-actions"><button id="today-copy" disabled>コピー</button><button data-close>閉じる</button></div></dialog>
+<dialog id="review-dialog" aria-labelledby="review-title"><div class="dialog-head"><h2 id="review-title">今日のふりかえり</h2><button class="dialog-close" data-close aria-label="今日のふりかえりを閉じる" title="閉じる">×</button></div><p id="review-count" class="review-count"></p><section class="review-section"><h3>やりきったこと</h3><ul id="review-done" class="review-list"></ul></section><section class="review-section"><h3>✓ 済みで、未完了の子が残る項目</h3><ul id="review-partial" class="review-list"></ul></section><section class="review-section"><h3>✦ AI提案の残り</h3><ul id="review-ai" class="review-list"></ul></section><div class="dialog-actions"><button data-close>閉じる</button><button id="review-archive" class="primary"></button></div></dialog>
 <script>
 'use strict';
 const KEY='puzzles.outline.v1', $=id=>document.getElementById(id);
@@ -182,8 +192,8 @@ function validate(raw){
  if(!raw || raw.version!==1 || !Array.isArray(raw.tabs) || !raw.tabs.length || raw.tabs.length>100)throw Error('対応するJSONではありません。');
  const ids=new Set();let total=0;
  function id(value){if(typeof value!=='string'||!value||ids.has(value))throw Error('IDが不正または重複しています。');ids.add(value);return value;}
- function nodes(list,depth=0){if(!Array.isArray(list)||depth>64)throw Error('階層データが不正です（最大64階層）。');return list.map(n=>{if(++total>10000||!n||typeof n.text!=='string'||(n.note!==undefined&&typeof n.note!=='string'))throw Error('項目データが不正です（最大10,000項目）。');return {id:id(n.id),text:n.text,note:n.note||'',completed:n.completed===true,collapsed:!!n.collapsed,...(n.draft?{draft:true}:{}),children:nodes(n.children,depth+1)};});}
- const tabs=raw.tabs.map(t=>{if(!t||typeof t.name!=='string')throw Error('タブの名前が不正です。');return {id:id(t.id),name:t.name,nodes:nodes(t.nodes),selected:typeof t.selected==='string'?t.selected:null,focus:typeof t.focus==='string'?t.focus:null,markFocus:t.markFocus===true,viewMode:t.viewMode==='logic'?'logic':'outline'};});
+ function nodes(list,depth=0){if(!Array.isArray(list)||depth>64)throw Error('階層データが不正です（最大64階層）。');return list.map(n=>{if(++total>10000||!n||typeof n.text!=='string'||(n.note!==undefined&&typeof n.note!=='string'))throw Error('項目データが不正です（最大10,000項目）。');return {id:id(n.id),text:n.text,note:n.note||'',completed:n.completed===true,collapsed:!!n.collapsed,...(n.draft?{draft:true}:{}),...(n.aiFocus===true?{aiFocus:true}:{}),children:nodes(n.children,depth+1)};});}
+ const tabs=raw.tabs.map(t=>{if(!t||typeof t.name!=='string')throw Error('タブの名前が不正です。');return {id:id(t.id),name:t.name,nodes:nodes(t.nodes),selected:typeof t.selected==='string'?t.selected:null,focus:typeof t.focus==='string'?t.focus:null,markFocus:t.markFocus===true,viewMode:t.viewMode==='logic'?'logic':'outline',...(t.archive===true?{archive:true}:{})};});
  return {version:1,tabs,active:tabs.some(t=>t.id===raw.active)?raw.active:tabs[0].id,panelOpen:raw.panelOpen!==false};
 }
 const fileStore=globalThis.puzzlesFile||null;
@@ -242,7 +252,9 @@ function render(){
    }
   };
 
-  row.append(handle,fold,input,completion,
+  row.append(handle,fold);
+  if(n.aiFocus){const ai=button('✦','AIフォーカスを外す：'+(n.text||'無題'),()=>change(()=>{delete n.aiFocus;},'AIフォーカス（✦）を外しました。'));ai.className='ai-mark';row.append(ai);}
+  row.append(input,completion,
    button('＋','この項目の下に同じ階層の項目を追加',()=>add('sibling',n.id)),
    button('−','この項目を削除',()=>removeNode(n.id)));
   row.onclick=e=>{if(e.target===row)select(n.id);};
@@ -308,6 +320,50 @@ function finishDraft(tabId,nodeId){
  }else if(restoreTask)focusTask();
 }
 function toggleCompleted(id=current().selected){const f=find(id);if(!f)return;change(()=>{current().selected=id;f.n.completed=!f.n.completed;},f.n.completed?'未完了にしました。':'完了にしました。');focusTask(id);}
+const WEEK='日月火水木金土';
+function dateHeading(d=new Date()){const p=v=>String(v).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}（${WEEK[d.getDay()]}）`;}
+// 子があれば子孫がすべて ✓、子がなければ自分が ✓ のとき「やりきった」とみなす
+function isDone(n){return n.children.length?n.children.every(isDone):n.completed;}
+function ancestorsOf(tab,id){const path=[];let p=find(id,tab.nodes)?.parent;while(p){path.unshift(p);p=find(p.id,tab.nodes).parent;}return path;}
+function archiveTab(create){let t=state.tabs.find(t=>t.archive);if(!t&&create){t=newTab('アーカイブ',[]);t.archive=true;state.tabs.push(t);}return t;}
+function childNamed(list,text){let c=list.find(x=>x.text===text);if(!c){c=node(text);list.push(c);}return c;}
+function hasPath(list,names){const [head,...rest]=names;return list.some(x=>x.text===head&&(!rest.length||hasPath(x.children,rest)));}
+// アーカイブ側では、日付見出しからの項目名（text）の並びが同じものを1つにまとめる
+function mergeInto(list,n){const same=list.find(x=>x.text===n.text);if(!same){list.push(n);return;}same.completed=same.completed||n.completed;if(n.note&&n.note!==same.note)same.note=same.note?same.note+'\n\n'+n.note:n.note;n.children.forEach(c=>mergeInto(same.children,c));}
+function archivable(tab,n){if(isDone(n))return true;if(n.children.length||n.completed)return false;const arch=archiveTab(false),names=[...ancestorsOf(tab,n.id).map(a=>a.text),n.text];return !!arch&&arch.nodes.some(d=>hasPath(d.children,names));}
+// change() の中で呼ぶ。項目を元の親の階層ごとアーカイブタブの今日の日付へ移し、空になった親も上へ順に移す
+function archiveNode(tab,id){
+ const f=find(id,tab.nodes);if(!f)return;
+ const ancestors=ancestorsOf(tab,id),copies=[];
+ let list=childNamed(archiveTab(true).nodes,dateHeading()).children;
+ for(const a of ancestors){const c=childNamed(list,a.text);copies.push(c);list=c.children;}
+ f.list.splice(f.index,1);walk([f.n],x=>{delete x.aiFocus;delete x.draft;});mergeInto(list,f.n);
+ for(let i=ancestors.length-1;i>=0&&!ancestors[i].children.length;i--){const a=ancestors[i],af=find(a.id,tab.nodes);af.list.splice(af.index,1);copies[i].completed=copies[i].completed||a.completed;if(a.note&&!copies[i].note)copies[i].note=a.note;}
+}
+function archiveSelected(){
+ const tab=current(),f=find(tab.selected);if(!f)return;
+ if(tab.archive){announce('アーカイブタブの項目はアーカイブできません。');return;}
+ if(!archivable(tab,f.n)){announce(f.n.children.length||f.n.completed?'未完了の子項目があるため、アーカイブできません。':'完了（✓）していない項目はアーカイブできません。m キーで完了にできます。');return;}
+ const next=f.list[f.index+1]?.id||f.list[f.index-1]?.id||f.parent?.id||null;
+ change(()=>{archiveNode(tab,f.n.id);tab.selected=next&&find(next)?next:null;},`「${f.n.text||'無題'}」をアーカイブタブの ${dateHeading()} へ移しました。u で元に戻せます。`);
+ focusTask();
+}
+function reviewItems(){
+ const done=[],partial=[],ai=[];let marks=0;
+ for(const tab of state.tabs){if(tab.archive)continue;(function visit(list,path){for(const n of list){
+  if((n.children.length||n.completed)&&isDone(n)){let count=0;walk([n],x=>{if(x.completed)count++;});marks+=count;done.push({tab,n,path});continue;}
+  if(n.completed){marks++;partial.push({tab,n,path});}
+  else if(n.aiFocus)ai.push({tab,n,path});
+  visit(n.children,[...path,n.text||'無題']);}})(tab.nodes,[]);}
+ return {done,partial,ai,marks};
+}
+function reviewList(id,items,empty){const ul=$(id);ul.replaceChildren();if(!items.length){const li=document.createElement('li');li.className='review-empty';li.textContent=empty;ul.append(li);return;}for(const {tab,n,path} of items){const li=document.createElement('li'),where=document.createElement('span');where.className='review-path';where.textContent=[tab.name||'無題',...path].join(' › ');li.append(n.text||'（無題）',where);ul.append(li);}}
+function renderReview(){
+ const {done,partial,ai,marks}=reviewItems();
+ $('review-count').textContent=`✓ ${marks} 個 · やりきったこと ${done.length} 件`;
+ reviewList('review-done',done,'まだありません。');reviewList('review-partial',partial,'ありません。');reviewList('review-ai',ai,'ありません。');
+ $('review-archive').textContent=`✓ ${done.length} 件をアーカイブして一日を終える`;$('review-archive').disabled=!done.length;
+}
 function removeNode(id=current().selected){const f=find(id);if(f)change(()=>{f.list.splice(f.index,1);if(current().selected&&contains(f.n,current().selected))current().selected=null;},'項目を削除しました。元に戻すこともできます。');}
 function move(direction){change(()=>{const f=find(current().selected);if(!f)return;
  if(direction==='up'&&f.index>0){f.list.splice(f.index,1);f.list.splice(f.index-1,0,f.n);}
@@ -377,6 +433,89 @@ $('import').onclick=()=>{$('import-error').textContent='';$('import-dialog').sho
 let fileName='読み込んだアウトライン',fileReadPending=false;
 $('import-file').onchange=async()=>{const file=$('import-file').files[0];if(!file)return;fileReadPending=true;$('apply-import').disabled=true;try{$('import-text').value=await file.text();fileName=file.name.replace(/\.[^.]+$/,'');$('import-error').textContent='';}catch(e){$('import-error').textContent='ファイルを読み取れませんでした。';}finally{fileReadPending=false;$('apply-import').disabled=false;}};
 $('apply-import').onclick=()=>{if(fileReadPending)return;try{const text=$('import-text').value.trim();if(!text)throw Error('ファイルを選ぶか、テキストを入力してください。');if(text.startsWith('{')||text.startsWith('[')){const restored=validate(JSON.parse(text));if(!confirm('現在の全タブをJSONの内容に置き換えますか？（元に戻せます）'))return;change(()=>state=restored,'JSONから全タブを復元しました。');}else{const t=parseMarkdown(text,fileName);validate({...state,tabs:[...state.tabs,t]});change(()=>{state.tabs.push(t);state.active=t.id;},'新しいタブに読み込みました。');}$('import-dialog').close();$('import-text').value='';$('import-file').value='';}catch(e){$('import-error').textContent='読み込みできません：'+e.message;}};
+const anyDialogOpen=()=>!!document.querySelector('dialog[open]');
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+$('open-review').onclick=()=>{finishEdit();renderReview();$('review-dialog').showModal();};
+$('review-archive').onclick=()=>{const {done}=reviewItems();if(!done.length)return;change(()=>done.forEach(({tab,n})=>archiveNode(tab,n.id)),`${done.length} 件をアーカイブタブの ${dateHeading()} へ移しました。u で元に戻せます。`);$('review-dialog').close();};
+// AI提案の結果は textContent と createElement だけで組み立てる（innerHTML は使わない。リンクは http(s) のみ）
+function mdInline(text){
+ const out=[],re=/\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)/g;let last=0,m;
+ while((m=re.exec(text))){
+  if(m.index>last)out.push(document.createTextNode(text.slice(last,m.index)));
+  if(m[1]!==undefined){const b=document.createElement('strong');b.textContent=m[1];out.push(b);}
+  else if(m[2]!==undefined){const c=document.createElement('code');c.textContent=m[2];out.push(c);}
+  else if(/^https?:\/\//i.test(m[4])){const a=document.createElement('a');a.href=m[4];a.textContent=m[3];a.target='_blank';a.rel='noopener noreferrer';out.push(a);}
+  else out.push(document.createTextNode(m[0]));
+  last=re.lastIndex;
+ }
+ if(last<text.length)out.push(document.createTextNode(text.slice(last)));
+ return out;
+}
+function mdRender(text){
+ const root=[],el=(tag,kids=[])=>{const e=document.createElement(tag);e.append(...kids);return e;};
+ let lists=[],para=null,fence=null;
+ for(const line of String(text).replace(/\r/g,'').split('\n')){
+  if(fence){if(/^\s*```/.test(line))fence=null;else fence.textContent+=(fence.textContent?'\n':'')+line;continue;}
+  if(/^\s*```/.test(line)){lists=[];para=null;fence=el('code');root.push(el('pre',[fence]));continue;}
+  if(!line.trim()){lists=[];para=null;continue;}
+  const h=line.match(/^(#{1,6})\s+(.*)$/);
+  if(h){lists=[];para=null;root.push(el(h[1].length<=2?'h3':'h4',mdInline(h[2])));continue;}
+  const li=line.match(/^(\s*)([-*+]|\d+[.)])\s+(.*)$/);
+  if(li){
+   para=null;const indent=li[1].replace(/\t/g,'  ').length;
+   while(lists.length&&indent<lists[lists.length-1].indent)lists.pop();
+   let top=lists[lists.length-1];
+   if(!top||indent>top.indent){const list=el(/\d/.test(li[2])?'ol':'ul');if(top)top.list.lastElementChild.append(list);else root.push(list);top={indent,list};lists.push(top);}
+   top.list.append(el('li',mdInline(li[3])));continue;
+  }
+  if(lists.length&&/^\s/.test(line)){lists[lists.length-1].list.lastElementChild.append(el('br'),...mdInline(line.trim()));continue;}
+  lists=[];
+  if(para)para.append(el('br'),...mdInline(line.trim()));else{para=el('p',mdInline(line.trim()));root.push(para);}
+ }
+ return root;
+}
+const TODAY_KEY='puzzles.outline.today.v1',todayRunner=globalThis.puzzlesToday||null;
+let todayResult=null;
+try{todayResult=JSON.parse(localStorage.getItem(TODAY_KEY)||'null');if(typeof todayResult?.markdown!=='string')todayResult=null;}catch(e){todayResult=null;}
+$('open-today').hidden=!todayRunner;
+// 末尾の ```focus-ids ブロックを取り出し、表示用のMarkdownからは除く
+function splitFocusIds(text){const blocks=[...text.matchAll(/```focus-ids[^\n]*\n([\s\S]*?)```/g)],last=blocks[blocks.length-1];return {markdown:text.replace(/```focus-ids[^\n]*\n[\s\S]*?```/g,'').trim(),ids:last?[...new Set(last[1].split(/\s+/).filter(Boolean))]:null};}
+function showTodayResult(){
+ $('today-result').hidden=!todayResult;$('today-copy').disabled=!todayResult;
+ if(!todayResult)return;
+ $('today-result').replaceChildren(...mdRender(todayResult.markdown));
+ const at=new Date(todayResult.at);$('today-meta').textContent=`前回の結果：${isNaN(at)?'':at.toLocaleString('ja-JP')}${todayResult.args?'（'+todayResult.args+'）':''}`;
+}
+function setTodayRunning(on){$('today-run').disabled=on;$('today-current').disabled=on;$('today-args').disabled=on;$('today-cancel').hidden=!on;}
+// ✦ を付け直し、提案した項目が見えるよう上位の階層を展開する
+function applyAiFocus(ids){
+ let found=0;
+ change(()=>{for(const tab of state.tabs)walk(tab.nodes,n=>{delete n.aiFocus;});
+  for(const tab of state.tabs){if(tab.archive)continue;for(const id of ids){const f=find(id,tab.nodes);if(!f)continue;f.n.aiFocus=true;found++;ancestorsOf(tab,id).forEach(a=>a.collapsed=false);}}});
+ return found;
+}
+async function runToday(){
+ if(!todayRunner)return;finishEdit();
+ const args=$('today-args').value.trim();
+ setTodayRunning(true);$('today-meta').textContent='Claude Code で提案を作成しています…（最大180秒）';
+ try{if(fileStore)await fileStore.save(snapshot());}catch(e){/* 保存の失敗は保存状態の表示で知らせる */}
+ let r;try{r=await todayRunner.run(args);}catch(e){r={ok:false,error:String(e.message||e)};}
+ setTodayRunning(false);
+ if(!r?.ok){$('today-meta').textContent=r?.canceled?'中止しました。':'実行できませんでした：'+(r?.error||'不明なエラー');return;}
+ const {markdown,ids}=splitFocusIds(r.text||'');
+ todayResult={args,markdown,at:new Date().toISOString()};
+ try{localStorage.setItem(TODAY_KEY,JSON.stringify(todayResult));}catch(e){/* 直前の結果を残せないだけで、表示は続ける */}
+ showTodayResult();
+ const found=ids?applyAiFocus(ids):0;
+ $('today-meta').textContent=ids?`提案した ${found} 件に ✦ を付けました。`:'提案した項目のid（focus-ids）がなかったため、✦ は変更していません。';
+ announce($('today-meta').textContent);
+}
+$('open-today').onclick=()=>{finishEdit();showTodayResult();$('today-dialog').showModal();};
+$('today-run').onclick=()=>runToday();
+$('today-args').onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();runToday();}};
+$('today-cancel').onclick=()=>todayRunner?.cancel();
+$('today-current').onclick=()=>{const count=$('today-args').value.trim().match(/^\d+/);$('today-args').value=(count?count[0]:'5')+' '+current().name;$('today-args').focus();};
+$('today-copy').onclick=async()=>{if(!todayResult)return;try{await navigator.clipboard.writeText(todayResult.markdown);$('today-meta').textContent='Markdownをコピーしました。';}catch(e){$('today-meta').textContent='コピーできませんでした。';}};
 let nativeFullscreen=false;
 function setFullscreen(active){
  $('editor').classList.toggle('is-fullscreen',active);document.body.classList.toggle('editor-fullscreen',active);
@@ -405,13 +544,13 @@ document.addEventListener('keydown',e=>{
  const editing=field?.matches('input,textarea,select')||field?.isContentEditable;
  if(e.key==='Escape'){
   pendingG=null;
-  if(!editing&&!$('import-dialog').open&&$('editor').classList.contains('is-fullscreen')){e.preventDefault();toggleFullscreen();return;}
+  if(!editing&&!anyDialogOpen()&&$('editor').classList.contains('is-fullscreen')){e.preventDefault();toggleFullscreen();return;}
   const taskId=field?.closest?.('.row')?.dataset.id||current().selected;
   if(editing){e.preventDefault();field.blur();finishEdit();updateTools();}
-  if(!$('import-dialog').open){e.preventDefault();focusTask(taskId);}
+  if(!anyDialogOpen()){e.preventDefault();focusTask(taskId);}
   return;
  }
- if(editing||$('import-dialog').open||e.metaKey||e.altKey){pendingG=null;return;}
+ if(editing||anyDialogOpen()||e.metaKey||e.altKey){pendingG=null;return;}
  if(e.ctrlKey){
   pendingG=null;
   if(e.key==='r'&&!e.shiftKey){e.preventDefault();if(!e.repeat)$('redo').onclick();}
@@ -421,8 +560,8 @@ document.addEventListener('keydown',e=>{
  if(key==='Tab'&&current().selected){
   pendingG=null;e.preventDefault();if(!e.repeat)move(e.shiftKey?'outdent':'indent');return;
  }
- if(e.shiftKey&&!['I','G','T','J','K','L','O'].includes(key)){pendingG=null;return;}
- if(!['h','j','k','l','i','I','a','d','m','z','f','o','O','t','T','g','G','u','J','K','L'].includes(key)){pendingG=null;return;}
+ if(e.shiftKey&&!['I','G','T','J','K','L','O','A'].includes(key)){pendingG=null;return;}
+ if(!['h','j','k','l','i','I','a','A','d','m','z','f','o','O','t','T','g','G','u','J','K','L'].includes(key)){pendingG=null;return;}
  e.preventDefault();
  if(e.repeat&&!['h','j','k','l','J','K'].includes(key))return;
  if(key==='g'){
@@ -434,6 +573,7 @@ document.addEventListener('keydown',e=>{
  pendingG=null;
  if(['h','j','k','l','G'].includes(key))navigateOutline(key);
  else if(key==='a')focusInput(current().selected,true);
+ else if(key==='A')archiveSelected();
  else if(key==='i')add(current().selected?'sibling':'root');
  else if(key==='I')add(current().selected?'child':'root');
  else if(key==='J'||key==='K'){

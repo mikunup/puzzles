@@ -1,5 +1,6 @@
 'use strict';
 const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,6 +9,11 @@ const ENTRY = path.join(ROOT, 'outline.html');
 const DATA_DIR = path.join(__dirname, 'datas');
 const DATA_FILE = path.join(DATA_DIR, 'outline.json');
 const MAX_BYTES = 50 * 1024 * 1024;
+const CLAUDE_BIN = process.env.CLAUDE_BIN || 'claude';
+const TODAY_TIMEOUT_MS = 180 * 1000;
+const TODAY_MAX_OUTPUT = 1024 * 1024;
+// /today に許可するツール：未完了タスクのツリー取得（node スクリプト）と読み取りだけ
+const TODAY_TOOLS = 'Bash(node scripts/outline_tree.mjs:*),Read';
 
 // outline.html の状態を electron/datas/outline.json に保存・読み込みする
 ipcMain.on('outline:load', (e) => {
@@ -34,6 +40,45 @@ ipcMain.handle('outline:save', (_e, json) => {
     return String(err.message || err);
   }
 });
+
+// 「今日のタスク」：electron/ を作業フォルダに claude -p "/today …" を実行する（同時に1つまで）
+let todayChild = null;
+
+function stopToday() {
+  if (todayChild) { todayChild.kill(); todayChild = null; }
+}
+
+ipcMain.handle('today:run', (_e, args) => {
+  if (todayChild) return { ok: false, error: 'すでに実行中です。' };
+  // 引数は制御文字を除き、100文字までにする。shell を通さずに起動する
+  const text = String(args ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 100);
+  return new Promise((resolve) => {
+    let out = '', err = '', settled = false;
+    const finish = (result) => { if (!settled) { settled = true; clearTimeout(timer); todayChild = null; resolve(result); } };
+    const child = spawn(CLAUDE_BIN, ['-p', ('/today ' + text).trim(), '--allowedTools', TODAY_TOOLS], {
+      cwd: __dirname, shell: false, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    todayChild = child;
+    child.stdout.setEncoding('utf-8');
+    child.stderr.setEncoding('utf-8');
+    const timer = setTimeout(() => { child.kill(); finish({ ok: false, error: '180秒を超えたため中止しました。' }); }, TODAY_TIMEOUT_MS);
+    child.stdout.on('data', (d) => { if (out.length < TODAY_MAX_OUTPUT) out += d; });
+    child.stderr.on('data', (d) => { if (err.length < TODAY_MAX_OUTPUT) err += d; });
+    child.on('error', (e) => finish({
+      ok: false,
+      error: e.code === 'ENOENT'
+        ? `claude が見つかりません（${CLAUDE_BIN}）。環境変数 CLAUDE_BIN に claude のパスを指定して起動してください。`
+        : String(e.message || e),
+    }));
+    child.on('close', (code, signal) => {
+      if (signal) finish({ ok: false, canceled: true, error: '中止しました。' });
+      else if (code === 0) finish({ ok: true, text: out });
+      else finish({ ok: false, error: (err || out).trim() || `claude が終了コード ${code} で終了しました。` });
+    });
+  });
+});
+
+ipcMain.handle('today:cancel', () => { const running = !!todayChild; stopToday(); return running; });
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -94,6 +139,8 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
+
+app.on('before-quit', stopToday);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
