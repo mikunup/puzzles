@@ -72,7 +72,7 @@ MDは直接編集せず、HTML内の初期データを変更して再生成し�
 
 | HTML | 用途 | 使い方・機能 |
 | --- | --- | --- |
-| <a href="outline.html" target="_blank" rel="noopener noreferrer">アウトライン ↗</a><br><code>outline.html</code> | 見出しとタスクを階層で整理し、必要な項目に集中します。 | アウトライン／ロジックツリー切替、複数タブ、パネル開閉、折りたたみ、ドラッグで上下左右に移動、集中表示、自動保存、JSON／Markdown読み込み・書き出し。 |
+| <a href="outline.html" target="_blank" rel="noopener noreferrer">アウトライン ↗</a><br><code>outline.html</code> | 見出しとタスクを階層で整理し、必要な項目に集中します。 | アウトライン／ロジックツリー切替、複数タブ、パネル開閉、折りたたみ、ドラッグで上下左右に移動、集中表示、完了項目のアーカイブ（日付ごと）、今日のふりかえり、自動保存、JSON／Markdown読み込み・書き出し。デスクトップ版（`electron/`）ではClaude Codeで今日のタスクを提案し、提案項目に ✦ を付けます。 |
 | <a href="schedule_plan.html" target="_blank" rel="noopener noreferrer">スケジュール計画書 ↗</a><br><code>schedule_plan.html</code> | プロジェクトの目的・マイルストーン・ガントチャート・WBS・体制・リスクをまとめます。 | HTML内の内容を編集して、プロジェクト計画・役割分担・進捗報告の資料に使います。 |
 
 ### デザインを参照・資料を作成する
