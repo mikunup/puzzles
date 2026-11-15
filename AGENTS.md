@@ -20,7 +20,13 @@ AIエージェント向けのルールです。Codexはこのファイルを直�
 - **ステータス**：利用者の合意前は「提案中」で作成します。利用者が変更を承認したら「承認」に更新し、変更履歴に記録します。
 - **HTMLのスタイル**：生成するHTMLは、`adr.html` の `<head>`（共通CSSを含む）をそのまま使います。`base.css` や `adr.html` の見た目を変えたら、`node adr/build_index.mjs` で全ADRのHTMLを作り直します。
 
+## Contextは責務を実現する手段全体を扱う
+
+Contextの対象と機能一覧はブラウザ機能に限定しません。そのコンテキストの責務を実現する、このプロジェクトのHTML・スクリプト・Skills・CLI・AIへの依頼手順などを含め、責務・実行手段・参照先を対応付けます。実装済み、運用手順、未実装・未定義を区別し、未作成のSkillなどを利用可能と記載しません。実行場所だけを理由に対象から外しません（ADR-0013）。
+
 ## スクリプトはNode.jsで書く
+
+- **業務分析コンテキストの更新フロー**：対象は `context/business-analysis.md` で定義する業務分析コンテキストの `business_flow.html`・`object_model.html` と対応するMDです。他のコンテキストや資料へ一律には適用しません。この対象は「HTML雛形作成 → ブラウザで編集 → JSON保存 → JSONをHTML内の初期データへ反映 → MD生成」の順で更新します。ブラウザで編集しただけではHTMLファイルは更新されません。保存したJSONの内容をHTMLへ反映してから `node build_model_markdown.mjs` を実行し、最後に `node build_model_markdown.mjs --check` を実行します。`business_flow.md`・`object_model.md` は生成物なので直接編集しません。JSONは編集結果の受け渡しに使い、AIへの質問・レビュー・開発にはまずMDを使います（ADR-0010・ADR-0012）。
 
 リポジトリで使うスクリプトはNode.js（標準モジュールのみ、拡張子 `.mjs`）で書き、Pythonは使いません（ADR-0003）。外部パッケージが必要になる場合は、先に利用者へ確認します。
 

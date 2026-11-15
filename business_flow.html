@@ -1331,16 +1331,16 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
     }
     function markdownText(value){return esc(value).replace(/[\\`*_\[\]{}()#+!|]/g,c=>"\\"+c).replace(/\r\n?|\n/g,"<br>");}
     function markdownTable(headers,rows){return [headers,headers.map(()=>"---"),...rows].map(row=>"| "+row.join(" | ")+" |").join("\n");}
-    function exportMarkdown(){
-      const m=markdownText;
-      const matrix=data.rows.map(row=>[m(row.name),...data.roles.map(role=>placedObjects().filter(n=>n.placement?.row===row.id&&n.placement?.col===role.id).map(n=>`${m(n.label)} [${m(n.id)}]`).join("<br>")),m(row.remark)]);
-      return ["# "+m(data.title||"業務フロー図"),AXIS_DESCRIPTION,"行のタイトル："+m(axisTitle("rows"))+"、列のタイトル："+m(axisTitle("roles")),
+    function exportMarkdown(source=data){
+      const m=markdownText,titleFor=key=>source.axisTitles?.[key]||AXIS_TITLES[key];
+      const matrix=source.rows.map(row=>[m(row.name),...source.roles.map(role=>placedObjects(source).filter(n=>n.placement?.row===row.id&&n.placement?.col===role.id).map(n=>`${m(n.label)} [${m(n.id)}]`).join("<br>")),m(row.remark)]);
+      return ["# "+m(source.title||"業務フロー図"),AXIS_DESCRIPTION,"行のタイトル："+m(titleFor("rows"))+"、列のタイトル："+m(titleFor("roles")),
         "実線＝作業の流れ・情報の受け渡し、点線＝参照・帳票とのやりとり。矢印は接続元 → 接続先です。未配置と配置済みは同じオブジェクトIDで管理します。", "## マトリクス",
-        markdownTable([m(axisTitle("rows")),...data.roles.map(r=>m(r.name)),"備考"],matrix),
-        "## 情報項目／ステータス（行）",markdownTable(["ID","名前","備考"],data.rows.map(r=>[m(r.id),m(r.name),m(r.remark)])),
-        "## みるもの（列）",markdownTable(["ID","名前"],data.roles.map(r=>[m(r.id),m(r.name)])),
-        "## オブジェクト一覧（同じIDで配置・解除）",markdownTable(["ID","名前","種類","補足","配置状態","行ID","列ID"],data.objects.map(o=>[m(o.id),m(o.label),o.type==="doc"?"帳票":"作業",m(o.note),o.placement?"配置済み":"未配置",m(o.placement?.row),m(o.placement?.col)])),
-        "## 接続（矢印）",markdownTable(["ID","接続元ID","接続先ID","線の意味","経路"],data.edges.map(e=>[m(e.id),m(e.from),m(e.to),e.style==="dashed"?"点線：参照・帳票とのやりとり":"実線：作業の流れ・情報の受け渡し",m(ROUTES[e.route])]))
+        markdownTable([m(titleFor("rows")),...source.roles.map(r=>m(r.name)),"備考"],matrix),
+        "## 情報項目／ステータス（行）",markdownTable(["ID","名前","備考"],source.rows.map(r=>[m(r.id),m(r.name),m(r.remark)])),
+        "## みるもの（列）",markdownTable(["ID","名前"],source.roles.map(r=>[m(r.id),m(r.name)])),
+        "## オブジェクト一覧（同じIDで配置・解除）",markdownTable(["ID","名前","種類","補足","配置状態","行ID","列ID"],source.objects.map(o=>[m(o.id),m(o.label),o.type==="doc"?"帳票":"作業",m(o.note),o.placement?"配置済み":"未配置",m(o.placement?.row),m(o.placement?.col)])),
+        "## 接続（矢印）",markdownTable(["ID","接続元ID","接続先ID","線の意味","経路"],source.edges.map(e=>[m(e.id),m(e.from),m(e.to),e.style==="dashed"?"点線：参照・帳票とのやりとり":"実線：作業の流れ・情報の受け渡し",m(ROUTES[e.route])]))
       ].join("\n\n")+"\n";
     }
     function exportHtml(){

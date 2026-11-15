@@ -7,7 +7,7 @@
 ## 一覧
 
 <!-- adr:index:start -->
-全 9 件　（提案中 0　承認 8　却下 0　廃止 0　置換 1）
+全 13 件　（提案中 0　承認 11　却下 0　廃止 0　置換 2）
 
 | 番号 | タイトル | ステータス | 決定日 | 対象範囲 | HTML |
 | --- | --- | --- | --- | --- | --- |
@@ -20,6 +20,10 @@
 | ADR-0007 | [ADRは重要な決定だけに使い、作業の管理はIssueとPRで行う](adr-0007-limit-adr-scope.md) | 置換 | 2026.11.14 | `AGENTS.md` のADRルール・雛形 `adr.md`・`adr.html` | [開く](html/adr-0007-limit-adr-scope.html) |
 | ADR-0008 | [bases/ の基準はMarkdownを元にし、HTMLはそれに合わせて直す](adr-0008-summarize-bases-in-markdown.md) | 承認 | 2026.11.14 | `bases/README.md`・`bases/` のHTML・`bases/base.css`・`AGENTS.md` のルール | [開く](html/adr-0008-summarize-bases-in-markdown.html) |
 | ADR-0009 | [ADRは今後の開発を継続して制約し、後から理由が必要になる決定だけに使う](adr-0009-narrow-adr-criteria.md) | 承認 | 2026.11.14 | `AGENTS.md` のADRルール・`adr/README.md` | [開く](html/adr-0009-narrow-adr-criteria.html) |
+| ADR-0010 | [業務フローとオブジェクトモデルのHTML更新後にMarkdownを生成する](adr-0010-generate-model-markdown-from-html.md) | 承認 | 2026.11.15 | `business_flow.html`・`object_model.html`・対応するMD・`build_model_markdown.mjs`・`AGENTS.md` | [開く](html/adr-0010-generate-model-markdown-from-html.html) |
+| ADR-0011 | [業務モデル資料はHTMLとMarkdownまで作成し、JSONは必要になってから検討する](adr-0011-use-markdown-before-json.md) | 置換 | 2026.11.15 | 業務フロー・オブジェクトモデルの資料生成とAIへの受け渡し | [開く](html/adr-0011-use-markdown-before-json.html) |
+| ADR-0012 | [ブラウザの編集結果をJSON経由でHTMLへ反映してMDを生成する](adr-0012-roundtrip-browser-edits-through-json.md) | 承認 | 2026.11.15 | 業務フロー・オブジェクトモデルの資料更新、AGENTS.md、README、Context、Spec | [開く](html/adr-0012-roundtrip-browser-edits-through-json.html) |
+| ADR-0013 | [Contextは実行場所を問わず責務を実現する手段全体を定義する](adr-0013-include-all-context-capabilities.md) | 承認 | 2026.11.15 | AGENTS.mdのContext定義ルール・context/配下の定義書 | [開く](html/adr-0013-include-all-context-capabilities.html) |
 <!-- adr:index:end -->
 
 上の一覧と各ADRのHTMLは `adr/build_index.mjs` が生成します。マーカー（`adr:index:start`〜`adr:index:end`）の間と、`html/` 配下のHTMLは手で編集しないでください。
