@@ -77,6 +77,9 @@
     .head-tools button:hover { background:rgba(255,255,255,.15); }
     .desc { display:block; width:100%; padding:10px 18px; border:0; border-bottom:1px solid var(--line); background:var(--tint); font-size:13px; color:var(--muted); resize:vertical; }
     .desc:focus { outline:2px solid var(--green); outline-offset:-2px; background:#fff; color:var(--ink); }
+    .concept-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; padding:12px 18px; border-bottom:1px solid var(--line); }
+    .concept-fields label { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--muted); }
+    .concept-fields input,.concept-fields select { width:100%; min-width:0; padding:7px; border:1px solid var(--line); border-radius:5px; background:#fff; }
 
     /* 箱全体の折りたたみ */
     .box-toggle { flex-shrink:0; width:22px; height:22px; margin-left:-8px; padding:0; border:0; border-radius:4px; background:transparent; color:inherit; font-size:10px; opacity:.85; transition:transform .15s; }
@@ -449,6 +452,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
     const STORAGE_KEY = "objmodel.data";
     const WORKSPACE_KEY="objmodel.workspace.v1",WORKSPACE_FORMAT="puzzles.object-model.workspace";
     const COLLAPSE_KEY = "objmodel.collapsed";
+    const OBJECT_KINDS = { undecided:"未確定", document:"資料（集約の区分は未確定）", concept:"識別子を持つ概念", "aggregate-root":"集約ルート", entity:"エンティティ", "value-object":"値オブジェクト" };
     const TYPES = { text: "テキスト", number: "数値", date: "日付", bool: "はい／いいえ", select: "選択肢", enum: "Enum（列挙型）", ref: "参照" };
     // プレビューに出すサンプル値
     const SAMPLE_VALUE = { text: "〇〇〇〇", number: "1,234", date: "2026/10/30", bool: "はい", select: "選択肢A" };
@@ -458,7 +462,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
     const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     const item = (label = "") => ({ id: uid(), name: label });
     const prop = (label = "", type = "text", ref = "") => ({ id: uid(), name: label, type, ref, ...(type==="enum"?{enumValues:[],defaultValue:""}:{}) });
-    const newObject = (label = "", desc = "", props = [prop()], methods = [""]) => ({ id: uid(), name: label, desc, props, methods: methods.map(item) });
+    const newObject = (label = "", desc = "", props = [prop()], methods = [""]) => ({ id: uid(), name: label, desc, kind:"undecided", identifier:"", objectsRef:"", props, methods: methods.map(item) });
     const newCollection = (sources = [], extra = {}) => ({ id: uid(), name: "", desc: "", sources, columns: [], methods: [item()], itemMethods: [item()], ...extra });
 
     // 初回表示用のサンプル
@@ -497,12 +501,18 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
       return out;
     }
     // 保存データ・JSONを読む（前のバージョンの形式も変換して読む）
+    function normalizeObjectKind(value){
+      const kind=String(value??"")||"undecided";
+      if(!Object.hasOwn(OBJECT_KINDS,kind))throw Error("オブジェクトの種別が不正です："+kind);
+      return kind;
+    }
     function parseData(d) {
       const str = v => String(v ?? "");
       const items = a => (Array.isArray(a) ? a : []).map(x => ({ id: str(x?.id) || uid(), name: str(x?.name) }));
       const rawObjects = Array.isArray(d) ? d : Array.isArray(d?.objects) ? d.objects : [];
       const objs = rawObjects.filter(o => o && typeof o === "object").map(o => ({
         id: str(o.id) || uid(), name: str(o.name), desc: str(o.desc),
+        kind:normalizeObjectKind(o.kind),identifier:str(o.identifier),objectsRef:str(o.objectsRef),
         props: (Array.isArray(o.props) ? o.props : []).map(normalizeProperty),
         methods: items(o.methods),
       }));
@@ -659,6 +669,11 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
             ${headSummary(`プロパティ ${o.props.length} ・ 操作 ${o.methods.length}`)}
             <span class="head-tools">${i ? `<button data-act="up" title="前へ">↑</button>` : ""}${i < objects.length - 1 ? `<button data-act="down" title="後ろへ">↓</button>` : ""}<button data-act="duplicate" title="複製">複製</button><button data-act="delete" title="削除">削除</button></span></div>
           <textarea class="desc" data-obj-field="desc" rows="1" placeholder="このオブジェクトは何か（例：自動販売機で売るもの）" aria-label="説明">${esc(o.desc)}</textarea>
+          <div class="concept-fields">
+            <label>概念の種別<select data-obj-field="kind">${Object.entries(OBJECT_KINDS).map(([kind,label])=>`<option value="${kind}"${(o.kind||"undecided")===kind?" selected":""}>${esc(label)}</option>`).join("")}</select></label>
+            <label>識別子の定義<input data-obj-field="identifier" value="${esc(o.identifier)}" placeholder="例：ワークスペース内のタブID"></label>
+            <label>Objects参照<input data-obj-field="objectsRef" value="${esc(o.objectsRef)}" placeholder="例：業務フロー［業務分析］／未作成"></label>
+          </div>
           ${section(`${o.id}:props`, "プロパティ（持っている情報）", o.props.length, joined(names(o.props)),
             `<ul class="rows" data-list="props">${o.props.map(p => propRow(o, p)).join("")}</ul>
             <button class="add-row" data-add="props"><span class="plus">＋</span>プロパティを追加</button>`)}
@@ -1088,6 +1103,7 @@ body[data-layout] .work-tabsbar > .work-tabs { flex:0 1 auto; }
       const lines = ["【オブジェクト】"];
       objects.forEach(o => {
         lines.push(`■ ${objName(o)}${o.desc ? `：${o.desc}` : ""}`);
+        lines.push(`  種別：${OBJECT_KINDS[o.kind||"undecided"]} ／ 識別子の定義：${o.identifier||"未定義"} ／ Objects参照：${o.objectsRef||"未作成"}`);
         lines.push("  プロパティ");
         o.props.filter(p => p.name.trim()).forEach(p => lines.push(`    - ${p.name}（${p.type === "ref" ? `参照：${byId(p.ref) ? objName(byId(p.ref)) : "未設定"}` : p.type==="enum"?`Enum：${(p.enumValues||[]).map(v=>v.value+"="+v.label).join("、")||"候補未定義"} ／ 初期値：${p.defaultValue||"未指定"}`: TYPES[p.type]}）`));
         lines.push("  操作");
